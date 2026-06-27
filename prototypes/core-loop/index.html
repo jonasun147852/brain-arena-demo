@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>脑力竞技 · 核心循环原型</title>
+<style>
+  :root{
+    --bg:#0a0e1a; --panel:#121a2e; --panel2:#16203a; --line:#26324d;
+    --cyan:#36e3ff; --blue:#4d7cff; --gold:#ffcf4d; --red:#ff4d6d;
+    --green:#3ddc84; --purple:#b15dff; --text:#e8eefc; --dim:#8a98b8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #16203a 0%, var(--bg) 60%);
+    color:var(--text); font-family:-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    display:flex; align-items:center; justify-content:center; overflow:hidden; user-select:none;
+  }
+  #app{ width:min(960px,100vw); height:min(600px,100vh); position:relative;
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.6);}
+  .screen{position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:28px; gap:18px;}
+  .hidden{display:none !important;}
+
+  h1{font-size:34px; letter-spacing:2px; background:linear-gradient(90deg,var(--cyan),var(--blue));
+    -webkit-background-clip:text; background-clip:text; color:transparent; text-align:center;}
+  .sub{color:var(--dim); font-size:14px; text-align:center; line-height:1.7; max-width:560px;}
+  .tag{font-size:12px; color:var(--cyan); border:1px solid var(--cyan); padding:3px 10px;
+    border-radius:20px; opacity:.85;}
+
+  button{font-family:inherit; cursor:pointer; border:none; color:var(--text);}
+  .btn{padding:14px 34px; font-size:17px; font-weight:700; border-radius:10px;
+    background:linear-gradient(90deg,var(--blue),var(--cyan)); color:#06121f;
+    transition:transform .08s, box-shadow .2s; box-shadow:0 8px 24px rgba(54,227,255,.25);}
+  .btn:hover{transform:translateY(-2px);}
+  .btn.ghost{background:transparent; border:1px solid var(--line); color:var(--text); box-shadow:none;}
+
+  /* ===== Augment cards ===== */
+  .cards{display:flex; gap:18px; flex-wrap:wrap; justify-content:center;}
+  .card{width:210px; min-height:230px; background:linear-gradient(180deg,var(--panel2),#0e1526);
+    border:1px solid var(--line); border-radius:14px; padding:18px; cursor:pointer;
+    display:flex; flex-direction:column; gap:10px; transition:transform .12s, border-color .2s, box-shadow .2s;}
+  .card:hover{transform:translateY(-6px) scale(1.02);}
+  .card .ico{font-size:32px;}
+  .card .name{font-size:18px; font-weight:800;}
+  .card .desc{font-size:13px; color:var(--dim); line-height:1.6; flex:1;}
+  .card .typ{font-size:11px; padding:2px 8px; border-radius:6px; align-self:flex-start;}
+  .t-dmg{color:var(--red); border:1px solid var(--red);} .card.t-dmg:hover{border-color:var(--red); box-shadow:0 12px 30px rgba(255,77,109,.25);}
+  .t-def{color:var(--green); border:1px solid var(--green);} .card.t-def:hover{border-color:var(--green); box-shadow:0 12px 30px rgba(61,220,132,.22);}
+  .t-ctl{color:var(--purple); border:1px solid var(--purple);} .card.t-ctl:hover{border-color:var(--purple); box-shadow:0 12px 30px rgba(177,93,255,.25);}
+  .pickhdr{text-align:center;}
+  .pickhdr .big{font-size:24px; font-weight:800;}
+  .owned{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; max-width:640px;}
+  .chip{font-size:11px; padding:3px 9px; border-radius:20px; background:#0e1526; border:1px solid var(--line); color:var(--dim);}
+
+  /* ===== Battle ===== */
+  #battle{padding:0; justify-content:flex-start; gap:0;}
+  .topbar{width:100%; padding:14px 20px; display:flex; align-items:center; gap:16px;
+    border-bottom:1px solid var(--line); background:#0e1526;}
+  .side{flex:1;}
+  .side .who{font-size:12px; color:var(--dim); margin-bottom:4px; display:flex; justify-content:space-between;}
+  .hpwrap{height:16px; background:#0a0f1d; border-radius:10px; overflow:hidden; border:1px solid var(--line); position:relative;}
+  .hp{height:100%; width:100%; transition:width .35s cubic-bezier(.2,.8,.2,1); border-radius:10px;}
+  .hp.me{background:linear-gradient(90deg,#3ddc84,#36e3ff);}
+  .hp.foe{background:linear-gradient(90deg,#ff4d6d,#ff8a4d); margin-left:auto;}
+  .foewrap{display:flex;}
+  .foewrap .hp{margin-left:auto;}
+  .mid{width:130px; text-align:center;}
+  .timer{font-size:26px; font-weight:800; font-variant-numeric:tabular-nums;}
+  .phase{font-size:11px; color:var(--cyan); letter-spacing:1px;}
+
+  .arena{flex:1; width:100%; position:relative; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:18px; padding:18px;}
+  .qcard{width:min(520px,90%); background:#0e1526; border:1px solid var(--line);
+    border-radius:14px; padding:22px; text-align:center; position:relative; z-index:2;}
+  .qmeta{font-size:11px; color:var(--dim); margin-bottom:6px; letter-spacing:1px;}
+  .qtext{font-size:30px; font-weight:800; margin-bottom:18px; min-height:40px;}
+  .opts{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .opt{padding:14px; font-size:20px; font-weight:700; border-radius:10px; background:#16203a;
+    border:1px solid var(--line); transition:transform .06s, background .15s;}
+  .opt:hover{background:#1d2a4a; transform:translateY(-1px);}
+  .opt.correct{background:var(--green) !important; color:#04140a;}
+  .opt.wrong{background:var(--red) !important; color:#1a0008;}
+
+  .statusrow{display:flex; gap:22px; align-items:center; z-index:2;}
+  .combo{font-size:15px; font-weight:800; min-width:120px; text-align:center;}
+  .combo .n{font-size:30px; color:var(--gold);}
+  .energywrap{width:200px;}
+  .energywrap .lbl{font-size:11px; color:var(--dim); display:flex; justify-content:space-between; margin-bottom:3px;}
+  .ebar{height:12px; background:#0a0f1d; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .ebar > div{height:100%; width:0%; background:linear-gradient(90deg,var(--purple),var(--cyan)); transition:width .25s;}
+
+  /* floating damage + fx */
+  #fxlayer{position:absolute; inset:0; pointer-events:none; z-index:5; overflow:hidden;}
+  .float{position:absolute; font-weight:900; animation:floatUp 1s ease-out forwards; text-shadow:0 2px 8px #000;}
+  @keyframes floatUp{0%{opacity:0; transform:translateY(10px) scale(.6);}
+    20%{opacity:1; transform:translateY(-4px) scale(1.15);}
+    100%{opacity:0; transform:translateY(-60px) scale(1);}}
+  .banner{position:absolute; top:30%; left:50%; transform:translateX(-50%);
+    font-size:40px; font-weight:900; letter-spacing:2px; opacity:0;
+    animation:banner 1.1s ease-out forwards; text-shadow:0 4px 20px rgba(0,0,0,.8);}
+  @keyframes banner{0%{opacity:0; transform:translateX(-50%) scale(.5);}
+    25%{opacity:1; transform:translateX(-50%) scale(1.1);}
+    75%{opacity:1;} 100%{opacity:0; transform:translateX(-50%) scale(1);}}
+  .shake{animation:shake .35s;}
+  @keyframes shake{0%,100%{transform:none;}20%{transform:translate(-6px,3px);}
+    40%{transform:translate(6px,-3px);}60%{transform:translate(-4px,-2px);}80%{transform:translate(4px,2px);}}
+  #app.frenzy{box-shadow:inset 0 0 120px rgba(255,77,109,.4), 0 30px 80px rgba(0,0,0,.6);}
+  #app.frenzy .arena::before{content:""; position:absolute; inset:0;
+    background:radial-gradient(circle at 50% 60%, rgba(255,77,109,.12), transparent 70%); pointer-events:none;}
+
+  /* settlement */
+  .stats{display:flex; gap:14px; flex-wrap:wrap; justify-content:center;}
+  .stat{background:#0e1526; border:1px solid var(--line); border-radius:12px; padding:14px 22px; text-align:center; min-width:120px;}
+  .stat .v{font-size:26px; font-weight:800; color:var(--cyan);}
+  .stat .k{font-size:12px; color:var(--dim); margin-top:4px;}
+  .result{font-size:48px; font-weight:900; letter-spacing:4px;}
+  .win{color:var(--gold);} .lose{color:var(--red);}
+  .hl{font-size:14px; color:var(--gold); border:1px dashed var(--gold); padding:8px 16px; border-radius:10px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- START -->
+  <div id="start" class="screen">
+    <span class="tag">实时 Roguelike 脑力竞技 · 核心循环原型</span>
+    <h1>脑力竞技 DEMO</h1>
+    <p class="sub">
+      答对题 → 打伤害 / 攒能量 / 涨连击。每段结束 <b>3选1</b> 抽强化,
+      强化之间联动成 Build。最后进入 <b>狂暴期</b>,所有效果翻倍。<br>
+      这是验证「爽不爽」的最小原型:你 vs AI,纯单机,无题库无联机。<br>
+      <span style="color:var(--dim)">用鼠标点选项即可。数学速算,越快越狠。</span>
+    </p>
+    <button class="btn" onclick="Game.start()">开始对战</button>
+  </div>
+
+  <!-- AUGMENT PICK -->
+  <div id="pick" class="screen hidden">
+    <div class="pickhdr">
+      <div class="phase" id="pickPhase">强化抽取</div>
+      <div class="big" id="pickTitle">选择一个海克斯强化</div>
+    </div>
+    <div class="cards" id="pickCards"></div>
+    <div class="owned" id="ownedList"></div>
+  </div>
+
+  <!-- BATTLE -->
+  <div id="battle" class="screen hidden">
+    <div class="topbar">
+      <div class="side">
+        <div class="who"><span>你</span><span id="meHpTxt">1000</span></div>
+        <div class="hpwrap"><div class="hp me" id="meHp"></div></div>
+      </div>
+      <div class="mid">
+        <div class="timer" id="timer">30</div>
+        <div class="phase" id="phaseTxt">第一阶段</div>
+      </div>
+      <div class="side">
+        <div class="who"><span id="foeHpTxt">1000</span><span>AI 对手</span></div>
+        <div class="hpwrap foewrap"><div class="hp foe" id="foeHp"></div></div>
+      </div>
+    </div>
+    <div class="arena">
+      <div class="qcard">
+        <div class="qmeta" id="qmeta">速算 · 中等</div>
+        <div class="qtext" id="qtext">2 × 6 + 3 = ?</div>
+        <div class="opts" id="opts"></div>
+      </div>
+      <div class="statusrow">
+        <div class="combo">连击 <span class="n" id="comboN">0</span></div>
+        <div class="energywrap">
+          <div class="lbl"><span>能量</span><span id="eTxt">0/100</span></div>
+          <div class="ebar"><div id="ebar"></div></div>
+        </div>
+      </div>
+    </div>
+    <div id="fxlayer"></div>
+  </div>
+
+  <!-- SETTLEMENT -->
+  <div id="end" class="screen hidden">
+    <div class="result" id="resultTxt">胜利</div>
+    <div class="hl" id="highlight">高光时刻</div>
+    <div class="stats" id="endStats"></div>
+    <div style="display:flex; gap:14px;">
+      <button class="btn" onclick="Game.start()">再来一局</button>
+      <button class="btn ghost" onclick="location.reload()">回主菜单</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============ tiny audio (juice) ============ */
+const Audio_ = (()=>{
+  let ctx;
+  const ensure=()=>{ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); return ctx; };
+  function blip(freq, dur=.08, type='triangle', vol=.18){
+    try{
+      const c=ensure(); const o=c.createOscillator(), g=c.createGain();
+      o.type=type; o.frequency.value=freq; o.connect(g); g.connect(c.destination);
+      g.gain.setValueAtTime(vol, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(.0001, c.currentTime+dur);
+      o.start(); o.stop(c.currentTime+dur);
+    }catch(e){}
+  }
+  return {
+    correct:()=>blip(660,.07,'triangle'),
+    crit:()=>{blip(880,.09,'square',.2); setTimeout(()=>blip(1320,.12,'square',.18),60);},
+    wrong:()=>blip(150,.18,'sawtooth',.18),
+    pick:()=>{blip(520,.08); setTimeout(()=>blip(780,.1),70);},
+    frenzy:()=>{blip(220,.3,'sawtooth',.2); setTimeout(()=>blip(440,.3,'sawtooth',.18),120);},
+    win:()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>blip(f,.15,'triangle',.2),i*110));},
+    lose:()=>{[440,330,247].forEach((f,i)=>setTimeout(()=>blip(f,.2,'sine',.18),i*150));},
+  };
+})();
+
+/* ============ augment definitions ============ */
+// effect: mutates Game.mods
+const AUGMENTS = [
+  // ---- damage ----
+  {id:'overclock', t:'dmg', ico:'🔥', name:'超频核心', desc:'连击≥3时,每次答对额外 +60% 伤害(可叠加)。',
+    apply:m=>{m.overclock=(m.overclock||0)+0.6;}},
+  {id:'crit', t:'dmg', ico:'💥', name:'暴击芯片', desc:'暴击率 +25%,暴击伤害 +60%。越叠越脆。',
+    apply:m=>{m.critChance+=0.25; m.critMult+=0.6;}},
+  {id:'chain', t:'dmg', ico:'⚡', name:'连锁爆破', desc:'每次暴击额外造成一次 40% 溅射伤害。',
+    apply:m=>{m.chain=(m.chain||0)+0.4;}},
+  {id:'speed', t:'dmg', ico:'🚀', name:'极速演算', desc:'答得越快伤害越高(3秒内最高 +80%)。',
+    apply:m=>{m.speed=(m.speed||0)+0.8;}},
+  {id:'truth', t:'dmg', ico:'🎯', name:'真理穿透', desc:'难题(困难标记)伤害翻倍。',
+    apply:m=>{m.truth=(m.truth||0)+1.0;}},
+  // ---- defense ----
+  {id:'shield', t:'def', ico:'🛡️', name:'知识护盾', desc:'每连对5题获得 120 点护盾,优先抵挡伤害。',
+    apply:m=>{m.shieldPer=(m.shieldPer||0)+120;}},
+  {id:'forgive', t:'def', ico:'🧩', name:'容错矩阵', desc:'答错不再清空连击(每段最多2次)。',
+    apply:m=>{m.forgive=(m.forgive||0)+2;}},
+  {id:'regen', t:'def', ico:'♻️', name:'稳态回路', desc:'答对额外 +8 能量;能量满自动放技能(全屏爆发)。',
+    apply:m=>{m.regen=(m.regen||0)+8;}},
+  {id:'lifesteal', t:'def', ico:'🩸', name:'知识汲取', desc:'造成伤害的 15% 转化为自身回血。',
+    apply:m=>{m.lifesteal=(m.lifesteal||0)+0.15;}},
+  // ---- control ----
+  {id:'pollute', t:'ctl', ico:'🌀', name:'认知污染', desc:'敌方答对率下降 12%(选项更易错)。',
+    apply:m=>{m.foeAccDrop=(m.foeAccDrop||0)+0.12;}},
+  {id:'lag', t:'ctl', ico:'🐌', name:'逻辑迟滞', desc:'敌方答题速度下降 18%,伤害产出降低。',
+    apply:m=>{m.foeSlow=(m.foeSlow||0)+0.18;}},
+  {id:'overload', t:'ctl', ico:'🧠', name:'精神过载', desc:'敌方连击越高,越容易被你打断(清空其连击)。',
+    apply:m=>{m.overload=(m.overload||0)+0.25;}},
+];
+const TYPE_NAME={dmg:'输出',def:'防御',ctl:'干扰'};
+
+/* ============ game ============ */
+const Game = {
+  mods:null, owned:[], me:0, foe:0, shield:0,
+  combo:0, maxCombo:0, energy:0, forgiveLeft:0,
+  segment:0, phase:0, // 0..2 normal, 3 frenzy
+  qStart:0, cur:null, foeTimer:null, tick:null, segEnd:0,
+  stat:{dmg:0, correct:0, wrong:0, biggestHit:0, ult:0},
+
+  start(){
+    this.mods={critChance:0.05, critMult:1.5, base:100};
+    this.owned=[]; this.me=1000; this.foe=1000; this.shield=0;
+    this.combo=0; this.maxCombo=0; this.energy=0; this.segment=0;
+    this.stat={dmg:0, correct:0, wrong:0, biggestHit:0, ult:0};
+    document.getElementById('app').classList.remove('frenzy');
+    show('pick'); this.offerAugments(true);
+  },
+
+  /* ---- augment selection ---- */
+  offerAugments(isStart){
+    Audio_; // noop touch
+    const pool=AUGMENTS.slice();
+    // weighted random 3 distinct
+    const pick=[];
+    while(pick.length<3 && pool.length){
+      const i=Math.floor(Math.random()*pool.length);
+      pick.push(pool.splice(i,1)[0]);
+    }
+    const seg=this.segment;
+    document.getElementById('pickPhase').textContent =
+      isStart ? '开局 · 初始强化' : `第 ${seg} 段结束 · 强化抽取 ${seg}`;
+    document.getElementById('pickTitle').textContent =
+      seg>=2 ? '强化开始变得离谱…' : '选择一个海克斯强化';
+    const wrap=document.getElementById('pickCards'); wrap.innerHTML='';
+    pick.forEach(a=>{
+      const el=document.createElement('div');
+      el.className=`card t-${a.t}`;
+      el.innerHTML=`<div class="ico">${a.ico}</div>
+        <span class="typ t-${a.t}">${TYPE_NAME[a.t]}型</span>
+        <div class="name">${a.name}</div>
+        <div class="desc">${a.desc}</div>`;
+      el.onclick=()=>this.takeAugment(a);
+      wrap.appendChild(el);
+    });
+    this.renderOwned();
+  },
+  renderOwned(){
+    const o=document.getElementById('ownedList');
+    if(!this.owned.length){o.innerHTML='<span class="chip">尚无强化</span>';return;}
+    const count={};
+    this.owned.forEach(a=>count[a.id]=(count[a.id]||0)+1);
+    o.innerHTML=this.owned.filter((a,i)=>this.owned.findIndex(x=>x.id===a.id)===i)
+      .map(a=>`<span class="chip">${a.ico} ${a.name}${count[a.id]>1?' ×'+count[a.id]:''}</span>`).join('');
+  },
+  takeAugment(a){
+    Audio_.pick();
+    this.owned.push(a); a.apply(this.mods);
+    this.forgiveLeft=this.mods.forgive||0;
+    this.beginSegment();
+  },
+
+  /* ---- battle segment ---- */
+  beginSegment(){
+    this.segment++;
+    this.phase = this.segment>=4 ? 3 : this.segment-1; // segment4 = frenzy
+    const frenzy = this.phase===3;
+    const app=document.getElementById('app');
+    app.classList.toggle('frenzy', frenzy);
+    show('battle');
+    const dur = frenzy ? 30 : 30;
+    this.segEnd = Date.now()+dur*1000;
+    document.getElementById('phaseTxt').textContent =
+      frenzy ? '🔥 狂暴阶段' : ['第一阶段','第二阶段','第三阶段'][this.segment-1] || '对战';
+    if(frenzy){ Audio_.frenzy(); this.banner('狂暴！全部强化翻倍','var(--red)'); }
+    this.combo = this.combo; // keep combo across? reset per segment feels cleaner:
+    this.nextQuestion();
+    this.startFoe();
+    this.startTick();
+    this.refresh();
+  },
+
+  startTick(){
+    clearInterval(this.tick);
+    this.tick=setInterval(()=>{
+      const left=Math.max(0,Math.ceil((this.segEnd-Date.now())/1000));
+      document.getElementById('timer').textContent=left;
+      if(left<=0){ this.endSegment(); }
+      if(this.me<=0||this.foe<=0){ this.finish(); }
+    },200);
+  },
+  endSegment(){
+    clearInterval(this.tick); clearInterval(this.foeTimer);
+    if(this.me<=0||this.foe<=0){ this.finish(); return; }
+    if(this.phase===3){ this.finish(); return; } // after frenzy -> end
+    show('pick'); this.offerAugments(false);
+  },
+
+  frenzyMul(){ return this.phase===3 ? 2 : 1; },
+
+  /* ---- questions ---- */
+  nextQuestion(){
+    const hard = Math.random() < (0.2 + this.segment*0.12);
+    let a,b,c,op,ans,text;
+    if(hard){
+      // two-step
+      a=rand(2,9); b=rand(2,9); c=rand(1,9);
+      ans=a*b+c; text=`${a} × ${b} + ${c} = ?`;
+    } else {
+      const r=Math.random();
+      if(r<0.5){a=rand(2,12); b=rand(2,12); ans=a*b; text=`${a} × ${b} = ?`;}
+      else if(r<0.8){a=rand(20,99); b=rand(10,60); ans=a+b; text=`${a} + ${b} = ?`;}
+      else {a=rand(40,99); b=rand(10,39); ans=a-b; text=`${a} − ${b} = ?`;}
+    }
+    this.cur={ans, hard};
+    document.getElementById('qmeta').textContent = '速算 · ' + (hard?'困难 ✦':'中等');
+    document.getElementById('qtext').textContent = text;
+    // options
+    const opts=new Set([ans]);
+    while(opts.size<4){ let d=ans+rand(-9,9)*(Math.random()<.5?1:rand(1,4)); if(d!==ans&&d>=0) opts.add(d); }
+    let arr=[...opts]; shuffle(arr);
+    const box=document.getElementById('opts'); box.innerHTML='';
+    arr.forEach(v=>{
+      const b2=document.createElement('button'); b2.className='opt'; b2.textContent=v;
+      b2.onclick=()=>this.answer(v===ans, b2);
+      box.appendChild(b2);
+    });
+    this.qStart=Date.now();
+  },
+
+  answer(correct, el){
+    if(correct){
+      el.classList.add('correct'); Audio_.correct();
+      this.stat.correct++;
+      this.combo++; this.maxCombo=Math.max(this.maxCombo,this.combo);
+      const dmg=this.computeDamage();
+      this.dealToFoe(dmg.amount, dmg.crit);
+      // shield gain
+      if(this.mods.shieldPer && this.combo>0 && this.combo%5===0){
+        this.shield += this.mods.shieldPer*this.frenzyMul();
+        this.banner('+护盾','var(--green)');
+      }
+      // energy
+      this.energy += (15 + (this.mods.regen||0))*1;
+      if(this.energy>=100){ this.ult(); }
+      // overload: break foe combo
+      if(this.mods.overload && this.foeCombo>2 && Math.random()<this.mods.overload){
+        this.foeCombo=0; this.banner('打断敌方连击!','var(--purple)');
+      }
+    } else {
+      el.classList.add('wrong'); Audio_.wrong();
+      this.stat.wrong++;
+      if(this.forgiveLeft>0){ this.forgiveLeft--; this.banner('容错矩阵·连击保留','var(--cyan)'); }
+      else { this.combo=0; }
+      this.me=Math.max(0,this.me-40); this.flashHit('me');
+    }
+    this.refresh();
+    setTimeout(()=>{ if(this.me>0&&this.foe>0&&this.phase>=0) this.nextQuestion(); }, 220);
+  },
+
+  computeDamage(){
+    const m=this.mods, fm=this.frenzyMul();
+    let dmg=m.base;
+    // combo scaling
+    if(this.combo>=5) dmg*=2; else if(this.combo>=3) dmg*=1.4;
+    // overclock
+    if(this.combo>=3 && m.overclock) dmg*=(1+m.overclock*fm);
+    // speed
+    if(m.speed){ const t=(Date.now()-this.qStart)/1000; const f=Math.max(0,1-(t/3)); dmg*=(1+m.speed*f*fm); }
+    // truth (hard q)
+    if(m.truth && this.cur.hard) dmg*=(1+m.truth*fm);
+    // crit
+    let crit=false;
+    if(Math.random() < Math.min(0.95, m.critChance*(fm>1?1.5:1))){ crit=true; dmg*=m.critMult; }
+    return {amount:Math.round(dmg), crit};
+  },
+
+  dealToFoe(amount, crit){
+    this.foe=Math.max(0,this.foe-amount);
+    this.stat.dmg+=amount; this.stat.biggestHit=Math.max(this.stat.biggestHit,amount);
+    this.floatDmg(amount, crit, 'foe');
+    if(crit){ Audio_.crit(); this.flashHit('foe',true);
+      // chain splash
+      if(this.mods.chain){ const sp=Math.round(amount*this.mods.chain*this.frenzyMul());
+        this.foe=Math.max(0,this.foe-sp); this.floatDmg(sp,false,'foe'); }
+    }
+    if(this.mods.lifesteal){ this.me=Math.min(1000,this.me+Math.round(amount*this.mods.lifesteal)); }
+    if(this.combo===5||this.combo===10||this.combo===15) this.banner(this.combo+' 连击!','var(--gold)');
+  },
+
+  ult(){
+    this.energy=0; this.stat.ult++;
+    const dmg=Math.round(280*this.frenzyMul());
+    this.foe=Math.max(0,this.foe-dmg);
+    this.floatDmg(dmg,true,'foe'); this.banner('⚡ 技能爆发!','var(--cyan)');
+    Audio_.crit(); this.flashHit('foe',true);
+  },
+
+  /* ---- AI opponent ---- */
+  startFoe(){
+    this.foeCombo=this.foeCombo||0;
+    clearInterval(this.foeTimer);
+    const base = 2000 * (1+(this.mods.foeSlow||0));
+    this.foeTimer=setInterval(()=>{
+      if(this.me<=0||this.foe<=0) return;
+      const acc = Math.max(0.3, 0.78 - (this.mods.foeAccDrop||0));
+      if(Math.random()<acc){
+        this.foeCombo++;
+        let d=70*this.frenzyMul();
+        if(this.foeCombo>=3) d*=1.4; if(this.foeCombo>=5) d*=1.8;
+        d=Math.round(d);
+        // player shield absorbs
+        if(this.shield>0){ const ab=Math.min(this.shield,d); this.shield-=ab; d-=ab;
+          if(ab>0) this.floatDmg(ab,false,'me',true); }
+        if(d>0){ this.me=Math.max(0,this.me-d); this.floatDmg(d,false,'me'); this.flashHit('me'); }
+      } else { this.foeCombo=0; }
+      this.refresh();
+    }, base);
+  },
+
+  /* ---- fx ---- */
+  floatDmg(n, crit, side, shield){
+    const layer=document.getElementById('fxlayer');
+    const el=document.createElement('div'); el.className='float';
+    el.textContent=(shield?'🛡 ':'') + (side==='me'?'-':'-')+n;
+    el.style.fontSize=(crit?34:side==='me'?20:24)+'px';
+    el.style.color= shield?'var(--green)' : side==='me'?'var(--red)' : crit?'var(--gold)':'var(--cyan)';
+    el.style.left=(side==='me'? rand(8,30):rand(62,86))+'%';
+    el.style.top=rand(28,52)+'%';
+    layer.appendChild(el); setTimeout(()=>el.remove(),1000);
+    if(crit) this.screenShake();
+  },
+  banner(txt,color){
+    const layer=document.getElementById('fxlayer');
+    const el=document.createElement('div'); el.className='banner'; el.textContent=txt;
+    el.style.color=color||'var(--gold)'; layer.appendChild(el);
+    setTimeout(()=>el.remove(),1100);
+  },
+  flashHit(side,big){ this.refresh(); if(big) this.screenShake(); },
+  screenShake(){ const a=document.getElementById('app'); a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake'); },
+
+  refresh(){
+    document.getElementById('meHp').style.width=(this.me/1000*100)+'%';
+    document.getElementById('foeHp').style.width=(this.foe/1000*100)+'%';
+    document.getElementById('meHpTxt').textContent=Math.round(this.me)+(this.shield>0?' (+'+Math.round(this.shield)+')':'');
+    document.getElementById('foeHpTxt').textContent=Math.round(this.foe);
+    document.getElementById('comboN').textContent=this.combo;
+    const e=Math.min(100,Math.round(this.energy));
+    document.getElementById('ebar').style.width=e+'%';
+    document.getElementById('eTxt').textContent=e+'/100';
+  },
+
+  /* ---- end ---- */
+  finish(){ clearInterval(this.tick); clearInterval(this.foeTimer); this.showEnd(); },
+  showEnd(){
+    const win = this.me > this.foe;
+    show('end');
+    const r=document.getElementById('resultTxt');
+    r.textContent= this.me<=0 ? '失败' : win ? '胜利' : '惜败';
+    r.className='result '+(win&&this.me>0?'win':'lose');
+    win?Audio_.win():Audio_.lose();
+    // highlight
+    let hl='稳扎稳打,小胜一筹。';
+    if(this.maxCombo>=12) hl=`🔥 最高 ${this.maxCombo} 连击 — 手感爆炸!`;
+    else if(this.stat.biggestHit>=600) hl=`💥 单次最高 ${this.stat.biggestHit} 伤害 — 一刀斩!`;
+    else if(this.stat.ult>=3) hl=`⚡ 放了 ${this.stat.ult} 次技能 — 能量永动机!`;
+    else if(win&&this.foe<=0) hl='🎯 直接把对面血条清空 — 完胜!';
+    document.getElementById('highlight').textContent=hl;
+    const acc = this.stat.correct+this.stat.wrong ? Math.round(this.stat.correct/(this.stat.correct+this.stat.wrong)*100):0;
+    document.getElementById('endStats').innerHTML=[
+      ['总伤害',this.stat.dmg],['最高连击',this.maxCombo],
+      ['正确率',acc+'%'],['答对',this.stat.correct],
+      ['技能',this.stat.ult+' 次'],['强化',this.owned.length+' 张'],
+    ].map(([k,v])=>`<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+  },
+};
+
+/* ---- helpers ---- */
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function show(id){['start','pick','battle','end'].forEach(s=>document.getElementById(s).classList.toggle('hidden',s!==id));}
+</script>
+</body>
+</html>
