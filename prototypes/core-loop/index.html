@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>脑力竞技 · 核心循环原型</title>
+<title>脑力竞技 · 回合制构筑原型</title>
 <style>
   :root{
     --bg:#0a0e1a; --panel:#121a2e; --panel2:#16203a; --line:#26324d;
@@ -17,7 +17,7 @@
     color:var(--text); font-family:-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
     display:flex; align-items:center; justify-content:center; overflow:hidden; user-select:none;
   }
-  #app{ width:min(960px,100vw); height:min(600px,100vh); position:relative;
+  #app{ width:min(960px,100vw); height:min(620px,100vh); position:relative;
     background:var(--panel); border:1px solid var(--line); border-radius:16px;
     overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.6);}
   .screen{position:absolute; inset:0; display:flex; flex-direction:column;
@@ -26,9 +26,8 @@
 
   h1{font-size:34px; letter-spacing:2px; background:linear-gradient(90deg,var(--cyan),var(--blue));
     -webkit-background-clip:text; background-clip:text; color:transparent; text-align:center;}
-  .sub{color:var(--dim); font-size:14px; text-align:center; line-height:1.7; max-width:560px;}
-  .tag{font-size:12px; color:var(--cyan); border:1px solid var(--cyan); padding:3px 10px;
-    border-radius:20px; opacity:.85;}
+  .sub{color:var(--dim); font-size:14px; text-align:center; line-height:1.7; max-width:580px;}
+  .tag{font-size:12px; color:var(--cyan); border:1px solid var(--cyan); padding:3px 10px; border-radius:20px; opacity:.85;}
 
   button{font-family:inherit; cursor:pointer; border:none; color:var(--text);}
   .btn{padding:14px 34px; font-size:17px; font-weight:700; border-radius:10px;
@@ -36,10 +35,11 @@
     transition:transform .08s, box-shadow .2s; box-shadow:0 8px 24px rgba(54,227,255,.25);}
   .btn:hover{transform:translateY(-2px);}
   .btn.ghost{background:transparent; border:1px solid var(--line); color:var(--text); box-shadow:none;}
+  .btn:disabled{opacity:.4; cursor:default; transform:none;}
 
   /* ===== Augment cards ===== */
   .cards{display:flex; gap:18px; flex-wrap:wrap; justify-content:center;}
-  .card{width:210px; min-height:230px; background:linear-gradient(180deg,var(--panel2),#0e1526);
+  .card{width:210px; min-height:228px; background:linear-gradient(180deg,var(--panel2),#0e1526);
     border:1px solid var(--line); border-radius:14px; padding:18px; cursor:pointer;
     display:flex; flex-direction:column; gap:10px; transition:transform .12s, border-color .2s, box-shadow .2s;}
   .card:hover{transform:translateY(-6px) scale(1.02);}
@@ -50,73 +50,70 @@
   .t-dmg{color:var(--red); border:1px solid var(--red);} .card.t-dmg:hover{border-color:var(--red); box-shadow:0 12px 30px rgba(255,77,109,.25);}
   .t-def{color:var(--green); border:1px solid var(--green);} .card.t-def:hover{border-color:var(--green); box-shadow:0 12px 30px rgba(61,220,132,.22);}
   .t-ctl{color:var(--purple); border:1px solid var(--purple);} .card.t-ctl:hover{border-color:var(--purple); box-shadow:0 12px 30px rgba(177,93,255,.25);}
+  .card .syn{font-size:11px; color:var(--gold); min-height:14px;}
   .pickhdr{text-align:center;}
   .pickhdr .big{font-size:24px; font-weight:800;}
-  .owned{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; max-width:640px;}
-  .chip{font-size:11px; padding:3px 9px; border-radius:20px; background:#0e1526; border:1px solid var(--line); color:var(--dim);}
+  .pickhdr .ph{font-size:12px; color:var(--cyan); letter-spacing:1px;}
 
   /* ===== Battle ===== */
   #battle{padding:0; justify-content:flex-start; gap:0;}
-  .topbar{width:100%; padding:14px 20px; display:flex; align-items:center; gap:16px;
-    border-bottom:1px solid var(--line); background:#0e1526;}
+  .topbar{width:100%; padding:14px 20px; display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--line); background:#0e1526;}
   .side{flex:1;}
   .side .who{font-size:12px; color:var(--dim); margin-bottom:4px; display:flex; justify-content:space-between;}
-  .hpwrap{height:16px; background:#0a0f1d; border-radius:10px; overflow:hidden; border:1px solid var(--line); position:relative;}
-  .hp{height:100%; width:100%; transition:width .35s cubic-bezier(.2,.8,.2,1); border-radius:10px;}
+  .hpwrap{height:16px; background:#0a0f1d; border-radius:10px; overflow:hidden; border:1px solid var(--line);}
+  .hp{height:100%; width:100%; transition:width .4s cubic-bezier(.2,.8,.2,1); border-radius:10px;}
   .hp.me{background:linear-gradient(90deg,#3ddc84,#36e3ff);}
   .hp.foe{background:linear-gradient(90deg,#ff4d6d,#ff8a4d); margin-left:auto;}
-  .foewrap{display:flex;}
-  .foewrap .hp{margin-left:auto;}
-  .mid{width:130px; text-align:center;}
-  .timer{font-size:26px; font-weight:800; font-variant-numeric:tabular-nums;}
-  .phase{font-size:11px; color:var(--cyan); letter-spacing:1px;}
+  .foewrap{display:flex;} .foewrap .hp{margin-left:auto;}
+  .mid{width:150px; text-align:center;}
+  .roundN{font-size:22px; font-weight:800;}
+  .turnTxt{font-size:11px; letter-spacing:1px;}
+  .turnTxt.me{color:var(--cyan);} .turnTxt.foe{color:var(--red);}
 
-  .arena{flex:1; width:100%; position:relative; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:18px; padding:18px;}
-  .qcard{width:min(520px,90%); background:#0e1526; border:1px solid var(--line);
-    border-radius:14px; padding:22px; text-align:center; position:relative; z-index:2;}
-  .qmeta{font-size:11px; color:var(--dim); margin-bottom:6px; letter-spacing:1px;}
-  .qtext{font-size:30px; font-weight:800; margin-bottom:18px; min-height:40px;}
+  .arena{flex:1; width:100%; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:16px;}
+  .qcard{width:min(540px,92%); background:#0e1526; border:1px solid var(--line); border-radius:14px; padding:20px; text-align:center; position:relative; z-index:2;}
+  .qmeta{font-size:11px; color:var(--dim); margin-bottom:6px; letter-spacing:1px; display:flex; justify-content:space-between;}
+  .qtext{font-size:30px; font-weight:800; margin-bottom:16px; min-height:40px;}
   .opts{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  .opt{padding:14px; font-size:20px; font-weight:700; border-radius:10px; background:#16203a;
-    border:1px solid var(--line); transition:transform .06s, background .15s;}
+  .opt{padding:14px; font-size:20px; font-weight:700; border-radius:10px; background:#16203a; border:1px solid var(--line); transition:transform .06s, background .15s;}
   .opt:hover{background:#1d2a4a; transform:translateY(-1px);}
+  .opt:disabled{cursor:default;}
   .opt.correct{background:var(--green) !important; color:#04140a;}
   .opt.wrong{background:var(--red) !important; color:#1a0008;}
 
   .statusrow{display:flex; gap:22px; align-items:center; z-index:2;}
-  .combo{font-size:15px; font-weight:800; min-width:120px; text-align:center;}
-  .combo .n{font-size:30px; color:var(--gold);}
-  .energywrap{width:200px;}
+  .combo{font-size:14px; font-weight:800; min-width:110px; text-align:center;}
+  .combo .n{font-size:28px; color:var(--gold);}
+  .energywrap{width:190px;}
   .energywrap .lbl{font-size:11px; color:var(--dim); display:flex; justify-content:space-between; margin-bottom:3px;}
-  .ebar{height:12px; background:#0a0f1d; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .ebar{height:11px; background:#0a0f1d; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
   .ebar > div{height:100%; width:0%; background:linear-gradient(90deg,var(--purple),var(--cyan)); transition:width .25s;}
 
-  /* floating damage + fx */
+  /* build panel (construction focus) */
+  .buildbar{width:100%; padding:8px 16px; border-top:1px solid var(--line); background:#0c1322; min-height:46px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; z-index:2;}
+  .buildbar .empty{color:var(--dim); font-size:12px;}
+  .aug{font-size:12px; padding:4px 10px; border-radius:20px; background:#121a2e; border:1px solid var(--line); display:flex; gap:5px; align-items:center; transition:transform .15s, box-shadow .15s, border-color .15s;}
+  .aug.fire{transform:scale(1.18); box-shadow:0 0 16px currentColor;}
+  .aug.t-dmg{color:var(--red);} .aug.t-def{color:var(--green);} .aug.t-ctl{color:var(--purple);}
+  .aug .x{color:var(--dim); font-size:10px;}
+
   #fxlayer{position:absolute; inset:0; pointer-events:none; z-index:5; overflow:hidden;}
   .float{position:absolute; font-weight:900; animation:floatUp 1s ease-out forwards; text-shadow:0 2px 8px #000;}
   @keyframes floatUp{0%{opacity:0; transform:translateY(10px) scale(.6);}
-    20%{opacity:1; transform:translateY(-4px) scale(1.15);}
-    100%{opacity:0; transform:translateY(-60px) scale(1);}}
-  .banner{position:absolute; top:30%; left:50%; transform:translateX(-50%);
-    font-size:40px; font-weight:900; letter-spacing:2px; opacity:0;
-    animation:banner 1.1s ease-out forwards; text-shadow:0 4px 20px rgba(0,0,0,.8);}
-  @keyframes banner{0%{opacity:0; transform:translateX(-50%) scale(.5);}
-    25%{opacity:1; transform:translateX(-50%) scale(1.1);}
-    75%{opacity:1;} 100%{opacity:0; transform:translateX(-50%) scale(1);}}
+    20%{opacity:1; transform:translateY(-4px) scale(1.15);} 100%{opacity:0; transform:translateY(-60px) scale(1);}}
+  .trigger{position:absolute; font-size:13px; font-weight:800; animation:trig 1.1s ease-out forwards; text-shadow:0 1px 4px #000;}
+  @keyframes trig{0%{opacity:0; transform:translateX(-8px);}15%{opacity:1;}85%{opacity:1;}100%{opacity:0; transform:translateX(-40px);}}
+  .banner{position:absolute; top:26%; left:50%; transform:translateX(-50%); font-size:38px; font-weight:900; letter-spacing:2px; opacity:0; animation:banner 1.1s ease-out forwards; text-shadow:0 4px 20px rgba(0,0,0,.8);}
+  @keyframes banner{0%{opacity:0; transform:translateX(-50%) scale(.5);}25%{opacity:1; transform:translateX(-50%) scale(1.1);}75%{opacity:1;}100%{opacity:0; transform:translateX(-50%) scale(1);}}
   .shake{animation:shake .35s;}
-  @keyframes shake{0%,100%{transform:none;}20%{transform:translate(-6px,3px);}
-    40%{transform:translate(6px,-3px);}60%{transform:translate(-4px,-2px);}80%{transform:translate(4px,2px);}}
+  @keyframes shake{0%,100%{transform:none;}20%{transform:translate(-6px,3px);}40%{transform:translate(6px,-3px);}60%{transform:translate(-4px,-2px);}80%{transform:translate(4px,2px);}}
   #app.frenzy{box-shadow:inset 0 0 120px rgba(255,77,109,.4), 0 30px 80px rgba(0,0,0,.6);}
-  #app.frenzy .arena::before{content:""; position:absolute; inset:0;
-    background:radial-gradient(circle at 50% 60%, rgba(255,77,109,.12), transparent 70%); pointer-events:none;}
+  #app.frenzy .arena::before{content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 60%, rgba(255,77,109,.12), transparent 70%); pointer-events:none;}
 
-  /* settlement */
   .stats{display:flex; gap:14px; flex-wrap:wrap; justify-content:center;}
   .stat{background:#0e1526; border:1px solid var(--line); border-radius:12px; padding:14px 22px; text-align:center; min-width:120px;}
-  .stat .v{font-size:26px; font-weight:800; color:var(--cyan);}
-  .stat .k{font-size:12px; color:var(--dim); margin-top:4px;}
-  .result{font-size:48px; font-weight:900; letter-spacing:4px;}
+  .stat .v{font-size:26px; font-weight:800; color:var(--cyan);} .stat .k{font-size:12px; color:var(--dim); margin-top:4px;}
+  .result{font-size:46px; font-weight:900; letter-spacing:4px;}
   .win{color:var(--gold);} .lose{color:var(--red);}
   .hl{font-size:14px; color:var(--gold); border:1px dashed var(--gold); padding:8px 16px; border-radius:10px;}
 </style>
@@ -126,13 +123,12 @@
 
   <!-- START -->
   <div id="start" class="screen">
-    <span class="tag">实时 Roguelike 脑力竞技 · 核心循环原型</span>
+    <span class="tag">实时 Roguelike 脑力竞技 · 回合制构筑原型</span>
     <h1>脑力竞技 DEMO</h1>
     <p class="sub">
-      答对题 → 打伤害 / 攒能量 / 涨连击。每段结束 <b>3选1</b> 抽强化,
-      强化之间联动成 Build。最后进入 <b>狂暴期</b>,所有效果翻倍。<br>
-      这是验证「爽不爽」的最小原型:你 vs AI,纯单机,无题库无联机。<br>
-      <span style="color:var(--dim)">用鼠标点选项即可。数学速算,越快越狠。</span>
+      <b>回合制</b>:你的回合答 5 题 → 结算伤害 → AI 回合 → 抽强化。共 5 回合,最后一回合狂暴。<br>
+      不比手速,比 <b>构筑</b>。每回合抽 1 张强化,凑出你的流派(暴击流 / 护盾流 / 污染流)。<br>
+      <span style="color:var(--dim)">答对题时,看屏幕弹出哪些强化触发了——这就是你的 Build 在成型。</span>
     </p>
     <button class="btn" onclick="Game.start()">开始对战</button>
   </div>
@@ -140,11 +136,10 @@
   <!-- AUGMENT PICK -->
   <div id="pick" class="screen hidden">
     <div class="pickhdr">
-      <div class="phase" id="pickPhase">强化抽取</div>
+      <div class="ph" id="pickPhase">强化抽取</div>
       <div class="big" id="pickTitle">选择一个海克斯强化</div>
     </div>
     <div class="cards" id="pickCards"></div>
-    <div class="owned" id="ownedList"></div>
   </div>
 
   <!-- BATTLE -->
@@ -155,8 +150,8 @@
         <div class="hpwrap"><div class="hp me" id="meHp"></div></div>
       </div>
       <div class="mid">
-        <div class="timer" id="timer">30</div>
-        <div class="phase" id="phaseTxt">第一阶段</div>
+        <div class="roundN" id="roundN">第 1 回合</div>
+        <div class="turnTxt me" id="turnTxt">你的回合</div>
       </div>
       <div class="side">
         <div class="who"><span id="foeHpTxt">1000</span><span>AI 对手</span></div>
@@ -165,18 +160,19 @@
     </div>
     <div class="arena">
       <div class="qcard">
-        <div class="qmeta" id="qmeta">速算 · 中等</div>
+        <div class="qmeta"><span id="qmeta">速算 · 中等</span><span id="qprog">第 1/5 题</span></div>
         <div class="qtext" id="qtext">2 × 6 + 3 = ?</div>
         <div class="opts" id="opts"></div>
       </div>
       <div class="statusrow">
-        <div class="combo">连击 <span class="n" id="comboN">0</span></div>
+        <div class="combo">本回合连击 <span class="n" id="comboN">0</span></div>
         <div class="energywrap">
           <div class="lbl"><span>能量</span><span id="eTxt">0/100</span></div>
           <div class="ebar"><div id="ebar"></div></div>
         </div>
       </div>
     </div>
+    <div class="buildbar" id="buildbar"><span class="empty">你的 Build —— 抽到的强化会显示在这里</span></div>
     <div id="fxlayer"></div>
   </div>
 
@@ -194,342 +190,292 @@
 </div>
 
 <script>
-/* ============ tiny audio (juice) ============ */
-const Audio_ = (()=>{
-  let ctx;
-  const ensure=()=>{ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); return ctx; };
-  function blip(freq, dur=.08, type='triangle', vol=.18){
-    try{
-      const c=ensure(); const o=c.createOscillator(), g=c.createGain();
-      o.type=type; o.frequency.value=freq; o.connect(g); g.connect(c.destination);
-      g.gain.setValueAtTime(vol, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(.0001, c.currentTime+dur);
-      o.start(); o.stop(c.currentTime+dur);
-    }catch(e){}
-  }
-  return {
-    correct:()=>blip(660,.07,'triangle'),
-    crit:()=>{blip(880,.09,'square',.2); setTimeout(()=>blip(1320,.12,'square',.18),60);},
-    wrong:()=>blip(150,.18,'sawtooth',.18),
-    pick:()=>{blip(520,.08); setTimeout(()=>blip(780,.1),70);},
-    frenzy:()=>{blip(220,.3,'sawtooth',.2); setTimeout(()=>blip(440,.3,'sawtooth',.18),120);},
+/* ============ audio ============ */
+const Audio_=(()=>{let ctx;const ensure=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
+  function blip(f,d=.08,t='triangle',v=.18){try{const c=ensure(),o=c.createOscillator(),g=c.createGain();
+    o.type=t;o.frequency.value=f;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(v,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
+  return{correct:()=>blip(660,.07),crit:()=>{blip(880,.09,'square',.2);setTimeout(()=>blip(1320,.12,'square',.18),60);},
+    wrong:()=>blip(150,.18,'sawtooth',.18),pick:()=>{blip(520,.08);setTimeout(()=>blip(780,.1),70);},
+    hit:()=>blip(300,.08,'sine',.14),frenzy:()=>{blip(220,.3,'sawtooth',.2);setTimeout(()=>blip(440,.3,'sawtooth',.18),120);},
     win:()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>blip(f,.15,'triangle',.2),i*110));},
-    lose:()=>{[440,330,247].forEach((f,i)=>setTimeout(()=>blip(f,.2,'sine',.18),i*150));},
-  };
-})();
+    lose:()=>{[440,330,247].forEach((f,i)=>setTimeout(()=>blip(f,.2,'sine',.18),i*150));}};})();
 
-/* ============ augment definitions ============ */
-// effect: mutates Game.mods
-const AUGMENTS = [
-  // ---- damage ----
-  {id:'overclock', t:'dmg', ico:'🔥', name:'超频核心', desc:'连击≥3时,每次答对额外 +60% 伤害(可叠加)。',
-    apply:m=>{m.overclock=(m.overclock||0)+0.6;}},
-  {id:'crit', t:'dmg', ico:'💥', name:'暴击芯片', desc:'暴击率 +25%,暴击伤害 +60%。越叠越脆。',
-    apply:m=>{m.critChance+=0.25; m.critMult+=0.6;}},
-  {id:'chain', t:'dmg', ico:'⚡', name:'连锁爆破', desc:'每次暴击额外造成一次 40% 溅射伤害。',
-    apply:m=>{m.chain=(m.chain||0)+0.4;}},
-  {id:'speed', t:'dmg', ico:'🚀', name:'极速演算', desc:'答得越快伤害越高(3秒内最高 +80%)。',
-    apply:m=>{m.speed=(m.speed||0)+0.8;}},
-  {id:'truth', t:'dmg', ico:'🎯', name:'真理穿透', desc:'难题(困难标记)伤害翻倍。',
-    apply:m=>{m.truth=(m.truth||0)+1.0;}},
-  // ---- defense ----
-  {id:'shield', t:'def', ico:'🛡️', name:'知识护盾', desc:'每连对5题获得 120 点护盾,优先抵挡伤害。',
-    apply:m=>{m.shieldPer=(m.shieldPer||0)+120;}},
-  {id:'forgive', t:'def', ico:'🧩', name:'容错矩阵', desc:'答错不再清空连击(每段最多2次)。',
-    apply:m=>{m.forgive=(m.forgive||0)+2;}},
-  {id:'regen', t:'def', ico:'♻️', name:'稳态回路', desc:'答对额外 +8 能量;能量满自动放技能(全屏爆发)。',
-    apply:m=>{m.regen=(m.regen||0)+8;}},
-  {id:'lifesteal', t:'def', ico:'🩸', name:'知识汲取', desc:'造成伤害的 15% 转化为自身回血。',
-    apply:m=>{m.lifesteal=(m.lifesteal||0)+0.15;}},
-  // ---- control ----
-  {id:'pollute', t:'ctl', ico:'🌀', name:'认知污染', desc:'敌方答对率下降 12%(选项更易错)。',
-    apply:m=>{m.foeAccDrop=(m.foeAccDrop||0)+0.12;}},
-  {id:'lag', t:'ctl', ico:'🐌', name:'逻辑迟滞', desc:'敌方答题速度下降 18%,伤害产出降低。',
-    apply:m=>{m.foeSlow=(m.foeSlow||0)+0.18;}},
-  {id:'overload', t:'ctl', ico:'🧠', name:'精神过载', desc:'敌方连击越高,越容易被你打断(清空其连击)。',
-    apply:m=>{m.overload=(m.overload||0)+0.25;}},
+/* ============ augments ============ */
+// tags: used to show synergy hints in the draft
+const AUGMENTS=[
+  {id:'overclock',t:'dmg',ico:'🔥',name:'超频核心',tags:['combo','dmg'],desc:'本回合连击≥3 时,每次答对额外 +60% 伤害(可叠)。',apply:m=>{m.overclock+=0.6;}},
+  {id:'crit',t:'dmg',ico:'💥',name:'暴击芯片',tags:['crit'],desc:'暴击率 +25%,暴击伤害 +60%。',apply:m=>{m.critChance+=0.25;m.critMult+=0.6;}},
+  {id:'chain',t:'dmg',ico:'⚡',name:'连锁爆破',tags:['crit'],desc:'每次暴击额外造成一次 40% 溅射伤害。',apply:m=>{m.chain+=0.4;}},
+  {id:'truth',t:'dmg',ico:'🎯',name:'真理穿透',tags:['dmg'],desc:'难题(✦)伤害翻倍。',apply:m=>{m.truth+=1.0;}},
+  {id:'momentum',t:'dmg',ico:'📈',name:'势能累积',tags:['combo'],desc:'本回合内,连击每 +1 则基础伤害额外 +12%。',apply:m=>{m.momentum+=0.12;}},
+  {id:'shield',t:'def',ico:'🛡️',name:'知识护盾',tags:['shield'],desc:'本回合每答对 3 题获得 150 护盾(优先抵伤)。',apply:m=>{m.shieldPer+=150;}},
+  {id:'forgive',t:'def',ico:'🧩',name:'容错矩阵',tags:['combo'],desc:'本回合答错不清空连击(每回合最多 2 次)。',apply:m=>{m.forgive+=2;}},
+  {id:'regen',t:'def',ico:'♻️',name:'稳态回路',tags:['energy'],desc:'答对额外 +10 能量。能量满自动放技能(全屏爆发)。',apply:m=>{m.regen+=10;}},
+  {id:'lifesteal',t:'def',ico:'🩸',name:'知识汲取',tags:['shield'],desc:'造成伤害的 18% 转化为自身回血。',apply:m=>{m.lifesteal+=0.18;}},
+  {id:'pollute',t:'ctl',ico:'🌀',name:'认知污染',tags:['ctl'],desc:'敌方回合答对率 -14%。',apply:m=>{m.foeAccDrop+=0.14;}},
+  {id:'lag',t:'ctl',ico:'🐌',name:'逻辑迟滞',tags:['ctl'],desc:'敌方每次伤害 -20%。',apply:m=>{m.foeDmgDrop+=0.20;}},
+  {id:'siphon',t:'ctl',ico:'🔋',name:'能量虹吸',tags:['ctl','energy'],desc:'敌方答错时,你 +15 能量。',apply:m=>{m.siphon+=15;}},
 ];
 const TYPE_NAME={dmg:'输出',def:'防御',ctl:'干扰'};
+const QPT=5;        // questions per turn
+const MAX_ROUND=5;  // last round = frenzy
 
 /* ============ game ============ */
-const Game = {
-  mods:null, owned:[], me:0, foe:0, shield:0,
-  combo:0, maxCombo:0, energy:0, forgiveLeft:0,
-  segment:0, phase:0, // 0..2 normal, 3 frenzy
-  qStart:0, cur:null, foeTimer:null, tick:null, segEnd:0,
-  stat:{dmg:0, correct:0, wrong:0, biggestHit:0, ult:0},
-
+const Game={
   start(){
-    this.mods={critChance:0.05, critMult:1.5, base:100};
-    this.owned=[]; this.me=1000; this.foe=1000; this.shield=0;
-    this.combo=0; this.maxCombo=0; this.energy=0; this.segment=0;
-    this.stat={dmg:0, correct:0, wrong:0, biggestHit:0, ult:0};
+    this.mods=newMods(); this.foeMods={dmgMul:1,critChance:0.06,acc:0.72,shieldPer:0,buffs:[]};
+    this.owned=[]; this.me=1000; this.foe=1000; this.shield=0; this.foeShield=0;
+    this.energy=0; this.round=0; this.maxCombo=0;
+    this.stat={dmg:0,correct:0,wrong:0,biggestHit:0,ult:0};
     document.getElementById('app').classList.remove('frenzy');
-    show('pick'); this.offerAugments(true);
+    this.toPick(true);
   },
 
-  /* ---- augment selection ---- */
-  offerAugments(isStart){
-    Audio_; // noop touch
-    const pool=AUGMENTS.slice();
-    // weighted random 3 distinct
-    const pick=[];
-    while(pick.length<3 && pool.length){
-      const i=Math.floor(Math.random()*pool.length);
-      pick.push(pool.splice(i,1)[0]);
-    }
-    const seg=this.segment;
-    document.getElementById('pickPhase').textContent =
-      isStart ? '开局 · 初始强化' : `第 ${seg} 段结束 · 强化抽取 ${seg}`;
-    document.getElementById('pickTitle').textContent =
-      seg>=2 ? '强化开始变得离谱…' : '选择一个海克斯强化';
+  /* ---------- draft ---------- */
+  toPick(isStart){
+    show('pick');
+    const pool=AUGMENTS.slice(), pick=[];
+    while(pick.length<3 && pool.length) pick.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+    document.getElementById('pickPhase').textContent=
+      isStart?'开局 · 初始强化':`第 ${this.round} 回合结束 · 强化抽取`;
+    document.getElementById('pickTitle').textContent=
+      this.round>=3?'强化开始变得离谱…':'选择一个海克斯强化';
     const wrap=document.getElementById('pickCards'); wrap.innerHTML='';
     pick.forEach(a=>{
-      const el=document.createElement('div');
-      el.className=`card t-${a.t}`;
+      const syn=this.synergyHint(a);
+      const el=document.createElement('div'); el.className=`card t-${a.t}`;
       el.innerHTML=`<div class="ico">${a.ico}</div>
         <span class="typ t-${a.t}">${TYPE_NAME[a.t]}型</span>
         <div class="name">${a.name}</div>
-        <div class="desc">${a.desc}</div>`;
-      el.onclick=()=>this.takeAugment(a);
+        <div class="desc">${a.desc}</div>
+        <div class="syn">${syn||''}</div>`;
+      el.onclick=()=>this.take(a);
       wrap.appendChild(el);
     });
-    this.renderOwned();
   },
-  renderOwned(){
-    const o=document.getElementById('ownedList');
-    if(!this.owned.length){o.innerHTML='<span class="chip">尚无强化</span>';return;}
-    const count={};
-    this.owned.forEach(a=>count[a.id]=(count[a.id]||0)+1);
-    o.innerHTML=this.owned.filter((a,i)=>this.owned.findIndex(x=>x.id===a.id)===i)
-      .map(a=>`<span class="chip">${a.ico} ${a.name}${count[a.id]>1?' ×'+count[a.id]:''}</span>`).join('');
+  synergyHint(a){ // surface build construction: hint when a card combos with what you own
+    const ownTags=new Set(); this.owned.forEach(o=>o.tags.forEach(t=>ownTags.add(t)));
+    const shared=a.tags.filter(t=>ownTags.has(t));
+    if(!shared.length) return '';
+    const map={combo:'连击',crit:'暴击',dmg:'输出',shield:'护盾',energy:'能量',ctl:'干扰'};
+    return '↗ 与你的「'+shared.map(s=>map[s]).join('/')+'」流派联动';
   },
-  takeAugment(a){
-    Audio_.pick();
-    this.owned.push(a); a.apply(this.mods);
-    this.forgiveLeft=this.mods.forgive||0;
-    this.beginSegment();
+  take(a){ Audio_.pick(); this.owned.push(a); a.apply(this.mods); this.foeBuff(); this.beginRound(); },
+
+  foeBuff(){ // opponent also "builds" each round (lightweight)
+    if(this.round===0) return; // none on initial pick
+    const opts=[
+      ()=>{this.foeMods.dmgMul+=0.18; return '+输出';},
+      ()=>{this.foeMods.critChance+=0.12; return '+暴击';},
+      ()=>{this.foeMods.acc=Math.min(0.95,this.foeMods.acc+0.05); return '+精准';},
+      ()=>{this.foeMods.shieldPer+=120; return '+护盾';},
+    ];
+    const name=opts[Math.floor(Math.random()*opts.length)]();
+    this.foeMods.buffs.push(name);
   },
 
-  /* ---- battle segment ---- */
-  beginSegment(){
-    this.segment++;
-    this.phase = this.segment>=4 ? 3 : this.segment-1; // segment4 = frenzy
-    const frenzy = this.phase===3;
-    const app=document.getElementById('app');
-    app.classList.toggle('frenzy', frenzy);
+  /* ---------- round / player turn ---------- */
+  beginRound(){
+    this.round++;
+    const frenzy=this.round>=MAX_ROUND;
+    document.getElementById('app').classList.toggle('frenzy',frenzy);
     show('battle');
-    const dur = frenzy ? 30 : 30;
-    this.segEnd = Date.now()+dur*1000;
-    document.getElementById('phaseTxt').textContent =
-      frenzy ? '🔥 狂暴阶段' : ['第一阶段','第二阶段','第三阶段'][this.segment-1] || '对战';
-    if(frenzy){ Audio_.frenzy(); this.banner('狂暴！全部强化翻倍','var(--red)'); }
-    this.combo = this.combo; // keep combo across? reset per segment feels cleaner:
-    this.nextQuestion();
-    this.startFoe();
-    this.startTick();
-    this.refresh();
+    document.getElementById('roundN').textContent= frenzy?'狂暴回合':`第 ${this.round} 回合`;
+    this.renderBuild();
+    if(frenzy){ Audio_.frenzy(); this.banner('🔥 狂暴回合 · 全部强化翻倍','var(--red)'); }
+    this.startPlayerTurn();
+  },
+  fm(){ return this.round>=MAX_ROUND?2:1; },
+
+  startPlayerTurn(){
+    this.turn='me'; this.combo=0; this.qIndex=0;
+    this.forgiveLeft=this.mods.forgive||0;
+    setTurn('me','你的回合');
+    this.refresh(); this.nextQuestion();
   },
 
-  startTick(){
-    clearInterval(this.tick);
-    this.tick=setInterval(()=>{
-      const left=Math.max(0,Math.ceil((this.segEnd-Date.now())/1000));
-      document.getElementById('timer').textContent=left;
-      if(left<=0){ this.endSegment(); }
-      if(this.me<=0||this.foe<=0){ this.finish(); }
-    },200);
-  },
-  endSegment(){
-    clearInterval(this.tick); clearInterval(this.foeTimer);
-    if(this.me<=0||this.foe<=0){ this.finish(); return; }
-    if(this.phase===3){ this.finish(); return; } // after frenzy -> end
-    show('pick'); this.offerAugments(false);
-  },
-
-  frenzyMul(){ return this.phase===3 ? 2 : 1; },
-
-  /* ---- questions ---- */
   nextQuestion(){
-    const hard = Math.random() < (0.2 + this.segment*0.12);
-    let a,b,c,op,ans,text;
-    if(hard){
-      // two-step
-      a=rand(2,9); b=rand(2,9); c=rand(1,9);
-      ans=a*b+c; text=`${a} × ${b} + ${c} = ?`;
-    } else {
-      const r=Math.random();
-      if(r<0.5){a=rand(2,12); b=rand(2,12); ans=a*b; text=`${a} × ${b} = ?`;}
-      else if(r<0.8){a=rand(20,99); b=rand(10,60); ans=a+b; text=`${a} + ${b} = ?`;}
-      else {a=rand(40,99); b=rand(10,39); ans=a-b; text=`${a} − ${b} = ?`;}
-    }
-    this.cur={ans, hard};
-    document.getElementById('qmeta').textContent = '速算 · ' + (hard?'困难 ✦':'中等');
-    document.getElementById('qtext').textContent = text;
-    // options
-    const opts=new Set([ans]);
-    while(opts.size<4){ let d=ans+rand(-9,9)*(Math.random()<.5?1:rand(1,4)); if(d!==ans&&d>=0) opts.add(d); }
-    let arr=[...opts]; shuffle(arr);
-    const box=document.getElementById('opts'); box.innerHTML='';
-    arr.forEach(v=>{
-      const b2=document.createElement('button'); b2.className='opt'; b2.textContent=v;
-      b2.onclick=()=>this.answer(v===ans, b2);
-      box.appendChild(b2);
-    });
+    const hard=Math.random()<(0.18+this.round*0.12);
+    let a,b,c,ans,text;
+    if(hard){ a=rand(2,9);b=rand(2,9);c=rand(1,9); ans=a*b+c; text=`${a} × ${b} + ${c} = ?`; }
+    else{ const r=Math.random();
+      if(r<0.5){a=rand(2,12);b=rand(2,12);ans=a*b;text=`${a} × ${b} = ?`;}
+      else if(r<0.8){a=rand(20,99);b=rand(10,60);ans=a+b;text=`${a} + ${b} = ?`;}
+      else{a=rand(40,99);b=rand(10,39);ans=a-b;text=`${a} − ${b} = ?`;} }
+    this.cur={ans,hard};
+    document.getElementById('qmeta').textContent='速算 · '+(hard?'困难 ✦':'中等');
+    document.getElementById('qprog').textContent=`第 ${this.qIndex+1}/${QPT} 题`;
+    document.getElementById('qtext').textContent=text;
+    const set=new Set([ans]);
+    while(set.size<4){let d=ans+rand(-9,9)*(Math.random()<.5?1:rand(1,4)); if(d!==ans&&d>=0)set.add(d);}
+    const arr=shuffle([...set]); const box=document.getElementById('opts'); box.innerHTML='';
+    arr.forEach(v=>{const b2=document.createElement('button');b2.className='opt';b2.textContent=v;
+      b2.onclick=()=>this.answer(v===ans,b2);box.appendChild(b2);});
     this.qStart=Date.now();
   },
 
-  answer(correct, el){
+  answer(correct,el){
+    [...document.getElementById('opts').children].forEach(o=>o.disabled=true);
     if(correct){
-      el.classList.add('correct'); Audio_.correct();
-      this.stat.correct++;
+      el.classList.add('correct'); Audio_.correct(); this.stat.correct++;
       this.combo++; this.maxCombo=Math.max(this.maxCombo,this.combo);
-      const dmg=this.computeDamage();
-      this.dealToFoe(dmg.amount, dmg.crit);
-      // shield gain
-      if(this.mods.shieldPer && this.combo>0 && this.combo%5===0){
-        this.shield += this.mods.shieldPer*this.frenzyMul();
-        this.banner('+护盾','var(--green)');
-      }
-      // energy
-      this.energy += (15 + (this.mods.regen||0))*1;
-      if(this.energy>=100){ this.ult(); }
-      // overload: break foe combo
-      if(this.mods.overload && this.foeCombo>2 && Math.random()<this.mods.overload){
-        this.foeCombo=0; this.banner('打断敌方连击!','var(--purple)');
-      }
+      const r=this.computeDamage(); this.dealToFoe(r);
+      if(this.mods.shieldPer && this.combo>0 && this.combo%3===0){
+        this.shield+=this.mods.shieldPer*this.fm(); this.trigger('知识护盾 +护盾','var(--green)'); }
+      this.energy+=(15+(this.mods.regen||0));
+      if(this.energy>=100) this.ult();
     } else {
-      el.classList.add('wrong'); Audio_.wrong();
-      this.stat.wrong++;
-      if(this.forgiveLeft>0){ this.forgiveLeft--; this.banner('容错矩阵·连击保留','var(--cyan)'); }
-      else { this.combo=0; }
-      this.me=Math.max(0,this.me-40); this.flashHit('me');
+      el.classList.add('wrong'); Audio_.wrong(); this.stat.wrong++;
+      if(this.forgiveLeft>0){ this.forgiveLeft--; this.trigger('容错矩阵·连击保留','var(--cyan)'); }
+      else this.combo=0;
     }
     this.refresh();
-    setTimeout(()=>{ if(this.me>0&&this.foe>0&&this.phase>=0) this.nextQuestion(); }, 220);
+    setTimeout(()=>{
+      this.qIndex++;
+      if(this.me<=0||this.foe<=0){ this.finish(); return; }
+      if(this.qIndex<QPT) this.nextQuestion();
+      else this.enemyTurn();
+    },420);
   },
 
   computeDamage(){
-    const m=this.mods, fm=this.frenzyMul();
-    let dmg=m.base;
-    // combo scaling
-    if(this.combo>=5) dmg*=2; else if(this.combo>=3) dmg*=1.4;
-    // overclock
-    if(this.combo>=3 && m.overclock) dmg*=(1+m.overclock*fm);
-    // speed
-    if(m.speed){ const t=(Date.now()-this.qStart)/1000; const f=Math.max(0,1-(t/3)); dmg*=(1+m.speed*f*fm); }
-    // truth (hard q)
-    if(m.truth && this.cur.hard) dmg*=(1+m.truth*fm);
-    // crit
+    const m=this.mods, fm=this.fm(), fired=[]; let dmg=m.base;
+    if(this.combo>=5){dmg*=2; fired.push(['5连·伤害×2','var(--gold)']);}
+    else if(this.combo>=3){dmg*=1.4; fired.push(['3连·伤害×1.4','var(--gold)']);}
+    if(m.momentum){ const f=1+m.momentum*this.combo*fm; dmg*=f; if(m.momentum) fired.push([`势能累积 ×${f.toFixed(1)}`,'var(--red)']); }
+    if(this.combo>=3 && m.overclock){ dmg*=(1+m.overclock*fm); fired.push([`超频核心 ×${(1+m.overclock*fm).toFixed(1)}`,'var(--red)']); }
+    if(m.truth && this.cur.hard){ dmg*=(1+m.truth*fm); fired.push(['真理穿透 ×2','var(--red)']); }
     let crit=false;
-    if(Math.random() < Math.min(0.95, m.critChance*(fm>1?1.5:1))){ crit=true; dmg*=m.critMult; }
-    return {amount:Math.round(dmg), crit};
+    if(Math.random()<Math.min(0.95,m.critChance*(fm>1?1.4:1))){ crit=true; dmg*=m.critMult; fired.push(['暴击!','var(--gold)']); }
+    return {amount:Math.round(dmg),crit,fired};
   },
-
-  dealToFoe(amount, crit){
-    this.foe=Math.max(0,this.foe-amount);
-    this.stat.dmg+=amount; this.stat.biggestHit=Math.max(this.stat.biggestHit,amount);
-    this.floatDmg(amount, crit, 'foe');
-    if(crit){ Audio_.crit(); this.flashHit('foe',true);
-      // chain splash
-      if(this.mods.chain){ const sp=Math.round(amount*this.mods.chain*this.frenzyMul());
-        this.foe=Math.max(0,this.foe-sp); this.floatDmg(sp,false,'foe'); }
-    }
-    if(this.mods.lifesteal){ this.me=Math.min(1000,this.me+Math.round(amount*this.mods.lifesteal)); }
-    if(this.combo===5||this.combo===10||this.combo===15) this.banner(this.combo+' 连击!','var(--gold)');
+  dealToFoe(r){
+    let amt=r.amount;
+    if(this.foeShield>0){const ab=Math.min(this.foeShield,amt);this.foeShield-=ab;amt-=ab;}
+    this.foe=Math.max(0,this.foe-amt);
+    this.stat.dmg+=amt; this.stat.biggestHit=Math.max(this.stat.biggestHit,amt);
+    this.floatDmg(amt,r.crit,'foe');
+    r.fired.forEach((f,i)=>setTimeout(()=>this.trigger(f[0],f[1]),i*90));
+    this.flashBuild(r.fired);
+    if(r.crit){ Audio_.crit(); this.screenShake();
+      if(this.mods.chain){ const sp=Math.round(amt*this.mods.chain*this.fm());
+        this.foe=Math.max(0,this.foe-sp); this.floatDmg(sp,false,'foe'); this.trigger('连锁爆破 溅射','var(--red)'); } }
+    if(this.mods.lifesteal) this.me=Math.min(1000,this.me+Math.round(amt*this.mods.lifesteal));
+    if(this.combo===3||this.combo===5) this.banner(this.combo+' 连击!','var(--gold)');
   },
+  ult(){ this.energy=0; this.stat.ult++; const d=Math.round(300*this.fm());
+    this.foe=Math.max(0,this.foe-d); this.floatDmg(d,true,'foe'); this.banner('⚡ 技能爆发!','var(--cyan)');
+    Audio_.crit(); this.screenShake(); },
 
-  ult(){
-    this.energy=0; this.stat.ult++;
-    const dmg=Math.round(280*this.frenzyMul());
-    this.foe=Math.max(0,this.foe-dmg);
-    this.floatDmg(dmg,true,'foe'); this.banner('⚡ 技能爆发!','var(--cyan)');
-    Audio_.crit(); this.flashHit('foe',true);
-  },
-
-  /* ---- AI opponent ---- */
-  startFoe(){
-    this.foeCombo=this.foeCombo||0;
-    clearInterval(this.foeTimer);
-    const base = 2000 * (1+(this.mods.foeSlow||0));
-    this.foeTimer=setInterval(()=>{
-      if(this.me<=0||this.foe<=0) return;
-      const acc = Math.max(0.3, 0.78 - (this.mods.foeAccDrop||0));
+  /* ---------- enemy turn ---------- */
+  enemyTurn(){
+    this.turn='foe'; setTurn('foe','AI 回合');
+    document.getElementById('qtext').textContent='AI 正在答题…';
+    document.getElementById('opts').innerHTML='';
+    document.getElementById('qmeta').textContent='对手回合';
+    document.getElementById('qprog').textContent='';
+    let i=0, foeCombo=0;
+    const step=()=>{
+      if(i>=QPT || this.me<=0 || this.foe<=0){
+        setTimeout(()=>{ if(this.me<=0||this.foe<=0){this.finish();return;}
+          if(this.round>=MAX_ROUND) this.finish(); else this.toPick(false); }, 500);
+        return;
+      }
+      const acc=Math.max(0.25, this.foeMods.acc-(this.mods.foeAccDrop||0));
       if(Math.random()<acc){
-        this.foeCombo++;
-        let d=70*this.frenzyMul();
-        if(this.foeCombo>=3) d*=1.4; if(this.foeCombo>=5) d*=1.8;
+        foeCombo++;
+        let d=70*this.foeMods.dmgMul*this.fm();
+        if(foeCombo>=3) d*=1.4; if(foeCombo>=5) d*=1.7;
+        if(Math.random()<this.foeMods.critChance){ d*=1.6; }
+        d*=(1-(this.mods.foeDmgDrop||0));
         d=Math.round(d);
-        // player shield absorbs
-        if(this.shield>0){ const ab=Math.min(this.shield,d); this.shield-=ab; d-=ab;
-          if(ab>0) this.floatDmg(ab,false,'me',true); }
-        if(d>0){ this.me=Math.max(0,this.me-d); this.floatDmg(d,false,'me'); this.flashHit('me'); }
-      } else { this.foeCombo=0; }
-      this.refresh();
-    }, base);
+        if(this.shield>0){const ab=Math.min(this.shield,d);this.shield-=ab;d-=ab; if(ab>0)this.floatDmg(ab,false,'me',true);}
+        if(d>0){ this.me=Math.max(0,this.me-d); this.floatDmg(d,false,'me'); Audio_.hit(); this.flashHit(); }
+      } else {
+        foeCombo=0;
+        if(this.mods.siphon){ this.energy=Math.min(100,this.energy+this.mods.siphon); this.trigger('能量虹吸 +能量','var(--purple)'); }
+        if(this.foeMods.shieldPer){ /* foe shields itself on its miss-free turns handled below */ }
+      }
+      this.refresh(); i++; setTimeout(step, 520);
+    };
+    // foe regains some shield at start of its turn from its shield buffs
+    if(this.foeMods.shieldPer){ this.foeShield=this.foeMods.shieldPer; }
+    setTimeout(step, 600);
   },
 
-  /* ---- fx ---- */
-  floatDmg(n, crit, side, shield){
-    const layer=document.getElementById('fxlayer');
-    const el=document.createElement('div'); el.className='float';
-    el.textContent=(shield?'🛡 ':'') + (side==='me'?'-':'-')+n;
-    el.style.fontSize=(crit?34:side==='me'?20:24)+'px';
-    el.style.color= shield?'var(--green)' : side==='me'?'var(--red)' : crit?'var(--gold)':'var(--cyan)';
-    el.style.left=(side==='me'? rand(8,30):rand(62,86))+'%';
-    el.style.top=rand(28,52)+'%';
-    layer.appendChild(el); setTimeout(()=>el.remove(),1000);
-    if(crit) this.screenShake();
+  /* ---------- fx / render ---------- */
+  floatDmg(n,crit,side,shield){
+    const l=document.getElementById('fxlayer'); const e=document.createElement('div'); e.className='float';
+    e.textContent=(shield?'🛡 ':'')+'-'+n;
+    e.style.fontSize=(crit?34:side==='me'?20:24)+'px';
+    e.style.color=shield?'var(--green)':side==='me'?'var(--red)':crit?'var(--gold)':'var(--cyan)';
+    e.style.left=(side==='me'?rand(8,30):rand(62,86))+'%'; e.style.top=rand(30,50)+'%';
+    l.appendChild(e); setTimeout(()=>e.remove(),1000); if(crit)this.screenShake();
   },
-  banner(txt,color){
-    const layer=document.getElementById('fxlayer');
-    const el=document.createElement('div'); el.className='banner'; el.textContent=txt;
-    el.style.color=color||'var(--gold)'; layer.appendChild(el);
-    setTimeout(()=>el.remove(),1100);
-  },
-  flashHit(side,big){ this.refresh(); if(big) this.screenShake(); },
+  trigger(txt,color){ const l=document.getElementById('fxlayer'); const e=document.createElement('div');
+    e.className='trigger'; e.textContent=txt; e.style.color=color||'var(--gold)';
+    e.style.left=rand(20,46)+'%'; e.style.top=rand(20,44)+'%'; l.appendChild(e); setTimeout(()=>e.remove(),1100); },
+  banner(txt,color){ const l=document.getElementById('fxlayer'); const e=document.createElement('div');
+    e.className='banner'; e.textContent=txt; e.style.color=color||'var(--gold)'; l.appendChild(e); setTimeout(()=>e.remove(),1100); },
+  flashHit(){ this.refresh(); },
   screenShake(){ const a=document.getElementById('app'); a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake'); },
 
+  renderBuild(){
+    const bb=document.getElementById('buildbar');
+    if(!this.owned.length){ bb.innerHTML='<span class="empty">你的 Build —— 抽到的强化会显示在这里</span>'; return; }
+    const cnt={}; this.owned.forEach(a=>cnt[a.id]=(cnt[a.id]||0)+1);
+    const uniq=this.owned.filter((a,i)=>this.owned.findIndex(x=>x.id===a.id)===i);
+    bb.innerHTML=uniq.map(a=>`<span class="aug t-${a.t}" data-id="${a.id}">${a.ico} ${a.name}${cnt[a.id]>1?' <span class="x">×'+cnt[a.id]+'</span>':''}</span>`).join('');
+  },
+  flashBuild(fired){
+    const names=fired.map(f=>f[0]);
+    const map={'超频核心':'overclock','暴击!':'crit','连锁爆破 溅射':'chain','真理穿透 ×2':'truth','势能累积':'momentum'};
+    [...document.querySelectorAll('#buildbar .aug')].forEach(el=>{
+      const id=el.dataset.id;
+      const hit=names.some(n=>{ for(const k in map){ if(n.includes(k)&&map[k]===id) return true; } return false; });
+      if(hit){ el.classList.add('fire'); setTimeout(()=>el.classList.remove('fire'),300); }
+    });
+  },
   refresh(){
     document.getElementById('meHp').style.width=(this.me/1000*100)+'%';
     document.getElementById('foeHp').style.width=(this.foe/1000*100)+'%';
     document.getElementById('meHpTxt').textContent=Math.round(this.me)+(this.shield>0?' (+'+Math.round(this.shield)+')':'');
-    document.getElementById('foeHpTxt').textContent=Math.round(this.foe);
-    document.getElementById('comboN').textContent=this.combo;
+    document.getElementById('foeHpTxt').textContent=Math.round(this.foe)+(this.foeShield>0?' (+'+Math.round(this.foeShield)+')':'');
+    document.getElementById('comboN').textContent=this.combo||0;
     const e=Math.min(100,Math.round(this.energy));
-    document.getElementById('ebar').style.width=e+'%';
-    document.getElementById('eTxt').textContent=e+'/100';
+    document.getElementById('ebar').style.width=e+'%'; document.getElementById('eTxt').textContent=e+'/100';
   },
 
-  /* ---- end ---- */
-  finish(){ clearInterval(this.tick); clearInterval(this.foeTimer); this.showEnd(); },
+  /* ---------- end ---------- */
+  finish(){ this.showEnd(); },
   showEnd(){
-    const win = this.me > this.foe;
+    const win=this.me>this.foe && this.me>0;
     show('end');
     const r=document.getElementById('resultTxt');
-    r.textContent= this.me<=0 ? '失败' : win ? '胜利' : '惜败';
-    r.className='result '+(win&&this.me>0?'win':'lose');
-    win?Audio_.win():Audio_.lose();
-    // highlight
+    r.textContent=this.me<=0?'失败':this.foe<=0?'胜利':win?'胜利':'惜败';
+    r.className='result '+((this.foe<=0||win)&&this.me>0?'win':'lose');
+    (this.foe<=0||win)&&this.me>0?Audio_.win():Audio_.lose();
     let hl='稳扎稳打,小胜一筹。';
-    if(this.maxCombo>=12) hl=`🔥 最高 ${this.maxCombo} 连击 — 手感爆炸!`;
-    else if(this.stat.biggestHit>=600) hl=`💥 单次最高 ${this.stat.biggestHit} 伤害 — 一刀斩!`;
+    if(this.maxCombo>=5&&this.owned.length>=4) hl='🧩 Build 成型 — 强化联动滚起来了!';
+    if(this.stat.biggestHit>=900) hl=`💥 单次最高 ${this.stat.biggestHit} 伤害 — 一刀斩!`;
     else if(this.stat.ult>=3) hl=`⚡ 放了 ${this.stat.ult} 次技能 — 能量永动机!`;
-    else if(win&&this.foe<=0) hl='🎯 直接把对面血条清空 — 完胜!';
+    else if(this.foe<=0) hl='🎯 直接把对面血条清空 — 完胜!';
     document.getElementById('highlight').textContent=hl;
-    const acc = this.stat.correct+this.stat.wrong ? Math.round(this.stat.correct/(this.stat.correct+this.stat.wrong)*100):0;
+    const acc=this.stat.correct+this.stat.wrong?Math.round(this.stat.correct/(this.stat.correct+this.stat.wrong)*100):0;
     document.getElementById('endStats').innerHTML=[
-      ['总伤害',this.stat.dmg],['最高连击',this.maxCombo],
-      ['正确率',acc+'%'],['答对',this.stat.correct],
-      ['技能',this.stat.ult+' 次'],['强化',this.owned.length+' 张'],
+      ['总伤害',this.stat.dmg],['最高连击',this.maxCombo],['正确率',acc+'%'],
+      ['答对',this.stat.correct],['技能',this.stat.ult+' 次'],['强化',this.owned.length+' 张'],
     ].map(([k,v])=>`<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
   },
 };
 
-/* ---- helpers ---- */
+function newMods(){return{base:100,critChance:0.05,critMult:1.5,overclock:0,chain:0,truth:0,momentum:0,
+  shieldPer:0,forgive:0,regen:0,lifesteal:0,foeAccDrop:0,foeDmgDrop:0,siphon:0};}
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function show(id){['start','pick','battle','end'].forEach(s=>document.getElementById(s).classList.toggle('hidden',s!==id));}
+function setTurn(side,txt){const t=document.getElementById('turnTxt');t.textContent=txt;t.className='turnTxt '+side;}
 </script>
 </body>
 </html>
