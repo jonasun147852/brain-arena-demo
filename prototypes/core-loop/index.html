@@ -3,119 +3,169 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>脑力竞技 · 回合制构筑原型</title>
+<title>脑力竞技 · 对战原型</title>
 <style>
   :root{
-    --bg:#0a0e1a; --panel:#121a2e; --panel2:#16203a; --line:#26324d;
+    --bg:#070b16; --panel:#0f1626; --panel2:#16203a; --line:#26324d;
     --cyan:#36e3ff; --blue:#4d7cff; --gold:#ffcf4d; --red:#ff4d6d;
-    --green:#3ddc84; --purple:#b15dff; --text:#e8eefc; --dim:#8a98b8;
+    --green:#3ddc84; --purple:#b15dff; --text:#eaf1ff; --dim:#8a98b8; --silver:#c3ccde;
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
-  body{
-    background:radial-gradient(1200px 600px at 50% -10%, #16203a 0%, var(--bg) 60%);
-    color:var(--text); font-family:-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
-    display:flex; align-items:center; justify-content:center; overflow:hidden; user-select:none;
-  }
-  #app{ width:min(960px,100vw); height:min(620px,100vh); position:relative;
-    background:var(--panel); border:1px solid var(--line); border-radius:16px;
-    overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.6);}
-  .screen{position:absolute; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; padding:28px; gap:18px;}
+  body{background:#05070d; color:var(--text); font-family:-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    display:flex; align-items:center; justify-content:center; overflow:hidden; user-select:none;}
+  #app{width:min(1000px,100vw); height:min(620px,100vh); position:relative; background:var(--panel);
+    border:1px solid var(--line); border-radius:16px; overflow:hidden; box-shadow:0 30px 90px rgba(0,0,0,.7);}
+  .screen{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:22px; gap:13px;}
   .hidden{display:none !important;}
-
-  h1{font-size:34px; letter-spacing:2px; background:linear-gradient(90deg,var(--cyan),var(--blue));
-    -webkit-background-clip:text; background-clip:text; color:transparent; text-align:center;}
-  .sub{color:var(--dim); font-size:14px; text-align:center; line-height:1.7; max-width:580px;}
+  h1{font-size:34px; letter-spacing:3px; background:linear-gradient(90deg,var(--cyan),var(--purple)); -webkit-background-clip:text; background-clip:text; color:transparent; text-align:center; filter:drop-shadow(0 2px 18px rgba(54,227,255,.4));}
+  .sub{color:var(--dim); font-size:13.5px; text-align:center; line-height:1.7; max-width:620px;}
   .tag{font-size:12px; color:var(--cyan); border:1px solid var(--cyan); padding:3px 10px; border-radius:20px; opacity:.85;}
-
   button{font-family:inherit; cursor:pointer; border:none; color:var(--text);}
-  .btn{padding:14px 34px; font-size:17px; font-weight:700; border-radius:10px;
-    background:linear-gradient(90deg,var(--blue),var(--cyan)); color:#06121f;
-    transition:transform .08s, box-shadow .2s; box-shadow:0 8px 24px rgba(54,227,255,.25);}
-  .btn:hover{transform:translateY(-2px);}
+  .btn{padding:14px 38px; font-size:18px; font-weight:800; letter-spacing:1px; border-radius:12px; background:linear-gradient(90deg,var(--blue),var(--cyan)); color:#06121f; transition:transform .08s, box-shadow .2s; box-shadow:0 10px 30px rgba(54,227,255,.35);}
+  .btn:hover{transform:translateY(-2px) scale(1.02);}
   .btn.ghost{background:transparent; border:1px solid var(--line); color:var(--text); box-shadow:none;}
-  .btn:disabled{opacity:.4; cursor:default; transform:none;}
+  .tunbtn{font-size:12px; color:var(--dim); background:none; border:1px solid var(--line); padding:6px 14px; border-radius:8px;}
 
-  /* ===== Augment cards ===== */
-  .cards{display:flex; gap:18px; flex-wrap:wrap; justify-content:center;}
-  .card{width:210px; min-height:228px; background:linear-gradient(180deg,var(--panel2),#0e1526);
-    border:1px solid var(--line); border-radius:14px; padding:18px; cursor:pointer;
-    display:flex; flex-direction:column; gap:10px; transition:transform .12s, border-color .2s, box-shadow .2s;}
-  .card:hover{transform:translateY(-6px) scale(1.02);}
-  .card .ico{font-size:32px;}
+  /* start hero */
+  #start{background:radial-gradient(900px 500px at 50% -10%, #14233f 0%, transparent 55%), radial-gradient(700px 460px at 50% 120%, #241433 0%, transparent 55%);}
+  .heroduel{display:flex; align-items:center; gap:26px; margin:4px 0;}
+  .heroduel .h{font-size:64px; filter:drop-shadow(0 6px 16px rgba(0,0,0,.6));}
+  .heroduel .h.l{animation:bobL 2.4s ease-in-out infinite;}
+  .heroduel .h.r{animation:bobR 2.4s ease-in-out infinite; transform:scaleX(-1);}
+  .heroduel .vs{font-size:26px; font-weight:900; color:var(--gold); text-shadow:0 0 18px rgba(255,207,77,.6);}
+  @keyframes bobL{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+  @keyframes bobR{0%,100%{transform:scaleX(-1) translateY(0);}50%{transform:scaleX(-1) translateY(-7px);}}
+
+  /* tuner */
+  .tuner{display:none; flex-direction:column; gap:6px; background:#0c1322; border:1px solid var(--line); border-radius:12px; padding:14px 18px; width:min(560px,92%);}
+  .tuner.open{display:flex;}
+  .tuner h3{font-size:13px; color:var(--cyan); margin-bottom:2px;}
+  .trow{display:flex; align-items:center; gap:10px; font-size:12px;}
+  .trow label{flex:1; color:var(--dim);}
+  .trow input{width:90px; background:#16203a; border:1px solid var(--line); color:var(--text); border-radius:6px; padding:5px 8px; font-family:inherit; font-size:13px;}
+
+  /* augment cards */
+  .cards{display:flex; gap:15px; flex-wrap:wrap; justify-content:center;}
+  .card{width:214px; min-height:244px; background:linear-gradient(180deg,var(--panel2),#0c1322); border:1px solid var(--line); border-radius:15px; padding:15px; cursor:pointer; display:flex; flex-direction:column; gap:6px; position:relative; transition:transform .12s, box-shadow .2s; overflow:hidden;}
+  .card::after{content:""; position:absolute; inset:0; background:linear-gradient(120deg,transparent 40%,rgba(255,255,255,.06) 50%,transparent 60%); transform:translateX(-100%); transition:transform .5s;}
+  .card:hover::after{transform:translateX(100%);}
+  .card:hover{transform:translateY(-7px) scale(1.03);}
+  .card .ico{font-size:30px; filter:drop-shadow(0 3px 8px rgba(0,0,0,.5));}
   .card .name{font-size:18px; font-weight:800;}
-  .card .desc{font-size:13px; color:var(--dim); line-height:1.6; flex:1;}
-  .card .typ{font-size:11px; padding:2px 8px; border-radius:6px; align-self:flex-start;}
-  .t-dmg{color:var(--red); border:1px solid var(--red);} .card.t-dmg:hover{border-color:var(--red); box-shadow:0 12px 30px rgba(255,77,109,.25);}
-  .t-def{color:var(--green); border:1px solid var(--green);} .card.t-def:hover{border-color:var(--green); box-shadow:0 12px 30px rgba(61,220,132,.22);}
-  .t-ctl{color:var(--purple); border:1px solid var(--purple);} .card.t-ctl:hover{border-color:var(--purple); box-shadow:0 12px 30px rgba(177,93,255,.25);}
-  .card .syn{font-size:11px; color:var(--gold); min-height:14px;}
+  .card .desc{font-size:12.5px; color:var(--dim); line-height:1.5; flex:1;}
+  .card .row1{display:flex; gap:5px; flex-wrap:wrap;}
+  .chiptag{font-size:10px; font-weight:800; padding:1px 6px; border-radius:4px; background:#0a0f1d;}
+  .chiptag.chips{color:var(--cyan); border:1px solid #1e4a55;}
+  .chiptag.addmult{color:var(--gold); border:1px solid #5a4a1a;}
+  .chiptag.xmult{color:var(--purple); border:1px solid #4a2a6a;}
+  .chiptag.util{color:var(--dim); border:1px solid var(--line);}
+  .card .syn{font-size:11px; color:var(--gold); min-height:14px; line-height:1.4;}
+  .tierbadge{position:absolute; top:12px; right:12px; font-size:10px; font-weight:800; letter-spacing:1px; padding:2px 7px; border-radius:5px; z-index:1;}
+  .card.tier-silver{border-color:#566;} .card.tier-silver .tierbadge{background:#2a3242; color:var(--silver);}
+  .card.tier-gold{border-color:#7a651f;} .card.tier-gold .tierbadge{background:#3a2f0e; color:var(--gold);} .card.tier-gold:hover{box-shadow:0 14px 34px rgba(255,207,77,.28);}
+  .card.tier-prismatic{border:1px solid transparent; background:linear-gradient(#0c1322,#0c1322) padding-box, linear-gradient(135deg,var(--purple),var(--cyan),var(--gold)) border-box;}
+  .card.tier-prismatic .tierbadge{background:linear-gradient(135deg,var(--purple),var(--cyan)); color:#06121f;}
+  .card.tier-prismatic:hover{box-shadow:0 16px 42px rgba(177,93,255,.45);}
+  .card.tier-prismatic .name{background:linear-gradient(90deg,var(--purple),var(--cyan),var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent;}
   .pickhdr{text-align:center;}
-  .pickhdr .big{font-size:24px; font-weight:800;}
+  .pickhdr .big{font-size:22px; font-weight:800;}
   .pickhdr .ph{font-size:12px; color:var(--cyan); letter-spacing:1px;}
+  .foesum{margin-top:5px; font-size:12px; color:var(--dim); display:flex; gap:6px; align-items:center; justify-content:center; flex-wrap:wrap;}
+  .foesum .fc{color:var(--red); border:1px solid #4a2a33; background:#1a1014; padding:2px 8px; border-radius:14px; font-size:11px;}
+  .rerollrow{margin-top:2px;}
+  .reroll{font-size:13px; font-weight:700; padding:8px 18px; border-radius:8px; background:#16203a; border:1px solid var(--line); color:var(--cyan);}
+  .reroll:hover{background:#1d2a4a;} .reroll:disabled{opacity:.4; cursor:default; color:var(--dim);}
 
-  /* ===== Battle ===== */
+  /* ===== BATTLE ===== */
   #battle{padding:0; justify-content:flex-start; gap:0;}
-  .topbar{width:100%; padding:14px 20px; display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--line); background:#0e1526;}
-  .side{flex:1;}
-  .side .who{font-size:12px; color:var(--dim); margin-bottom:4px; display:flex; justify-content:space-between;}
-  .hpwrap{height:16px; background:#0a0f1d; border-radius:10px; overflow:hidden; border:1px solid var(--line);}
-  .hp{height:100%; width:100%; transition:width .4s cubic-bezier(.2,.8,.2,1); border-radius:10px;}
+  .hudbar{width:100%; padding:7px 0; text-align:center; border-bottom:1px solid var(--line); background:#0b1120; z-index:3;}
+  .hudbar .rn{font-size:15px; font-weight:800;} .hudbar .qc{font-size:11px; color:var(--dim); letter-spacing:1px;}
+
+  .stage{position:relative; flex:1; width:100%; overflow:hidden;
+    background:
+      radial-gradient(600px 300px at 25% 40%, rgba(54,227,255,.10), transparent 60%),
+      radial-gradient(600px 300px at 75% 40%, rgba(255,77,109,.10), transparent 60%),
+      linear-gradient(180deg,#0a1326 0%, #0c1020 55%, #070b13 100%);}
+  .stage::before{content:""; position:absolute; left:0; right:0; bottom:0; height:42%;
+    background:linear-gradient(180deg, transparent, rgba(54,227,255,.05)), repeating-linear-gradient(90deg, rgba(80,120,200,.10) 0 1px, transparent 1px 46px);
+    transform:perspective(380px) rotateX(60deg); transform-origin:bottom; opacity:.5;}
+  .glow{position:absolute; border-radius:50%; filter:blur(48px); opacity:.5; animation:drift 9s ease-in-out infinite;}
+  .glow.a{width:200px;height:200px;background:#1f6f9c;left:8%;top:18%;}
+  .glow.b{width:220px;height:220px;background:#7a2a52;right:8%;top:14%;animation-delay:-4s;}
+  @keyframes drift{0%,100%{transform:translateY(0);}50%{transform:translateY(18px);}}
+
+  .fighter{position:absolute; bottom:14px; width:230px; display:flex; flex-direction:column; align-items:center; gap:7px; z-index:2;}
+  .fighter.me{left:24px;} .fighter.foe{right:24px;}
+  .fname{font-size:12px; color:var(--dim); display:flex; justify-content:space-between; width:100%;}
+  .fname b{color:var(--text);}
+  .hpwrap{width:100%; height:15px; background:#0a0f1d; border-radius:9px; overflow:hidden; border:1px solid var(--line); position:relative;}
+  .hp{height:100%; width:100%; transition:width .45s cubic-bezier(.2,.8,.2,1); border-radius:9px;}
   .hp.me{background:linear-gradient(90deg,#3ddc84,#36e3ff);}
-  .hp.foe{background:linear-gradient(90deg,#ff4d6d,#ff8a4d); margin-left:auto;}
-  .foewrap{display:flex;} .foewrap .hp{margin-left:auto;}
-  .mid{width:150px; text-align:center;}
-  .roundN{font-size:22px; font-weight:800;}
-  .turnTxt{font-size:11px; letter-spacing:1px;}
-  .turnTxt.me{color:var(--cyan);} .turnTxt.foe{color:var(--red);}
+  .hp.foe{background:linear-gradient(90deg,#ff8a4d,#ff4d6d);}
+  .hpghost{position:absolute; top:0; height:100%; background:rgba(255,255,255,.35); transition:width .9s ease .15s;}
+  .marks{font-size:11px; min-height:14px; color:var(--purple); font-weight:800;}
+  .avatar{font-size:78px; line-height:1; filter:drop-shadow(0 8px 14px rgba(0,0,0,.55)); transition:filter .1s;}
+  .avatar.me{animation:idleL 2.6s ease-in-out infinite;}
+  .avatar.foe{animation:idleR 2.6s ease-in-out infinite;}
+  @keyframes idleL{0%,100%{transform:translateY(0) scaleX(1);}50%{transform:translateY(-6px) scaleX(1);}}
+  @keyframes idleR{0%,100%{transform:translateY(0) scaleX(-1);}50%{transform:translateY(-6px) scaleX(-1);}}
+  .avatar.lungeL{animation:lungeL .4s ease;} @keyframes lungeL{0%{transform:translateX(0);}35%{transform:translateX(40px) scale(1.08);}100%{transform:translateX(0);}}
+  .avatar.lungeR{animation:lungeR .4s ease;} @keyframes lungeR{0%{transform:scaleX(-1) translateX(0);}35%{transform:scaleX(-1) translateX(40px) scale(1.08);}100%{transform:scaleX(-1) translateX(0);}}
+  .avatar.hurt{animation:hurt .4s ease; filter:drop-shadow(0 0 14px var(--red)) brightness(1.6) saturate(.4);}
+  @keyframes hurt{0%,100%{}20%{transform:translateX(-8px) rotate(-4deg);}60%{transform:translateX(6px) rotate(3deg);}}
+  .fbuild{display:flex; gap:3px; flex-wrap:wrap; justify-content:center; max-width:100%; min-height:18px;}
+  .fbuild .b{font-size:13px; transition:transform .15s;} .fbuild .b.fire{transform:scale(1.5);}
 
-  .arena{flex:1; width:100%; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:16px;}
-  .qcard{width:min(540px,92%); background:#0e1526; border:1px solid var(--line); border-radius:14px; padding:20px; text-align:center; position:relative; z-index:2;}
-  .qmeta{font-size:11px; color:var(--dim); margin-bottom:6px; letter-spacing:1px; display:flex; justify-content:space-between;}
-  .qtext{font-size:30px; font-weight:800; margin-bottom:16px; min-height:40px;}
-  .opts{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  .opt{padding:14px; font-size:20px; font-weight:700; border-radius:10px; background:#16203a; border:1px solid var(--line); transition:transform .06s, background .15s;}
-  .opt:hover{background:#1d2a4a; transform:translateY(-1px);}
+  .center{position:absolute; left:0; right:0; top:8%; display:flex; flex-direction:column; align-items:center; gap:4px; pointer-events:none; z-index:4;}
+  .tally{min-height:34px; font-weight:900; display:flex; gap:8px; align-items:baseline; justify-content:center; flex-wrap:wrap; opacity:0;}
+  .tally.show{animation:pop .5s ease;}
+  @keyframes pop{0%{opacity:0; transform:scale(.6);}30%{opacity:1; transform:scale(1.15);}100%{opacity:1; transform:scale(1);}}
+  .tally .chips{color:var(--cyan); font-size:19px;} .tally .x{color:var(--dim); font-size:14px;}
+  .tally .mult{color:var(--gold); font-size:19px;} .tally .eq{color:var(--dim); font-size:14px;}
+  .tally .dmg{color:var(--red); font-size:26px;} .tally .dmg.crit{color:var(--gold); font-size:32px; text-shadow:0 0 16px rgba(255,207,77,.7);}
+
+  #shots{position:absolute; inset:0; pointer-events:none; z-index:5; overflow:hidden;}
+  .shot{position:absolute; width:26px; height:26px; border-radius:50%; box-shadow:0 0 18px 4px currentColor; will-change:transform;}
+  .impact{position:absolute; border-radius:50%; pointer-events:none; animation:imp .4s ease-out forwards;}
+  @keyframes imp{0%{opacity:.9; transform:scale(.3);}100%{opacity:0; transform:scale(2.4);}}
+  .spark{position:absolute; width:6px; height:6px; border-radius:50%; animation:sp .5s ease-out forwards;}
+  @keyframes sp{to{opacity:0; transform:translate(var(--dx),var(--dy)) scale(.3);}}
+  .float{position:absolute; font-weight:900; animation:floatUp 1s ease-out forwards; text-shadow:0 2px 8px #000; z-index:6;}
+  @keyframes floatUp{0%{opacity:0; transform:translateY(8px) scale(.6);}20%{opacity:1; transform:translateY(-4px) scale(1.15);}100%{opacity:0; transform:translateY(-52px) scale(1);}}
+  .banner{position:absolute; left:50%; top:26%; transform:translateX(-50%); font-size:30px; font-weight:900; letter-spacing:2px; opacity:0; animation:banner 1.1s ease-out forwards; text-shadow:0 4px 20px rgba(0,0,0,.8); z-index:7; white-space:nowrap;}
+  @keyframes banner{0%{opacity:0; transform:translateX(-50%) scale(.5);}25%{opacity:1; transform:translateX(-50%) scale(1.1);}75%{opacity:1;}100%{opacity:0; transform:translateX(-50%) scale(1);}}
+  .shake{animation:shake .32s;}
+  @keyframes shake{0%,100%{transform:none;}20%{transform:translate(-6px,3px);}40%{transform:translate(6px,-3px);}60%{transform:translate(-4px,-2px);}80%{transform:translate(4px,2px);}}
+  #app.frenzy .stage{filter:saturate(1.25) contrast(1.05);}
+  #app.frenzy .stage::after{content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 60%, rgba(255,77,109,.14), transparent 70%); pointer-events:none;}
+
+  /* console (bottom) */
+  .console{width:100%; background:#0b1120; border-top:1px solid var(--line); padding:11px 16px 12px; z-index:3;}
+  .qrow{display:flex; justify-content:space-between; font-size:11px; color:var(--dim); letter-spacing:1px; margin-bottom:4px;}
+  .qtext{font-size:26px; font-weight:900; text-align:center; min-height:32px; margin-bottom:9px; letter-spacing:1px;}
+  .opts{display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:560px; margin:0 auto;}
+  .opt{padding:11px; font-size:19px; font-weight:800; border-radius:10px; background:linear-gradient(180deg,#1b2742,#141d33); border:1px solid var(--line); transition:transform .06s, background .15s, box-shadow .15s;}
+  .opt:hover{background:#23335a; transform:translateY(-1px); box-shadow:0 4px 14px rgba(54,227,255,.15);}
   .opt:disabled{cursor:default;}
-  .opt.correct{background:var(--green) !important; color:#04140a;}
+  .opt.correct{background:var(--green) !important; color:#04140a; box-shadow:0 0 20px rgba(61,220,132,.5);}
   .opt.wrong{background:var(--red) !important; color:#1a0008;}
-
-  .statusrow{display:flex; gap:22px; align-items:center; z-index:2;}
-  .combo{font-size:14px; font-weight:800; min-width:110px; text-align:center;}
-  .combo .n{font-size:28px; color:var(--gold);}
-  .energywrap{width:190px;}
-  .energywrap .lbl{font-size:11px; color:var(--dim); display:flex; justify-content:space-between; margin-bottom:3px;}
-  .ebar{height:11px; background:#0a0f1d; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .gauges{display:flex; gap:14px; align-items:center; justify-content:center; margin-top:8px;}
+  .gg{font-size:12px; font-weight:800; color:var(--dim);} .gg .n{font-size:19px;}
+  .gg.me .n{color:var(--gold);} .gg.foe .n{color:var(--red);}
+  .energywrap{width:160px;}
+  .energywrap .lbl{font-size:10px; color:var(--dim); display:flex; justify-content:space-between; margin-bottom:2px;}
+  .ebar{height:9px; background:#0a0f1d; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
   .ebar > div{height:100%; width:0%; background:linear-gradient(90deg,var(--purple),var(--cyan)); transition:width .25s;}
 
-  /* build panel (construction focus) */
-  .buildbar{width:100%; padding:8px 16px; border-top:1px solid var(--line); background:#0c1322; min-height:46px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; z-index:2;}
-  .buildbar .empty{color:var(--dim); font-size:12px;}
-  .aug{font-size:12px; padding:4px 10px; border-radius:20px; background:#121a2e; border:1px solid var(--line); display:flex; gap:5px; align-items:center; transition:transform .15s, box-shadow .15s, border-color .15s;}
-  .aug.fire{transform:scale(1.18); box-shadow:0 0 16px currentColor;}
-  .aug.t-dmg{color:var(--red);} .aug.t-def{color:var(--green);} .aug.t-ctl{color:var(--purple);}
-  .aug .x{color:var(--dim); font-size:10px;}
-
-  #fxlayer{position:absolute; inset:0; pointer-events:none; z-index:5; overflow:hidden;}
-  .float{position:absolute; font-weight:900; animation:floatUp 1s ease-out forwards; text-shadow:0 2px 8px #000;}
-  @keyframes floatUp{0%{opacity:0; transform:translateY(10px) scale(.6);}
-    20%{opacity:1; transform:translateY(-4px) scale(1.15);} 100%{opacity:0; transform:translateY(-60px) scale(1);}}
-  .trigger{position:absolute; font-size:13px; font-weight:800; animation:trig 1.1s ease-out forwards; text-shadow:0 1px 4px #000;}
-  @keyframes trig{0%{opacity:0; transform:translateX(-8px);}15%{opacity:1;}85%{opacity:1;}100%{opacity:0; transform:translateX(-40px);}}
-  .banner{position:absolute; top:26%; left:50%; transform:translateX(-50%); font-size:38px; font-weight:900; letter-spacing:2px; opacity:0; animation:banner 1.1s ease-out forwards; text-shadow:0 4px 20px rgba(0,0,0,.8);}
-  @keyframes banner{0%{opacity:0; transform:translateX(-50%) scale(.5);}25%{opacity:1; transform:translateX(-50%) scale(1.1);}75%{opacity:1;}100%{opacity:0; transform:translateX(-50%) scale(1);}}
-  .shake{animation:shake .35s;}
-  @keyframes shake{0%,100%{transform:none;}20%{transform:translate(-6px,3px);}40%{transform:translate(6px,-3px);}60%{transform:translate(-4px,-2px);}80%{transform:translate(4px,2px);}}
-  #app.frenzy{box-shadow:inset 0 0 120px rgba(255,77,109,.4), 0 30px 80px rgba(0,0,0,.6);}
-  #app.frenzy .arena::before{content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 60%, rgba(255,77,109,.12), transparent 70%); pointer-events:none;}
-
-  .stats{display:flex; gap:14px; flex-wrap:wrap; justify-content:center;}
-  .stat{background:#0e1526; border:1px solid var(--line); border-radius:12px; padding:14px 22px; text-align:center; min-width:120px;}
-  .stat .v{font-size:26px; font-weight:800; color:var(--cyan);} .stat .k{font-size:12px; color:var(--dim); margin-top:4px;}
-  .result{font-size:46px; font-weight:900; letter-spacing:4px;}
-  .win{color:var(--gold);} .lose{color:var(--red);}
-  .hl{font-size:14px; color:var(--gold); border:1px dashed var(--gold); padding:8px 16px; border-radius:10px;}
+  /* settlement */
+  .stats{display:flex; gap:12px; flex-wrap:wrap; justify-content:center;}
+  .stat{background:#0e1526; border:1px solid var(--line); border-radius:12px; padding:12px 18px; text-align:center; min-width:110px;}
+  .stat .v{font-size:24px; font-weight:800; color:var(--cyan);} .stat .k{font-size:12px; color:var(--dim); margin-top:4px;}
+  .result{font-size:46px; font-weight:900; letter-spacing:5px;}
+  .win{color:var(--gold); text-shadow:0 0 24px rgba(255,207,77,.5);} .lose{color:var(--red);}
+  .hl{font-size:14px; color:var(--gold); border:1px dashed var(--gold); padding:8px 16px; border-radius:10px; text-align:center;}
+  .endbuild{font-size:12px; color:var(--dim); max-width:560px; text-align:center; line-height:1.6;}
 </style>
 </head>
 <body>
@@ -123,14 +173,25 @@
 
   <!-- START -->
   <div id="start" class="screen">
-    <span class="tag">实时 Roguelike 脑力竞技 · 回合制构筑原型</span>
-    <h1>脑力竞技 DEMO</h1>
+    <span class="tag">实时 Roguelike 脑力竞技 · 对战原型</span>
+    <h1>脑力竞技</h1>
+    <div class="heroduel"><span class="h l">🦊</span><span class="vs">VS</span><span class="h r">👾</span></div>
     <p class="sub">
-      <b>回合制</b>:你的回合答 5 题 → 结算伤害 → AI 回合 → 抽强化。共 5 回合,最后一回合狂暴。<br>
-      不比手速,比 <b>构筑</b>。每回合抽 1 张强化,凑出你的流派(暴击流 / 护盾流 / 污染流)。<br>
-      <span style="color:var(--dim)">答对题时,看屏幕弹出哪些强化触发了——这就是你的 Build 在成型。</span>
+      答对 = 出招打对手,伤害 = <b style="color:var(--cyan)">底数</b> × <b style="color:var(--gold)">倍率</b>。<br>
+      抽海克斯强化凑 <b style="color:var(--purple)">×倍率</b> 引擎,连乘指数爆炸。4 小局,3 次抽取,每次可重抽。
     </p>
     <button class="btn" onclick="Game.start()">开始对战</button>
+    <button class="tunbtn" onclick="Game.toggleTuner()">⚙ 数值调参</button>
+    <div class="tuner" id="tuner">
+      <h3>数值调参(改完点"开始对战"生效)</h3>
+      <div class="trow"><label>双方血量 HP</label><input id="t_hp" type="number"></div>
+      <div class="trow"><label>玩家基础底数(每题)</label><input id="t_baseChips" type="number"></div>
+      <div class="trow"><label>连击底数(每连击 +底数)</label><input id="t_comboChips" type="number"></div>
+      <div class="trow"><label>大招基础伤害</label><input id="t_ultBase" type="number"></div>
+      <div class="trow"><label>对手基础伤害</label><input id="t_foeBase" type="number"></div>
+      <div class="trow"><label>对手逐局成长(每小局 +倍)</label><input id="t_foeRamp" type="number" step="0.1"></div>
+      <div class="trow"><label>对手准确率(0-1)</label><input id="t_foeAcc" type="number" step="0.02"></div>
+    </div>
   </div>
 
   <!-- AUGMENT PICK -->
@@ -138,48 +199,51 @@
     <div class="pickhdr">
       <div class="ph" id="pickPhase">强化抽取</div>
       <div class="big" id="pickTitle">选择一个海克斯强化</div>
+      <div class="foesum" id="foeSum"></div>
     </div>
     <div class="cards" id="pickCards"></div>
+    <div class="rerollrow"><button class="reroll" id="rerollBtn" onclick="Game.reroll()">🎲 重抽 (剩 2)</button></div>
   </div>
 
   <!-- BATTLE -->
   <div id="battle" class="screen hidden">
-    <div class="topbar">
-      <div class="side">
-        <div class="who"><span>你</span><span id="meHpTxt">1000</span></div>
-        <div class="hpwrap"><div class="hp me" id="meHp"></div></div>
+    <div class="hudbar"><div class="rn" id="roundN">第 1 小局</div><div class="qc" id="qcount">第 1 题</div></div>
+    <div class="stage" id="stage">
+      <div class="glow a"></div><div class="glow b"></div>
+      <div class="fighter me">
+        <div class="fname"><b>你</b><span id="meHpTxt">—</span></div>
+        <div class="hpwrap"><div class="hpghost" id="meGhost"></div><div class="hp me" id="meHp"></div></div>
+        <div class="marks">&nbsp;</div>
+        <div class="avatar me" id="avMe">🦊</div>
+        <div class="fbuild" id="buildMe"></div>
       </div>
-      <div class="mid">
-        <div class="roundN" id="roundN">第 1 回合</div>
-        <div class="turnTxt me" id="turnTxt">你的回合</div>
+      <div class="fighter foe">
+        <div class="fname"><span id="foeHpTxt">—</span><b>AI 对手</b></div>
+        <div class="hpwrap"><div class="hpghost" id="foeGhost"></div><div class="hp foe" id="foeHp"></div></div>
+        <div class="marks" id="foeMarkLine">&nbsp;</div>
+        <div class="avatar foe" id="avFoe">👾</div>
+        <div class="fbuild" id="buildFoe"></div>
       </div>
-      <div class="side">
-        <div class="who"><span id="foeHpTxt">1000</span><span>AI 对手</span></div>
-        <div class="hpwrap foewrap"><div class="hp foe" id="foeHp"></div></div>
+      <div class="center"><div class="tally" id="tally"></div></div>
+      <div id="shots"></div>
+    </div>
+    <div class="console">
+      <div class="qrow"><span id="qmeta">速算 · 中等</span><span id="qprog">本局 1/5 题</span></div>
+      <div class="qtext" id="qtext">2 × 6 + 3 = ?</div>
+      <div class="opts" id="opts"></div>
+      <div class="gauges">
+        <span class="gg me">你连击 <span class="n" id="comboMe">0</span></span>
+        <div class="energywrap"><div class="lbl"><span>能量</span><span id="eTxt">0/100</span></div><div class="ebar"><div id="ebar"></div></div></div>
+        <span class="gg foe">对手连击 <span class="n" id="comboFoe">0</span></span>
       </div>
     </div>
-    <div class="arena">
-      <div class="qcard">
-        <div class="qmeta"><span id="qmeta">速算 · 中等</span><span id="qprog">第 1/5 题</span></div>
-        <div class="qtext" id="qtext">2 × 6 + 3 = ?</div>
-        <div class="opts" id="opts"></div>
-      </div>
-      <div class="statusrow">
-        <div class="combo">本回合连击 <span class="n" id="comboN">0</span></div>
-        <div class="energywrap">
-          <div class="lbl"><span>能量</span><span id="eTxt">0/100</span></div>
-          <div class="ebar"><div id="ebar"></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="buildbar" id="buildbar"><span class="empty">你的 Build —— 抽到的强化会显示在这里</span></div>
-    <div id="fxlayer"></div>
   </div>
 
   <!-- SETTLEMENT -->
   <div id="end" class="screen hidden">
     <div class="result" id="resultTxt">胜利</div>
     <div class="hl" id="highlight">高光时刻</div>
+    <div class="endbuild" id="endBuild"></div>
     <div class="stats" id="endStats"></div>
     <div style="display:flex; gap:14px;">
       <button class="btn" onclick="Game.start()">再来一局</button>
@@ -190,113 +254,177 @@
 </div>
 
 <script>
-/* ============ audio ============ */
+const T={ hp:2200, baseChips:12, comboChips:3, ultBase:200, foeBase:60, foeRamp:0.45, foeAcc:0.72 };
+const TKEYS=['hp','baseChips','comboChips','ultBase','foeBase','foeRamp','foeAcc'];
+
 const Audio_=(()=>{let ctx;const ensure=()=>{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();return ctx;};
   function blip(f,d=.08,t='triangle',v=.18){try{const c=ensure(),o=c.createOscillator(),g=c.createGain();
     o.type=t;o.frequency.value=f;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(v,c.currentTime);
     g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
   return{correct:()=>blip(660,.07),crit:()=>{blip(880,.09,'square',.2);setTimeout(()=>blip(1320,.12,'square',.18),60);},
     wrong:()=>blip(150,.18,'sawtooth',.18),pick:()=>{blip(520,.08);setTimeout(()=>blip(780,.1),70);},
-    hit:()=>blip(300,.08,'sine',.14),frenzy:()=>{blip(220,.3,'sawtooth',.2);setTimeout(()=>blip(440,.3,'sawtooth',.18),120);},
+    reroll:()=>{blip(420,.05,'square',.12);setTimeout(()=>blip(620,.06,'square',.12),55);},
+    pris:()=>{[523,784,1046,1568].forEach((f,i)=>setTimeout(()=>blip(f,.12,'triangle',.18),i*70));},
+    boom:()=>{blip(180,.2,'sawtooth',.2);setTimeout(()=>blip(90,.25,'sawtooth',.18),60);},
+    hit:()=>blip(300,.07,'sine',.14),frenzy:()=>{blip(220,.3,'sawtooth',.2);setTimeout(()=>blip(440,.3,'sawtooth',.18),120);},
     win:()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>blip(f,.15,'triangle',.2),i*110));},
     lose:()=>{[440,330,247].forEach((f,i)=>setTimeout(()=>blip(f,.2,'sine',.18),i*150));}};})();
 
-/* ============ augments ============ */
-// tags: used to show synergy hints in the draft
+const KIND_NAME={chips:'+底数',add:'+倍率',x:'×倍率',util:'功能'};
 const AUGMENTS=[
-  {id:'overclock',t:'dmg',ico:'🔥',name:'超频核心',tags:['combo','dmg'],desc:'本回合连击≥3 时,每次答对额外 +60% 伤害(可叠)。',apply:m=>{m.overclock+=0.6;}},
-  {id:'crit',t:'dmg',ico:'💥',name:'暴击芯片',tags:['crit'],desc:'暴击率 +25%,暴击伤害 +60%。',apply:m=>{m.critChance+=0.25;m.critMult+=0.6;}},
-  {id:'chain',t:'dmg',ico:'⚡',name:'连锁爆破',tags:['crit'],desc:'每次暴击额外造成一次 40% 溅射伤害。',apply:m=>{m.chain+=0.4;}},
-  {id:'truth',t:'dmg',ico:'🎯',name:'真理穿透',tags:['dmg'],desc:'难题(✦)伤害翻倍。',apply:m=>{m.truth+=1.0;}},
-  {id:'momentum',t:'dmg',ico:'📈',name:'势能累积',tags:['combo'],desc:'本回合内,连击每 +1 则基础伤害额外 +12%。',apply:m=>{m.momentum+=0.12;}},
-  {id:'shield',t:'def',ico:'🛡️',name:'知识护盾',tags:['shield'],desc:'本回合每答对 3 题获得 150 护盾(优先抵伤)。',apply:m=>{m.shieldPer+=150;}},
-  {id:'forgive',t:'def',ico:'🧩',name:'容错矩阵',tags:['combo'],desc:'本回合答错不清空连击(每回合最多 2 次)。',apply:m=>{m.forgive+=2;}},
-  {id:'regen',t:'def',ico:'♻️',name:'稳态回路',tags:['energy'],desc:'答对额外 +10 能量。能量满自动放技能(全屏爆发)。',apply:m=>{m.regen+=10;}},
-  {id:'lifesteal',t:'def',ico:'🩸',name:'知识汲取',tags:['shield'],desc:'造成伤害的 18% 转化为自身回血。',apply:m=>{m.lifesteal+=0.18;}},
-  {id:'pollute',t:'ctl',ico:'🌀',name:'认知污染',tags:['ctl'],desc:'敌方回合答对率 -14%。',apply:m=>{m.foeAccDrop+=0.14;}},
-  {id:'lag',t:'ctl',ico:'🐌',name:'逻辑迟滞',tags:['ctl'],desc:'敌方每次伤害 -20%。',apply:m=>{m.foeDmgDrop+=0.20;}},
-  {id:'siphon',t:'ctl',ico:'🔋',name:'能量虹吸',tags:['ctl','energy'],desc:'敌方答错时,你 +15 能量。',apply:m=>{m.siphon+=15;}},
+  {id:'sharpen',tier:'silver',kind:'chips',ico:'🗡️',name:'锐刃',tags:['chips'],desc:'每次答对 +10 底数。',apply:m=>{m.chipFlat+=10;}},
+  {id:'tempo',tier:'silver',kind:'chips',ico:'🥁',name:'节奏',tags:['combo'],desc:'连击每 1 层,额外 +3 底数。',apply:m=>{m.comboChipsBonus+=3;}},
+  {id:'mark',tier:'silver',kind:'util',ico:'☠️',name:'过载印记',tags:['mark'],desc:'答对给对手叠 1 层【过载】(燃料)。',apply:m=>{m.markPerHit+=1;}},
+  {id:'crit',tier:'silver',kind:'util',ico:'💥',name:'暴击芯片',tags:['crit'],desc:'暴击率 +22%。暴击基础 ×1.5,配"暴击增幅"更强。',apply:m=>{m.critChance+=0.22;}},
+  {id:'charge',tier:'silver',kind:'util',ico:'🔌',name:'充能',tags:['energy'],desc:'答对额外 +12 能量。',apply:m=>{m.regen+=12;}},
+  {id:'shieldgen',tier:'silver',kind:'util',ico:'🛡️',name:'知识护盾',tags:['shield'],desc:'每 3 连击获得 150 护盾。',apply:m=>{m.shieldPer+=150;}},
+  {id:'pollute',tier:'silver',kind:'util',ico:'🌀',name:'认知污染',tags:['ctl'],desc:'敌方答对率 -14%。',apply:m=>{m.foeAccDrop+=0.14;}},
+  {id:'resent',tier:'gold',kind:'add',ico:'🔥',name:'积怨',tags:['mark'],desc:'倍率 +0.05 × 对手过载层数。',apply:m=>{m.markAddMult+=0.05;}},
+  {id:'detonate',tier:'gold',kind:'util',ico:'💣',name:'引爆',tags:['mark','crit'],desc:'暴击时引爆全部过载,每层 45 伤害然后清空。',apply:m=>{m.markDetonate+=45;}},
+  {id:'critamp',tier:'gold',kind:'x',ico:'✴️',name:'暴击增幅',tags:['crit'],desc:'暴击时,倍率 ×1.6(与其它 ×倍率 连乘)。',apply:m=>{m.critXmult*=1.6;}},
+  {id:'echo',tier:'gold',kind:'util',ico:'🔁',name:'暴击回响',tags:['crit','combo'],desc:'每次暴击使连击 +1。',apply:m=>{m.critToCombo+=1;}},
+  {id:'surge',tier:'gold',kind:'add',ico:'📈',name:'势如破竹',tags:['combo'],desc:'倍率 +0.12 × 当前连击。',apply:m=>{m.momentumMult+=0.12;}},
+  {id:'overclock',tier:'gold',kind:'x',ico:'⚙️',name:'超频核心',tags:['combo'],desc:'连击≥5 时,倍率 ×1.8。',apply:m=>{m.comboXmult*=1.8;}},
+  {id:'truth',tier:'gold',kind:'x',ico:'🎯',name:'真理穿透',tags:['scale'],desc:'答难题(✦)时,倍率 ×2.2。',apply:m=>{m.truthXmult*=2.2;}},
+  {id:'shieldconv',tier:'gold',kind:'chips',ico:'🪞',name:'护盾转化',tags:['shield'],desc:'答对 +底数 = 当前护盾的 10%。',apply:m=>{m.shieldToChips+=0.10;}},
+  {id:'forgive',tier:'gold',kind:'util',ico:'🧩',name:'容错矩阵',tags:['combo'],desc:'答错不清空连击(每小局 2 次)。',apply:m=>{m.forgive+=2;}},
+  {id:'siphon',tier:'gold',kind:'util',ico:'🔋',name:'能量虹吸',tags:['ctl','energy'],desc:'敌方每答错,你 +22 能量并回血 60。',apply:m=>{m.siphon+=22;m.foeMissHeal+=60;}},
+  {id:'meltdown',tier:'prismatic',kind:'x',ico:'🌋',name:'熔毁',tags:['mark'],desc:'过载无上限,答对叠 2 层;每 10 层过载 倍率 ×1.6(连乘)。',apply:m=>{m.markUncapped=true;m.markPerHit+=1;m.markXmultPer*=1.6;}},
+  {id:'overload',tier:'prismatic',kind:'x',ico:'💠',name:'无限超载',tags:['crit'],desc:'暴击后下题必暴击,且暴击倍率额外 ×1.5。',apply:m=>{m.critGuarantee=true;m.critXmult*=1.5;}},
+  {id:'singularity',tier:'prismatic',kind:'add',ico:'🌌',name:'奇点',tags:['combo'],desc:'连击永不清零,且所有"连击倍率"系数翻倍。',apply:m=>{m.comboNeverResets=true;m.comboMultDouble=true;}},
+  {id:'perpetual',tier:'prismatic',kind:'chips',ico:'🔆',name:'永动核心',tags:['shield'],desc:'答对 +底数 = 护盾 12%,溢出转护盾,+15% 汲取。',apply:m=>{m.shieldToChips+=0.12;m.overhealToShield=true;m.lifesteal+=0.15;}},
+  {id:'ultengine',tier:'prismatic',kind:'util',ico:'🚀',name:'超频奇点',tags:['energy'],desc:'答对 +24 能量,技能威力翻倍,且技能按你当前倍率计分。',apply:m=>{m.regen+=24;m.ultScales=true;}},
+  {id:'totalpollution',tier:'prismatic',kind:'util',ico:'☣️',name:'全面污染',tags:['ctl'],desc:'敌方答对率 -32%,其每次答错治疗你 100 并叠 2 层过载。',apply:m=>{m.foeAccDrop+=0.32;m.foeMissHeal+=100;m.foeMissMark+=2;}},
 ];
-const TYPE_NAME={dmg:'输出',def:'防御',ctl:'干扰'};
-const QPT=5;        // questions per turn
-const MAX_ROUND=5;  // last round = frenzy
+const TIER_NAME={silver:'银',gold:'金',prismatic:'棱彩'};
+const QPR=5, MAX_ROUND=4;
 
-/* ============ game ============ */
+/* ===== scene / fx ===== */
+const Scene={
+  rect(id){ return document.getElementById(id).getBoundingClientRect(); },
+  stageRect(){ return document.getElementById('stage').getBoundingClientRect(); },
+  attack(side, amount, crit, kind){ // side = attacker ('me' or 'foe')
+    const av=document.getElementById(side==='me'?'avMe':'avFoe');
+    const tgt=document.getElementById(side==='me'?'avFoe':'avMe');
+    av.classList.remove('lungeL','lungeR'); void av.offsetWidth;
+    av.classList.add(side==='me'?'lungeL':'lungeR');
+    const s=this.stageRect(), a=this.rect(side==='me'?'avMe':'avFoe'), t=this.rect(side==='me'?'avFoe':'avMe');
+    const x0=a.left-s.left+a.width/2, y0=a.top-s.top+a.height*0.4;
+    const x1=t.left-s.left+t.width/2, y1=t.top-s.top+t.height*0.4;
+    const color = kind==='detonate'?'#b15dff':crit?'#ffcf4d':side==='foe'?'#ff6a4d':'#36e3ff';
+    const big = crit?1.7:1; const sz=Math.min(2.4, 0.8+amount/700)*big;
+    const shot=document.createElement('div'); shot.className='shot';
+    shot.style.color=color; shot.style.background=color;
+    shot.style.left=x0+'px'; shot.style.top=y0+'px';
+    shot.style.transform=`translate(-50%,-50%) scale(${sz})`;
+    shot.style.transition='transform .26s cubic-bezier(.5,0,.9,.4), left .26s cubic-bezier(.5,0,.9,.4), top .26s';
+    document.getElementById('shots').appendChild(shot);
+    requestAnimationFrame(()=>{ shot.style.left=x1+'px'; shot.style.top=y1+'px'; shot.style.transform=`translate(-50%,-50%) scale(${sz*1.1})`; });
+    setTimeout(()=>{ shot.remove(); this.impact(x1,y1,color,sz); this.hurt(tgt);
+      this.dmgNum(x1,y1,amount,crit,side); Audio_.hit(); if(crit||amount>500)Game.shake(); }, 270);
+  },
+  impact(x,y,color,sz){
+    const lay=document.getElementById('shots');
+    const im=document.createElement('div'); im.className='impact';
+    const d=40*sz; im.style.width=d+'px'; im.style.height=d+'px'; im.style.left=(x-d/2)+'px'; im.style.top=(y-d/2)+'px';
+    im.style.background=`radial-gradient(circle, ${color} 0%, transparent 70%)`;
+    lay.appendChild(im); setTimeout(()=>im.remove(),420);
+    for(let i=0;i<7;i++){ const sp=document.createElement('div'); sp.className='spark'; sp.style.background=color;
+      sp.style.left=x+'px'; sp.style.top=y+'px'; const ang=Math.random()*6.28, dist=20+Math.random()*40;
+      sp.style.setProperty('--dx',Math.cos(ang)*dist+'px'); sp.style.setProperty('--dy',Math.sin(ang)*dist+'px');
+      lay.appendChild(sp); setTimeout(()=>sp.remove(),500); }
+  },
+  hurt(av){ av.classList.remove('hurt'); void av.offsetWidth; av.classList.add('hurt'); setTimeout(()=>av.classList.remove('hurt'),400); },
+  dmgNum(x,y,n,crit,side){
+    const lay=document.getElementById('shots'); const e=document.createElement('div'); e.className='float';
+    e.textContent='-'+n; e.style.left=x+'px'; e.style.top=(y-20)+'px';
+    e.style.fontSize=(crit?34:22)+'px'; e.style.color=crit?'#ffcf4d':side==='me'?'#36e3ff':'#ff4d6d';
+    lay.appendChild(e); setTimeout(()=>e.remove(),1000);
+  },
+  heal(side,n){ const av=this.rect(side==='me'?'avMe':'avFoe'), s=this.stageRect();
+    const lay=document.getElementById('shots'); const e=document.createElement('div'); e.className='float';
+    e.textContent='+'+n; e.style.left=(av.left-s.left+av.width/2)+'px'; e.style.top=(av.top-s.top)+'px';
+    e.style.fontSize='20px'; e.style.color='#3ddc84'; lay.appendChild(e); setTimeout(()=>e.remove(),1000); },
+  banner(txt,color){ const lay=document.getElementById('shots'); const e=document.createElement('div'); e.className='banner';
+    e.textContent=txt; e.style.color=color||'#ffcf4d'; lay.appendChild(e); setTimeout(()=>e.remove(),1100); },
+};
+
+/* ===== game ===== */
 const Game={
+  toggleTuner(){ const t=document.getElementById('tuner'); t.classList.toggle('open'); if(t.classList.contains('open')) TKEYS.forEach(k=>{document.getElementById('t_'+k).value=T[k];}); },
+  readTuner(){ TKEYS.forEach(k=>{ const el=document.getElementById('t_'+k); if(el&&el.value!=='') T[k]=parseFloat(el.value); }); },
+  shake(){ const a=document.getElementById('app'); a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake'); },
+
   start(){
-    this.mods=newMods(); this.foeMods={dmgMul:1,critChance:0.06,acc:0.72,shieldPer:0,buffs:[]};
-    this.owned=[]; this.me=1000; this.foe=1000; this.shield=0; this.foeShield=0;
-    this.energy=0; this.round=0; this.maxCombo=0;
-    this.stat={dmg:0,correct:0,wrong:0,biggestHit:0,ult:0};
+    this.readTuner();
+    this.mods=newMods(); this.foeMods={dmgMul:1,critChance:0.07,buffs:[]};
+    this.owned=[]; this.me=T.hp; this.foe=T.hp; this.shield=0; this.foeMarks=0;
+    this.energy=0; this.combo=0; this.foeCombo=0; this.maxCombo=0; this.guaranteedCrit=false;
+    this.round=0; this.qInRound=0; this.qTotal=0; this.pickCount=0; this.rerolls=2;
+    this.stat={dmg:0,correct:0,wrong:0,biggestHit:0,ult:0,detonated:0,peakMult:1};
     document.getElementById('app').classList.remove('frenzy');
     this.toPick(true);
   },
 
-  /* ---------- draft ---------- */
   toPick(isStart){
-    show('pick');
-    const pool=AUGMENTS.slice(), pick=[];
-    while(pick.length<3 && pool.length) pick.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
-    document.getElementById('pickPhase').textContent=
-      isStart?'开局 · 初始强化':`第 ${this.round} 回合结束 · 强化抽取`;
-    document.getElementById('pickTitle').textContent=
-      this.round>=3?'强化开始变得离谱…':'选择一个海克斯强化';
+    show('pick'); this.pickCount++;
+    this.curTier=this.pickCount===1?'silver':this.pickCount===2?'gold':'prismatic';
+    if(this.curTier==='prismatic') Audio_.pris();
+    document.getElementById('pickPhase').textContent=(isStart?'第 1 次抽取':`第 ${this.pickCount} 次抽取(已打完 ${this.round} 小局)`)+' · '+TIER_NAME[this.curTier]+'强化';
+    document.getElementById('pickTitle').textContent=this.curTier==='prismatic'?'✦ 棱彩核心 · ×倍率引擎':this.curTier==='gold'?'金色收益 · 放大倍率':'银色催化剂 · 选定方向';
+    this.curOffer=this.rollOffer(this.curTier);
+    this.renderFoeSum(); this.renderOffer(); this.updateReroll();
+  },
+  rollOffer(tier){
+    let pool=AUGMENTS.filter(a=>a.tier===tier && !this.owned.find(o=>o.id===a.id));
+    if(pool.length<3) pool=AUGMENTS.filter(a=>!this.owned.find(o=>o.id===a.id));
+    const own=new Set(); this.owned.forEach(o=>o.tags.forEach(t=>own.add(t)));
+    const bag=[]; pool.forEach(a=>{ const w=1+a.tags.filter(t=>own.has(t)).length*3; for(let i=0;i<w;i++) bag.push(a); });
+    const pick=[],used=new Set(); let g=0;
+    while(pick.length<3 && used.size<pool.length && g++<300){ const a=bag[Math.floor(Math.random()*bag.length)]; if(!used.has(a.id)){used.add(a.id);pick.push(a);} }
+    return pick;
+  },
+  renderOffer(){
     const wrap=document.getElementById('pickCards'); wrap.innerHTML='';
-    pick.forEach(a=>{
+    this.curOffer.forEach(a=>{
       const syn=this.synergyHint(a);
-      const el=document.createElement('div'); el.className=`card t-${a.t}`;
-      el.innerHTML=`<div class="ico">${a.ico}</div>
-        <span class="typ t-${a.t}">${TYPE_NAME[a.t]}型</span>
-        <div class="name">${a.name}</div>
-        <div class="desc">${a.desc}</div>
-        <div class="syn">${syn||''}</div>`;
-      el.onclick=()=>this.take(a);
-      wrap.appendChild(el);
+      const el=document.createElement('div'); el.className=`card tier-${a.tier}`;
+      el.innerHTML=`<span class="tierbadge">${TIER_NAME[a.tier]}</span><div class="ico">${a.ico}</div>
+        <div class="row1"><span class="chiptag ${a.kind==='x'?'xmult':a.kind==='add'?'addmult':a.kind==='chips'?'chips':'util'}">${KIND_NAME[a.kind]}</span></div>
+        <div class="name">${a.name}</div><div class="desc">${a.desc}</div><div class="syn">${syn||''}</div>`;
+      el.onclick=()=>this.take(a); wrap.appendChild(el);
     });
   },
-  synergyHint(a){ // surface build construction: hint when a card combos with what you own
-    const ownTags=new Set(); this.owned.forEach(o=>o.tags.forEach(t=>ownTags.add(t)));
-    const shared=a.tags.filter(t=>ownTags.has(t));
-    if(!shared.length) return '';
-    const map={combo:'连击',crit:'暴击',dmg:'输出',shield:'护盾',energy:'能量',ctl:'干扰'};
-    return '↗ 与你的「'+shared.map(s=>map[s]).join('/')+'」流派联动';
+  updateReroll(){ const b=document.getElementById('rerollBtn'); b.textContent=`🎲 重抽 (剩 ${this.rerolls})`; b.disabled=this.rerolls<=0; },
+  reroll(){ if(this.rerolls<=0) return; this.rerolls--; Audio_.reroll(); this.curOffer=this.rollOffer(this.curTier); this.renderOffer(); this.updateReroll(); },
+  synergyHint(a){
+    const own=new Set(); this.owned.forEach(o=>o.tags.forEach(t=>own.add(t)));
+    const sh=a.tags.filter(t=>own.has(t)); if(!sh.length) return '';
+    const map={mark:'过载',crit:'暴击',combo:'连击',shield:'护盾',energy:'能量',ctl:'干扰',chips:'底数',scale:'难题'};
+    return '↗ 联动你的「'+sh.map(s=>map[s]).join('/')+'」流派';
   },
-  take(a){ Audio_.pick(); this.owned.push(a); a.apply(this.mods); this.foeBuff(); this.beginRound(); },
+  take(a){ a.tier==='prismatic'?Audio_.pris():Audio_.pick(); this.owned.push(a); a.apply(this.mods); this.foeBuff(); this.beginRound(); },
+  foeBuff(){ if(this.round===0) return;
+    const opts=[ ()=>{this.foeMods.dmgMul+=0.22;return{ico:'🗡️',name:'强攻'};}, ()=>{this.foeMods.critChance+=0.13;return{ico:'💥',name:'暴击'};},
+      ()=>{this.foeMods.dmgMul+=0.16;return{ico:'⚔️',name:'凶猛'};}, ()=>{this.foeMods.dmgMul+=0.18;return{ico:'🎯',name:'精进'};} ];
+    this.foeMods.buffs.push(opts[Math.floor(Math.random()*opts.length)]()); },
 
-  foeBuff(){ // opponent also "builds" each round (lightweight)
-    if(this.round===0) return; // none on initial pick
-    const opts=[
-      ()=>{this.foeMods.dmgMul+=0.18; return '+输出';},
-      ()=>{this.foeMods.critChance+=0.12; return '+暴击';},
-      ()=>{this.foeMods.acc=Math.min(0.95,this.foeMods.acc+0.05); return '+精准';},
-      ()=>{this.foeMods.shieldPer+=120; return '+护盾';},
-    ];
-    const name=opts[Math.floor(Math.random()*opts.length)]();
-    this.foeMods.buffs.push(name);
-  },
-
-  /* ---------- round / player turn ---------- */
   beginRound(){
-    this.round++;
-    const frenzy=this.round>=MAX_ROUND;
+    this.round++; const frenzy=this.round>=MAX_ROUND;
     document.getElementById('app').classList.toggle('frenzy',frenzy);
     show('battle');
-    document.getElementById('roundN').textContent= frenzy?'狂暴回合':`第 ${this.round} 回合`;
+    document.getElementById('roundN').textContent=frenzy?'🔥 狂暴小局':`第 ${this.round} 小局`;
+    this.qInRound=0; this.forgiveLeft=this.mods.forgive||0;
     this.renderBuild();
-    if(frenzy){ Audio_.frenzy(); this.banner('🔥 狂暴回合 · 全部强化翻倍','var(--red)'); }
-    this.startPlayerTurn();
-  },
-  fm(){ return this.round>=MAX_ROUND?2:1; },
-
-  startPlayerTurn(){
-    this.turn='me'; this.combo=0; this.qIndex=0;
-    this.forgiveLeft=this.mods.forgive||0;
-    setTurn('me','你的回合');
+    if(frenzy){ Audio_.frenzy(); Scene.banner('🔥 狂暴小局 · 倍率再 ×2','#ff4d6d'); }
     this.refresh(); this.nextQuestion();
   },
+  fm(){ return this.round>=MAX_ROUND?2:1; },
+  foeStageMul(){ return 1+T.foeRamp*(this.round-1); },
 
   nextQuestion(){
-    const hard=Math.random()<(0.18+this.round*0.12);
+    const tl=document.getElementById('tally'); tl.classList.remove('show'); tl.innerHTML='';
+    const hard=Math.random()<(0.14+this.round*0.13);
     let a,b,c,ans,text;
     if(hard){ a=rand(2,9);b=rand(2,9);c=rand(1,9); ans=a*b+c; text=`${a} × ${b} + ${c} = ?`; }
     else{ const r=Math.random();
@@ -305,177 +433,165 @@ const Game={
       else{a=rand(40,99);b=rand(10,39);ans=a-b;text=`${a} − ${b} = ?`;} }
     this.cur={ans,hard};
     document.getElementById('qmeta').textContent='速算 · '+(hard?'困难 ✦':'中等');
-    document.getElementById('qprog').textContent=`第 ${this.qIndex+1}/${QPT} 题`;
+    document.getElementById('qprog').textContent=`本局 ${this.qInRound+1}/${QPR} 题`;
+    document.getElementById('qcount').textContent=`第 ${this.qTotal+1} 题`;
     document.getElementById('qtext').textContent=text;
-    const set=new Set([ans]);
-    while(set.size<4){let d=ans+rand(-9,9)*(Math.random()<.5?1:rand(1,4)); if(d!==ans&&d>=0)set.add(d);}
+    const set=new Set([ans]); while(set.size<4){let d=ans+rand(-9,9)*(Math.random()<.5?1:rand(1,4)); if(d!==ans&&d>=0)set.add(d);}
     const arr=shuffle([...set]); const box=document.getElementById('opts'); box.innerHTML='';
     arr.forEach(v=>{const b2=document.createElement('button');b2.className='opt';b2.textContent=v;
       b2.onclick=()=>this.answer(v===ans,b2);box.appendChild(b2);});
-    this.qStart=Date.now();
   },
 
   answer(correct,el){
     [...document.getElementById('opts').children].forEach(o=>o.disabled=true);
     if(correct){
-      el.classList.add('correct'); Audio_.correct(); this.stat.correct++;
+      el.classList.add('correct'); this.stat.correct++;
       this.combo++; this.maxCombo=Math.max(this.maxCombo,this.combo);
-      const r=this.computeDamage(); this.dealToFoe(r);
-      if(this.mods.shieldPer && this.combo>0 && this.combo%3===0){
-        this.shield+=this.mods.shieldPer*this.fm(); this.trigger('知识护盾 +护盾','var(--green)'); }
-      this.energy+=(15+(this.mods.regen||0));
-      if(this.energy>=100) this.ult();
+      if(this.mods.markPerHit) this.addMarks(this.mods.markPerHit);
+      const r=this.computeDamage(); this.showTally(r); this.dealToFoe(r);
+      if(this.mods.shieldPer && this.combo%3===0){ this.shield+=this.mods.shieldPer; this.fireAug('shieldgen'); }
+      this.energy+=(14+(this.mods.regen||0)); if(this.energy>=100) this.ult();
     } else {
       el.classList.add('wrong'); Audio_.wrong(); this.stat.wrong++;
-      if(this.forgiveLeft>0){ this.forgiveLeft--; this.trigger('容错矩阵·连击保留','var(--cyan)'); }
-      else this.combo=0;
+      const tl=document.getElementById('tally'); tl.classList.add('show');
+      if(this.forgiveLeft>0){ this.forgiveLeft--; this.fireAug('forgive'); tl.innerHTML='<span class="x" style="color:var(--cyan)">容错矩阵 · 连击保留</span>'; }
+      else if(this.mods.comboNeverResets){ this.fireAug('singularity'); tl.innerHTML='<span class="x" style="color:var(--purple)">奇点 · 连击不灭</span>'; }
+      else { this.combo=0; tl.innerHTML='<span class="x" style="color:var(--dim)">答错 · 连击清零</span>'; }
+    }
+    const foeAcc=Math.max(0.16, T.foeAcc-(this.mods.foeAccDrop||0));
+    if(Math.random()<foeAcc){
+      this.foeCombo++;
+      let d=T.foeBase*this.foeMods.dmgMul*this.foeStageMul();
+      if(this.foeCombo>=5)d*=1.7; else if(this.foeCombo>=3)d*=1.4;
+      let crit=false; if(Math.random()<this.foeMods.critChance){d*=1.6;crit=true;}
+      d=Math.round(d);
+      if(this.shield>0){const ab=Math.min(this.shield,d);this.shield-=ab;d-=ab;}
+      if(d>0){ this.me=Math.max(0,this.me-d); setTimeout(()=>Scene.attack('foe',d,crit),140); }
+    } else {
+      this.foeCombo=0;
+      if(this.mods.siphon){ this.energy=Math.min(100,this.energy+this.mods.siphon); this.fireAug('siphon'); }
+      if(this.mods.foeMissHeal){ this.heal(this.mods.foeMissHeal); Scene.heal('me',this.mods.foeMissHeal); this.fireAug('siphon'); this.fireAug('totalpollution'); }
+      if(this.mods.foeMissMark){ this.addMarks(this.mods.foeMissMark); }
     }
     this.refresh();
     setTimeout(()=>{
-      this.qIndex++;
+      this.qInRound++; this.qTotal++;
       if(this.me<=0||this.foe<=0){ this.finish(); return; }
-      if(this.qIndex<QPT) this.nextQuestion();
-      else this.enemyTurn();
-    },420);
+      if(this.qInRound<QPR) this.nextQuestion();
+      else if(this.round>=MAX_ROUND) this.finish();
+      else if(this.pickCount>=3) this.beginRound();
+      else this.toPick(false);
+    }, 1150);
   },
+
+  addMarks(n){ this.foeMarks+=n; if(!this.mods.markUncapped) this.foeMarks=Math.min(40,this.foeMarks); this.fireAug('mark'); this.fireAug('meltdown'); },
 
   computeDamage(){
-    const m=this.mods, fm=this.fm(), fired=[]; let dmg=m.base;
-    if(this.combo>=5){dmg*=2; fired.push(['5连·伤害×2','var(--gold)']);}
-    else if(this.combo>=3){dmg*=1.4; fired.push(['3连·伤害×1.4','var(--gold)']);}
-    if(m.momentum){ const f=1+m.momentum*this.combo*fm; dmg*=f; if(m.momentum) fired.push([`势能累积 ×${f.toFixed(1)}`,'var(--red)']); }
-    if(this.combo>=3 && m.overclock){ dmg*=(1+m.overclock*fm); fired.push([`超频核心 ×${(1+m.overclock*fm).toFixed(1)}`,'var(--red)']); }
-    if(m.truth && this.cur.hard){ dmg*=(1+m.truth*fm); fired.push(['真理穿透 ×2','var(--red)']); }
+    const m=this.mods, fm=this.fm(), fired=[];
+    let chips=T.baseChips + T.comboChips*this.combo + (m.chipFlat||0) + (m.comboChipsBonus||0)*this.combo;
+    if(m.shieldToChips && this.shield>0){ chips+=Math.round(this.shield*m.shieldToChips); }
+    let add=0, x=1; const cm=m.comboMultDouble?2:1;
+    if(m.momentumMult){ add+=m.momentumMult*this.combo*cm; }
+    if(m.markAddMult && this.foeMarks>0){ add+=m.markAddMult*this.foeMarks; fired.push('resent'); }
     let crit=false;
-    if(Math.random()<Math.min(0.95,m.critChance*(fm>1?1.4:1))){ crit=true; dmg*=m.critMult; fired.push(['暴击!','var(--gold)']); }
-    return {amount:Math.round(dmg),crit,fired};
+    if(this.guaranteedCrit){ crit=true; this.guaranteedCrit=false; }
+    else if(Math.random()<Math.min(0.95,(m.critChance||0))) crit=true;
+    if(crit){ x*=1.5*(m.critXmult||1); fired.push('crit','critamp','overload'); }
+    if(m.comboXmult>1 && this.combo>=5){ x*=m.comboXmult; fired.push('overclock'); }
+    if(m.truthXmult>1 && this.cur.hard){ x*=m.truthXmult; fired.push('truth'); }
+    if(m.markXmultPer>1 && this.foeMarks>=10){ x*=Math.pow(m.markXmultPer,Math.floor(this.foeMarks/10)); fired.push('meltdown'); }
+    if(fm>1) x*=2;
+    const mult=(1+add)*x; this.stat.peakMult=Math.max(this.stat.peakMult,mult);
+    return {amount:Math.max(1,Math.round(chips*mult)), crit, chips:Math.round(chips), mult, fired};
+  },
+  showTally(r){
+    const t=document.getElementById('tally');
+    t.innerHTML=`<span class="chips">底数 ${r.chips}</span><span class="x">×</span><span class="mult">倍率 ${r.mult.toFixed(1)}</span><span class="eq">=</span><span class="dmg${r.crit?' crit':''}">${r.amount}${r.crit?' 💥':''}</span>`;
+    t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
+    r.crit?Audio_.crit():Audio_.correct();
   },
   dealToFoe(r){
-    let amt=r.amount;
-    if(this.foeShield>0){const ab=Math.min(this.foeShield,amt);this.foeShield-=ab;amt-=ab;}
-    this.foe=Math.max(0,this.foe-amt);
-    this.stat.dmg+=amt; this.stat.biggestHit=Math.max(this.stat.biggestHit,amt);
-    this.floatDmg(amt,r.crit,'foe');
-    r.fired.forEach((f,i)=>setTimeout(()=>this.trigger(f[0],f[1]),i*90));
-    this.flashBuild(r.fired);
-    if(r.crit){ Audio_.crit(); this.screenShake();
-      if(this.mods.chain){ const sp=Math.round(amt*this.mods.chain*this.fm());
-        this.foe=Math.max(0,this.foe-sp); this.floatDmg(sp,false,'foe'); this.trigger('连锁爆破 溅射','var(--red)'); } }
-    if(this.mods.lifesteal) this.me=Math.min(1000,this.me+Math.round(amt*this.mods.lifesteal));
-    if(this.combo===3||this.combo===5) this.banner(this.combo+' 连击!','var(--gold)');
-  },
-  ult(){ this.energy=0; this.stat.ult++; const d=Math.round(300*this.fm());
-    this.foe=Math.max(0,this.foe-d); this.floatDmg(d,true,'foe'); this.banner('⚡ 技能爆发!','var(--cyan)');
-    Audio_.crit(); this.screenShake(); },
-
-  /* ---------- enemy turn ---------- */
-  enemyTurn(){
-    this.turn='foe'; setTurn('foe','AI 回合');
-    document.getElementById('qtext').textContent='AI 正在答题…';
-    document.getElementById('opts').innerHTML='';
-    document.getElementById('qmeta').textContent='对手回合';
-    document.getElementById('qprog').textContent='';
-    let i=0, foeCombo=0;
-    const step=()=>{
-      if(i>=QPT || this.me<=0 || this.foe<=0){
-        setTimeout(()=>{ if(this.me<=0||this.foe<=0){this.finish();return;}
-          if(this.round>=MAX_ROUND) this.finish(); else this.toPick(false); }, 500);
-        return;
+    this.foe=Math.max(0,this.foe-r.amount);
+    this.stat.dmg+=r.amount; this.stat.biggestHit=Math.max(this.stat.biggestHit,r.amount);
+    Scene.attack('me', r.amount, r.crit);
+    r.fired.forEach(id=>this.fireAug(id));
+    if(r.crit){
+      if(this.mods.critToCombo){ this.combo+=this.mods.critToCombo; this.fireAug('echo'); }
+      if(this.mods.critGuarantee){ this.guaranteedCrit=true; this.fireAug('overload'); }
+      if(this.mods.markDetonate && this.foeMarks>0){
+        const boom=Math.round(this.foeMarks*this.mods.markDetonate*this.fm());
+        this.foe=Math.max(0,this.foe-boom); this.stat.dmg+=boom; this.stat.detonated++;
+        setTimeout(()=>{ Scene.attack('me',boom,true,'detonate'); Scene.banner('💣 引爆 '+this.foeMarks+' 层!','#b15dff'); Audio_.boom(); },180);
+        this.fireAug('detonate'); this.foeMarks=0;
       }
-      const acc=Math.max(0.25, this.foeMods.acc-(this.mods.foeAccDrop||0));
-      if(Math.random()<acc){
-        foeCombo++;
-        let d=70*this.foeMods.dmgMul*this.fm();
-        if(foeCombo>=3) d*=1.4; if(foeCombo>=5) d*=1.7;
-        if(Math.random()<this.foeMods.critChance){ d*=1.6; }
-        d*=(1-(this.mods.foeDmgDrop||0));
-        d=Math.round(d);
-        if(this.shield>0){const ab=Math.min(this.shield,d);this.shield-=ab;d-=ab; if(ab>0)this.floatDmg(ab,false,'me',true);}
-        if(d>0){ this.me=Math.max(0,this.me-d); this.floatDmg(d,false,'me'); Audio_.hit(); this.flashHit(); }
-      } else {
-        foeCombo=0;
-        if(this.mods.siphon){ this.energy=Math.min(100,this.energy+this.mods.siphon); this.trigger('能量虹吸 +能量','var(--purple)'); }
-        if(this.foeMods.shieldPer){ /* foe shields itself on its miss-free turns handled below */ }
-      }
-      this.refresh(); i++; setTimeout(step, 520);
-    };
-    // foe regains some shield at start of its turn from its shield buffs
-    if(this.foeMods.shieldPer){ this.foeShield=this.foeMods.shieldPer; }
-    setTimeout(step, 600);
+    }
+    if(this.mods.lifesteal) this.heal(Math.round(r.amount*this.mods.lifesteal));
+    if(this.combo===5||this.combo===10||this.combo===15||this.combo===20) Scene.banner(this.combo+' 连击!','#ffcf4d');
   },
+  heal(n){ const room=T.hp-this.me; if(n<=room) this.me+=n; else{ this.me=T.hp; if(this.mods.overhealToShield){ this.shield+=(n-room); } } },
+  ult(){ this.energy=0; this.stat.ult++; let d=T.ultBase*this.fm()*2;
+    if(this.mods.ultScales){ const r=this.computeDamage(); d=Math.round(d+r.amount*1.5); }
+    this.foe=Math.max(0,this.foe-d); this.stat.dmg+=d;
+    Scene.banner('⚡ 技能爆发!','#36e3ff'); setTimeout(()=>Scene.attack('me',d,true),100); this.fireAug('ultengine'); },
 
-  /* ---------- fx / render ---------- */
-  floatDmg(n,crit,side,shield){
-    const l=document.getElementById('fxlayer'); const e=document.createElement('div'); e.className='float';
-    e.textContent=(shield?'🛡 ':'')+'-'+n;
-    e.style.fontSize=(crit?34:side==='me'?20:24)+'px';
-    e.style.color=shield?'var(--green)':side==='me'?'var(--red)':crit?'var(--gold)':'var(--cyan)';
-    e.style.left=(side==='me'?rand(8,30):rand(62,86))+'%'; e.style.top=rand(30,50)+'%';
-    l.appendChild(e); setTimeout(()=>e.remove(),1000); if(crit)this.screenShake();
-  },
-  trigger(txt,color){ const l=document.getElementById('fxlayer'); const e=document.createElement('div');
-    e.className='trigger'; e.textContent=txt; e.style.color=color||'var(--gold)';
-    e.style.left=rand(20,46)+'%'; e.style.top=rand(20,44)+'%'; l.appendChild(e); setTimeout(()=>e.remove(),1100); },
-  banner(txt,color){ const l=document.getElementById('fxlayer'); const e=document.createElement('div');
-    e.className='banner'; e.textContent=txt; e.style.color=color||'var(--gold)'; l.appendChild(e); setTimeout(()=>e.remove(),1100); },
-  flashHit(){ this.refresh(); },
-  screenShake(){ const a=document.getElementById('app'); a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake'); },
+  fireAug(id){ const el=document.querySelector('#buildMe .b[data-id="'+id+'"]'); if(el){ el.classList.add('fire'); setTimeout(()=>el.classList.remove('fire'),300); } },
 
   renderBuild(){
-    const bb=document.getElementById('buildbar');
-    if(!this.owned.length){ bb.innerHTML='<span class="empty">你的 Build —— 抽到的强化会显示在这里</span>'; return; }
-    const cnt={}; this.owned.forEach(a=>cnt[a.id]=(cnt[a.id]||0)+1);
-    const uniq=this.owned.filter((a,i)=>this.owned.findIndex(x=>x.id===a.id)===i);
-    bb.innerHTML=uniq.map(a=>`<span class="aug t-${a.t}" data-id="${a.id}">${a.ico} ${a.name}${cnt[a.id]>1?' <span class="x">×'+cnt[a.id]+'</span>':''}</span>`).join('');
+    const me=document.getElementById('buildMe'), foe=document.getElementById('buildFoe');
+    me.innerHTML=this.owned.map(a=>`<span class="b" data-id="${a.id}" title="${a.name}">${a.ico}</span>`).join('');
+    foe.innerHTML=(this.foeMods.buffs||[]).map(b=>`<span class="b" title="${b.name}">${b.ico}</span>`).join('');
   },
-  flashBuild(fired){
-    const names=fired.map(f=>f[0]);
-    const map={'超频核心':'overclock','暴击!':'crit','连锁爆破 溅射':'chain','真理穿透 ×2':'truth','势能累积':'momentum'};
-    [...document.querySelectorAll('#buildbar .aug')].forEach(el=>{
-      const id=el.dataset.id;
-      const hit=names.some(n=>{ for(const k in map){ if(n.includes(k)&&map[k]===id) return true; } return false; });
-      if(hit){ el.classList.add('fire'); setTimeout(()=>el.classList.remove('fire'),300); }
-    });
+  renderFoeSum(){
+    const el=document.getElementById('foeSum'); if(!el) return;
+    const b=this.foeMods.buffs||[]; let core='<span>对手 Build:</span>';
+    if(!b.length) core+='<span class="fc">基础</span>';
+    else{ const cnt={}; b.forEach(x=>cnt[x.name]=(cnt[x.name]||0)+1); const seen={}; b.forEach(x=>{if(seen[x.name])return;seen[x.name]=1;core+=`<span class="fc">${x.ico} ${x.name}${cnt[x.name]>1?' ×'+cnt[x.name]:''}</span>`;}); }
+    core+='　<span>准确率 '+Math.round(Math.max(0.16,T.foeAcc-(this.mods.foeAccDrop||0))*100)+'%</span>';
+    el.innerHTML=core;
   },
   refresh(){
-    document.getElementById('meHp').style.width=(this.me/1000*100)+'%';
-    document.getElementById('foeHp').style.width=(this.foe/1000*100)+'%';
-    document.getElementById('meHpTxt').textContent=Math.round(this.me)+(this.shield>0?' (+'+Math.round(this.shield)+')':'');
-    document.getElementById('foeHpTxt').textContent=Math.round(this.foe)+(this.foeShield>0?' (+'+Math.round(this.foeShield)+')':'');
-    document.getElementById('comboN').textContent=this.combo||0;
+    document.getElementById('meHp').style.width=(this.me/T.hp*100)+'%';
+    document.getElementById('foeHp').style.width=(this.foe/T.hp*100)+'%';
+    document.getElementById('meGhost').style.width=(this.me/T.hp*100)+'%';
+    document.getElementById('foeGhost').style.width=(this.foe/T.hp*100)+'%';
+    document.getElementById('meHpTxt').textContent=Math.round(this.me)+(this.shield>0?' 🛡'+Math.round(this.shield):'');
+    document.getElementById('foeHpTxt').textContent=Math.round(this.foe);
+    document.getElementById('foeMarkLine').innerHTML=this.foeMarks>0?('☠️ 过载 ×'+this.foeMarks):'&nbsp;';
+    document.getElementById('comboMe').textContent=this.combo||0;
+    document.getElementById('comboFoe').textContent=this.foeCombo||0;
     const e=Math.min(100,Math.round(this.energy));
     document.getElementById('ebar').style.width=e+'%'; document.getElementById('eTxt').textContent=e+'/100';
   },
 
-  /* ---------- end ---------- */
   finish(){ this.showEnd(); },
   showEnd(){
-    const win=this.me>this.foe && this.me>0;
+    const win=(this.foe<=0 || this.me>this.foe) && this.me>0;
     show('end');
     const r=document.getElementById('resultTxt');
-    r.textContent=this.me<=0?'失败':this.foe<=0?'胜利':win?'胜利':'惜败';
-    r.className='result '+((this.foe<=0||win)&&this.me>0?'win':'lose');
-    (this.foe<=0||win)&&this.me>0?Audio_.win():Audio_.lose();
-    let hl='稳扎稳打,小胜一筹。';
-    if(this.maxCombo>=5&&this.owned.length>=4) hl='🧩 Build 成型 — 强化联动滚起来了!';
-    if(this.stat.biggestHit>=900) hl=`💥 单次最高 ${this.stat.biggestHit} 伤害 — 一刀斩!`;
-    else if(this.stat.ult>=3) hl=`⚡ 放了 ${this.stat.ult} 次技能 — 能量永动机!`;
-    else if(this.foe<=0) hl='🎯 直接把对面血条清空 — 完胜!';
+    r.textContent=this.me<=0?'失败':win?'胜利':'惜败'; r.className='result '+(win?'win':'lose'); win?Audio_.win():Audio_.lose();
+    let hl='稳扎稳打,小胜一筹。'; const pris=this.owned.filter(a=>a.tier==='prismatic');
+    if(this.stat.peakMult>=10) hl=`🌌 倍率峰值 ×${this.stat.peakMult.toFixed(0)} — 引擎起飞了!`;
+    else if(this.stat.biggestHit>=1500) hl=`💥 单次最高 ${this.stat.biggestHit} — Build 成神!`;
+    else if(this.stat.detonated>=2) hl=`💣 引爆 ${this.stat.detonated} 次过载 — 滚雪球炸穿!`;
+    else if(pris.length) hl=`🌌 围绕「${pris[0].name}」成型 — 流派打通!`;
+    else if(this.foe<=0) hl='🎯 把对面血条清空 — 完胜!';
     document.getElementById('highlight').textContent=hl;
+    document.getElementById('endBuild').textContent='本局 Build:'+(this.owned.length?this.owned.map(a=>a.ico+a.name).join(' → '):'(无)');
     const acc=this.stat.correct+this.stat.wrong?Math.round(this.stat.correct/(this.stat.correct+this.stat.wrong)*100):0;
     document.getElementById('endStats').innerHTML=[
-      ['总伤害',this.stat.dmg],['最高连击',this.maxCombo],['正确率',acc+'%'],
-      ['答对',this.stat.correct],['技能',this.stat.ult+' 次'],['强化',this.owned.length+' 张'],
+      ['总伤害',this.stat.dmg],['倍率峰值','×'+this.stat.peakMult.toFixed(1)],['最高连击',this.maxCombo],
+      ['单次最高',this.stat.biggestHit],['正确率',acc+'%'],['引爆',this.stat.detonated+' 次'],
     ].map(([k,v])=>`<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
   },
 };
 
-function newMods(){return{base:100,critChance:0.05,critMult:1.5,overclock:0,chain:0,truth:0,momentum:0,
-  shieldPer:0,forgive:0,regen:0,lifesteal:0,foeAccDrop:0,foeDmgDrop:0,siphon:0};}
+function newMods(){return{chipFlat:0,comboChipsBonus:0,shieldToChips:0,momentumMult:0,markAddMult:0,comboMultDouble:false,
+  critChance:0.05,critXmult:1,comboXmult:1,truthXmult:1,markXmultPer:1,markPerHit:0,markDetonate:0,markUncapped:false,
+  critToCombo:0,critGuarantee:false,shieldPer:0,forgive:0,regen:0,lifesteal:0,overhealToShield:false,ultScales:false,
+  foeAccDrop:0,siphon:0,foeMissHeal:0,foeMissMark:0,comboNeverResets:false};}
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function show(id){['start','pick','battle','end'].forEach(s=>document.getElementById(s).classList.toggle('hidden',s!==id));}
-function setTurn(side,txt){const t=document.getElementById('turnTxt');t.textContent=txt;t.className='turnTxt '+side;}
 </script>
 </body>
 </html>
