@@ -341,8 +341,8 @@
     </div>
 
     <div class="releases">
-      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><span class="kbd">1</span>小放<span class="cost" id="rSmallCost">需 50</span><span class="od" id="rSmallOd">即时 × 3</span></button>
-      <button class="rbtn big" id="rBig" onclick="releaseBig()"><span class="kbd">2</span>大放<span class="cost" id="rBigCost">需 100</span><span class="od" id="rBigOd">即时 × 6 + 震慑</span><span class="odpips" id="odPips"></span></button>
+      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><span class="kbd">1</span><span id="rSmallName">小放</span><span class="cost" id="rSmallCost">需 50</span><span class="od" id="rSmallOd">即时 × 3</span></button>
+      <button class="rbtn big" id="rBig" onclick="releaseBig()"><span class="kbd">2</span><span id="rBigName">大放</span><span class="cost" id="rBigCost">需 100</span><span class="od" id="rBigOd">即时 × 6 + 震慑</span><span class="odpips" id="odPips"></span></button>
     </div>
 
     <div class="keypad" id="keypad">
@@ -512,7 +512,7 @@ let CUR_SCREEN = 'start';
 let BATTLE_TIMER = null;
 
 function freshRun(){
-  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false };
+  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, _betweenQ:false, _skillSig:'' };
   R = { section:0, qInSection:0, results:[] };
   E = null;
   telem = {
@@ -520,7 +520,7 @@ function freshRun(){
     releases:{small:0, big:0}, overloadUses:0,
     breaks:0, recoveredAfterBreak:0,
     maxHit:0, maxHitCombo:0, maxHitOver:0, maxHitKind:'',
-    maxCombo:0, correct:0, odCrash:0,
+    maxCombo:0, correct:0, odCrash:0, skillUse:{},
     dmgTaken:0, startTime:Date.now(),
   };
 }
@@ -643,6 +643,13 @@ function combatTick(){
 }
 
 function enemyAttack(){
+  if(P.shieldCharges>0){
+    P.shieldCharges--;
+    floatText('🛡 挡下!', '#3fe7ff', true, false, 'you');
+    beep({f:520, f2:700, dur:.1, type:'triangle', gain:.12});
+    updateSceneUI();
+    return;
+  }
   P.hp = Math.max(0, P.hp - E.atk);
   telem.dmgTaken += E.atk;
   SFX.foeHit();
@@ -705,10 +712,12 @@ function renderDraft(rar){
     const sc = schoolCount(h.school);
     const resTag = (RESONANCE[h.school] && sc===1) ? `<span class="chiptag res">🔗 选它触发共鸣「${RESONANCE[h.school].name}」</span>`
                  : (RESONANCE[h.school] && sc>=2) ? `<span class="chiptag res">🔗 共鸣已激活</span>` : '';
+    const morphTag = (h.school!=='通用' && dominantOf(P.hexes.concat([h])) !== dominantSchool())
+                 ? `<span class="chiptag ba">⚔ 技能变形</span>` : '';
     el.innerHTML=`<div class="ico">${h.ico}</div><div class="name">${h.name}</div>
       <div class="row1"><span class="chiptag school">${h.school}${sc?` ${sc}张`:''}</span><span class="chiptag cat">${h.cat}</span>${h.ba?'<span class="chiptag ba">★流派核心</span>':''}</div>
       <div class="desc">${h.desc}${resTag?`<br><span style="color:#ffb1e6">共鸣:${RESONANCE[h.school].desc}</span>`:''}</div>
-      <div class="row1">${resTag}</div>
+      <div class="row1">${resTag}${morphTag}</div>
       <div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`;
     el.onclick=()=>pickHex(h);
     wrap.appendChild(el);
@@ -748,6 +757,12 @@ function beginSection(){
   show('battle');
   renderBuild();
   if(P._loadBanner){ banner(P._loadBanner); P._loadBanner=null; }
+  // 技能变形提示:主修流派变化 → 技能槽换形态
+  const sig = `${lightSkill().name}/${heavySkill().name}`;
+  if(sig !== P._skillSig){
+    P._skillSig = sig;
+    setTimeout(()=>{ if(CUR_SCREEN==='battle') toast(`⚔ 技能变形:${sig}`); }, 1250);
+  }
   stopLoop();
   BATTLE_TIMER = setInterval(combatTick, 100);
   updateHUD(); updateSceneUI();
@@ -767,6 +782,7 @@ function nextQuestion(){
   pe.className = 'qprompt ' + (q.prompt.length<=11?'qp-l':q.prompt.length<=18?'qp-m':'qp-s');
   document.getElementById('qbox').classList.remove('good','bad');
   const inp=document.getElementById('qInput'); inp.value=''; inp.disabled=false;
+  P._betweenQ = false;
   if(!IS_TOUCH) inp.focus();
   qStart = Date.now();
   const timeout = q.benchmark * K.TIMEOUT_FACTOR;
@@ -828,6 +844,7 @@ function onCorrect(){
   P.combo++;
   telem.correct++;
   telem.maxCombo = Math.max(telem.maxCombo, P.combo);
+  P._betweenQ = true;
   showQFeedback('good', `✓ COMBO ${P.combo}`);
   SFX.correct(P.combo);
   // 共鸣·时间凝滞:快答冻结敌人充能
@@ -894,6 +911,7 @@ function onTimeout(){ onBreak('超时'); }
 function onBreak(reason){
   document.getElementById('qInput').disabled=true;
   telem.breaks++;
+  P._betweenQ = true;
   showQFeedback('bad', `✗ 答案 ${q.answer}`);
   SFX.wrong();
   // 共鸣·不灭雪球:每节首次断连,连击不回落
@@ -919,30 +937,103 @@ function onBreak(reason){
   afterAction(true);
 }
 
-function releaseSmall(){
-  if(CUR_SCREEN!=='battle' || !smallEnabled() || P.energy < smallCost() || E.dead) return;
-  const dmg = immediateDamage()*K.SMALL_MULT;
-  P.energy -= smallCost();
-  telem.releases.small++;
-  SFX.small();
-  hexFire('h12');
-  dealDamage(dmg,'小放','#3fe7ff'); markEvent(); bumpStats(); updateHUD();
+/* ============================== 技能变形系统:主修流派决定技能槽形态 ============================== */
+function dominantOf(list){
+  const counts={};
+  list.forEach(h=>{ if(h.school!=='通用') counts[h.school]=(counts[h.school]||0)+1; });
+  let best=null, bestN=0;
+  // 平手时取最近获得的流派
+  for(let i=list.length-1;i>=0;i--){
+    const s=list[i].school; if(s==='通用') continue;
+    if((counts[s]||0)>bestN){ best=s; bestN=counts[s]; }
+  }
+  return best;
 }
-function releaseBig(){
-  if(CUR_SCREEN!=='battle' || P.energy < bigCost() || E.dead) return;
-  const mult = bigMult() * (1 + K.OVERLOAD_PER_STACK*P.overloadStacks);
-  const dmg = Math.round(immediateDamage()*mult);
-  P.energy -= bigCost();
+function dominantSchool(){ return dominantOf(P.hexes); }
+function lightSkill(){
+  const s = dominantSchool();
+  const disc = has('h12') ? 10 : 0;
+  if(s==='神速系') return {key:'swap',  name:'换题',   cost:40-disc, od:'弃换本题·不断连', dmg:0};
+  if(s==='蓄力系') return {key:'shield',name:'能量护盾',cost:50-disc, od:'挡下 2 次攻击', dmg:0};
+  if(s==='连击系') return {key:'flurry',name:'疾风连打',cost:50-disc, od:'×2 + 连击+2', dmg:immediateDamage()*2};
+  if(s==='即时系') return {key:'sear',  name:'灼热打击',cost:50-disc, od:'×2.5 + 灼烧', dmg:immediateDamage()*2.5};
+  return {key:'small', name:'小放', cost:50-disc, od:`即时 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
+}
+function heavySkill(){
+  const s = dominantSchool();
+  const disc = has('h12') ? 20 : 0;
+  const odMult = 1 + K.OVERLOAD_PER_STACK*P.overloadStacks;
+  const hammer = has('h10') ? 1.5 : 1;   // h10 重锤:重技能 ×1.5(默认大放 6→9)
+  let v;
+  if(s==='连击系')      v={key:'avalanche', name:'雪崩',   base:4*(1+0.02*P.combo), od:'×4·连击每点+2% + 震慑', stun:true};
+  else if(s==='神速系') v={key:'timestop',  name:'时停',   base:4, od:'×4 + 冻结 5 秒', freeze:5000};
+  else if(s==='即时系') v={key:'firestorm', name:'烈焰风暴',base:5, od:'×5 + 重灼烧', dot:{left:3, ratio:0.8}};
+  else                  v={key:'big',       name:'大放',   base:K.BIG_MULT, od:`即时 × ${K.BIG_MULT} + 震慑`, stun:true};
+  v.cost = 100-disc;
+  v.dmg = Math.round(immediateDamage()*v.base*hammer*odMult);
+  return v;
+}
+function swapQuestion(){
+  // 换题:弃掉当前题,原地换新(计时重置,不算断连)
+  q = genQuestion(R.section-1);
+  document.getElementById('qType').textContent = TYPE_LABEL[q.type];
+  const qd=document.getElementById('qDiff'); qd.textContent=q.difficulty.toUpperCase(); qd.className='qdiff '+q.difficulty;
+  const pe=document.getElementById('qPrompt'); pe.textContent=q.prompt;
+  pe.className = 'qprompt ' + (q.prompt.length<=11?'qp-l':q.prompt.length<=18?'qp-m':'qp-s');
+  const inp=document.getElementById('qInput'); inp.value=''; inp.disabled=false;
+  qStart = Date.now();
+  const timeout = q.benchmark * K.TIMEOUT_FACTOR;
+  const fill=document.getElementById('qTimerFill'); fill.style.transition='none'; fill.style.width='100%';
+  void fill.offsetWidth;
+  fill.style.transition=`width ${timeout}s linear`; fill.style.width='0%';
+  clearTimeout(qTimer);
+  qTimer = setTimeout(()=>onTimeout(), timeout*1000);
+}
+function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
+  if(CUR_SCREEN!=='battle' || !smallEnabled() || E.dead) return;
+  const sk = lightSkill();
+  if(P.energy < sk.cost) return;
+  if(sk.key==='swap' && (P._betweenQ || document.getElementById('qInput').disabled)) return; // 只能换正在答的题
+  P.energy -= sk.cost;
+  telem.releases.small++;
+  telem.skillUse[sk.name]=(telem.skillUse[sk.name]||0)+1;
+  hexFire('h12');
+  if(sk.key==='swap'){ SFX.small(); swapQuestion(); floatText('🔄 换题!', '#3fe7ff', true, false, 'you'); }
+  else if(sk.key==='shield'){ SFX.res(); P.shieldCharges = 2; floatText('🛡 护盾 ×2', '#3fe7ff', true, false, 'you'); }
+  else if(sk.key==='flurry'){
+    SFX.small(); P.combo += 2;
+    telem.maxCombo = Math.max(telem.maxCombo, P.combo);
+    dealDamage(Math.round(immediateDamage()*2),'疾风连打','#3fe7ff');
+    floatText('连击 +2!', '#3fe7ff', true, false, 'you');
+  }
+  else if(sk.key==='sear'){
+    SFX.small();
+    const dmg=Math.round(immediateDamage()*2.5);
+    dealDamage(dmg,'灼热打击','#3fe7ff');
+    P.dotQueue.push({left:2, amount:Math.round(immediateDamage()*0.5)});
+  }
+  else { SFX.small(); dealDamage(Math.round(sk.dmg),'小放','#3fe7ff'); }
+  markEvent(); bumpStats(); updateHUD(); updateSceneUI();
+}
+function releaseBig(){   // 重技能槽
+  if(CUR_SCREEN!=='battle' || E.dead) return;
+  const sk = heavySkill();
+  if(P.energy < sk.cost) return;
+  P.energy -= sk.cost;
   const od = P.overloadStacks;
-  // 共鸣·稳压核心:大放保留一半过载层
+  // 共鸣·稳压核心:重技能保留一半过载层
   P.overloadStacks = hasRes('蓄力系') ? Math.ceil(od/2) : 0;
   if(hasRes('蓄力系') && od>0) floatText(`🔗 稳压:保留${P.overloadStacks}层`, '#ffb1e6', true, false, 'you');
   if(has('h13')){ P.energy = Math.min(K.ENERGY_MAX, P.energy+40); hexFire('h13','+40能量'); }
   telem.releases.big++;
+  telem.skillUse[sk.name]=(telem.skillUse[sk.name]||0)+1;
   SFX.big();
   hexFire('h10'); hexFire('h12');
-  applyStun();   // 控场:打断敌人攻击充能
-  dealDamage(dmg, od>0?`大放·过载${od}`:'大放','#ffcf4d'); markEvent(); bumpStats(); updateHUD();
+  if(sk.stun) applyStun();
+  if(sk.freeze && E) E.frozenUntil = Date.now()+sk.freeze;
+  if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio)});
+  dealDamage(sk.dmg, od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
+  markEvent(); bumpStats(); updateHUD(); updateSceneUI();
 }
 
 function dealDamage(amount, kind, color, secondary){
@@ -1075,7 +1166,7 @@ function updateSceneUI(){
   const pf=document.getElementById('pHpFill');
   pf.style.width = (P.hp/K.PLAYER_HP*100)+'%';
   pf.className = 'hpfill' + (P.hp<=K.PLAYER_HP*0.3?' low':'');
-  document.getElementById('pHpNum').textContent = `${P.hp} / ${K.PLAYER_HP}`;
+  document.getElementById('pHpNum').textContent = `${P.hp} / ${K.PLAYER_HP}` + (P.shieldCharges>0?` 🛡×${P.shieldCharges}`:'');
   const ef=document.getElementById('eHpFill');
   ef.style.width = (E.hp/E.hpMax*100)+'%';
   ef.className = 'hpfill' + (E.hp<=E.hpMax*0.3?' low':'');
@@ -1097,8 +1188,8 @@ function updateHUD(){
   document.getElementById('sEnergy').textContent = Math.floor(P.energy);
   document.getElementById('sOver').textContent = P.overloadStacks;
   document.getElementById('energyFill').style.width = Math.min(100, P.energy/K.ENERGY_MAX*100)+'%';
-  document.getElementById('gmS').style.left = (smallCost()/K.ENERGY_MAX*100)+'%';
-  document.getElementById('gmB').style.left = (bigCost()/K.ENERGY_MAX*100)+'%';
+  document.getElementById('gmS').style.left = (lightSkill().cost/K.ENERGY_MAX*100)+'%';
+  document.getElementById('gmB').style.left = (heavySkill().cost/K.ENERGY_MAX*100)+'%';
 
   const u=tierUnlocks(P.combo);
   document.getElementById('tcSplash').className = 'tc'+(u.splash?' on':'');
@@ -1107,21 +1198,22 @@ function updateHUD(){
   document.getElementById('tcDouble').className = 'tc'+(u.double?' on':'');
   document.getElementById('tcDbl').classList.toggle('hidden', !P.nextImmDouble);
 
-  const immNow = immediateDamage();
-  const rs=document.getElementById('rSmall'); const sOk=smallEnabled()&&P.energy>=smallCost();
+  const lsk = lightSkill(), hsk = heavySkill();
+  const rs=document.getElementById('rSmall'); const sOk=smallEnabled()&&P.energy>=lsk.cost;
   rs.style.display = smallEnabled()?'flex':'none'; rs.disabled=!sOk; rs.classList.toggle('ready',sOk);
-  document.getElementById('rSmallCost').textContent = `需 ${smallCost()}`;
-  const killS = sOk && E && !E.dead && immNow*K.SMALL_MULT >= E.hp;
+  document.getElementById('rSmallName').textContent = lsk.name;
+  document.getElementById('rSmallCost').textContent = `需 ${lsk.cost}`;
+  const killS = sOk && E && !E.dead && lsk.dmg>0 && lsk.dmg >= E.hp;
   rs.classList.toggle('kill', !!killS);
-  document.getElementById('rSmallOd').textContent = killS ? '⚔ 斩杀!' : `即时 × ${K.SMALL_MULT}`;
-  const rb=document.getElementById('rBig'); const bOk=P.energy>=bigCost();
+  document.getElementById('rSmallOd').textContent = killS ? '⚔ 斩杀!' : lsk.od;
+  const rb=document.getElementById('rBig'); const bOk=P.energy>=hsk.cost;
   rb.disabled=!bOk; rb.classList.toggle('ready',bOk);
-  document.getElementById('rBigCost').textContent = `需 ${bigCost()}`;
-  const od=P.overloadStacks; const m=(bigMult()*(1+K.OVERLOAD_PER_STACK*od)).toFixed(od>0?1:0);
-  const bigDmg = Math.round(immNow*bigMult()*(1+K.OVERLOAD_PER_STACK*od));
-  const killB = bOk && E && !E.dead && bigDmg >= E.hp;
+  document.getElementById('rBigName').textContent = hsk.name;
+  document.getElementById('rBigCost').textContent = `需 ${hsk.cost}`;
+  const od=P.overloadStacks;
+  const killB = bOk && E && !E.dead && hsk.dmg >= E.hp;
   rb.classList.toggle('kill', !!killB);
-  document.getElementById('rBigOd').textContent = killB ? `⚔ 斩杀!(${bigDmg})` : `即时 × ${m}${od>0?` (过载${od})`:''} + 震慑`;
+  document.getElementById('rBigOd').textContent = killB ? `⚔ 斩杀!(${hsk.dmg})` : `${hsk.od}${od>0?` (过载${od})`:''}`;
   const pips=document.getElementById('odPips');
   pips.innerHTML = Array.from({length:overloadMax()},(_,i)=>`<span class="odp${i<od?' on':''}"></span>`).join('');
 }
