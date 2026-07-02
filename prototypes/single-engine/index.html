@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>脑力竞技 · 单人核心引擎 v2</title>
+<title>脑力竞技 BRAIN ARENA · 以答为刃</title>
 <style>
   :root{
     --bg0:#04060c; --bg1:#080d18; --panel:#0b1120; --panel2:#101a30; --line:#1d2740; --line2:#2a3a5e;
@@ -233,6 +233,45 @@
   .core.rage{filter:saturate(1.7) brightness(1.2);}
   .core.rage .r1{animation-duration:2.2s;}
 
+  /* VS 关卡演出(格斗游戏开场仪式) */
+  .vsplash{position:absolute; inset:0; z-index:12; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    background:radial-gradient(600px 400px at 50% 45%, rgba(10,16,32,.97), rgba(2,4,10,.99)); pointer-events:none; opacity:0;}
+  .vsplash.play{animation:vsp 2.0s ease forwards;}
+  @keyframes vsp{0%{opacity:0; transform:scale(1.06);}10%{opacity:1; transform:scale(1);}82%{opacity:1;}100%{opacity:0; visibility:hidden;}}
+  .vsk{font-size:15px; letter-spacing:8px; color:var(--dim);}
+  .vsg{font-size:74px; font-weight:900; line-height:1;
+    background:linear-gradient(160deg, #fff, var(--enemy,#3fe7ff)); -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 34px var(--enemy,#3fe7ff)); animation:vsgIn .5s cubic-bezier(.2,1.6,.4,1);}
+  @keyframes vsgIn{0%{transform:scale(2.6); opacity:0;}100%{transform:scale(1); opacity:1;}}
+  .vsn{font-size:24px; font-weight:900; letter-spacing:4px;}
+  .vsq{font-size:14px; color:var(--silver); font-style:italic; letter-spacing:1px; max-width:80%; text-align:center;}
+  .vsload{font-size:12px; color:var(--gold); border:1px solid rgba(255,207,77,.4); padding:4px 14px; border-radius:20px; margin-top:8px;}
+
+  /* 连击喝彩分级(鬼泣式) */
+  .qprompt.good.co1{color:var(--cyan);}
+  .qprompt.good.co2{color:var(--gold); text-shadow:0 0 28px rgba(255,207,77,.6);}
+  .qprompt.good.co3{color:#ff9d4d; text-shadow:0 0 30px rgba(255,157,77,.7); animation:coShake .3s;}
+  .qprompt.good.co4{background:linear-gradient(100deg,#ffb1e6,var(--purple),#7ea0ff); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 0 22px rgba(181,97,255,.8)); animation:coShake .3s;}
+  @keyframes coShake{0%{transform:scale(1.25) rotate(-2deg);}60%{transform:scale(.96) rotate(1deg);}100%{transform:scale(1);}}
+  .stat.combo .v.t1{color:var(--cyan);}
+  .stat.combo .v.t2{color:var(--gold); text-shadow:0 0 14px rgba(255,207,77,.6);}
+  .stat.combo .v.t3{background:linear-gradient(180deg,#ffd34d,#ff5470); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 0 10px rgba(255,84,112,.7));}
+
+  /* 打击物理感:闪白 / 核心碎裂 / 低血暗角 */
+  #flash{position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:11; transition:opacity .16s;}
+  #flash.on{opacity:.5; transition:none;}
+  .core.shatter{animation:shatter .65s forwards;}
+  @keyframes shatter{0%{transform:scale(1); filter:brightness(3);}40%{transform:scale(1.5) rotate(8deg); opacity:1;}100%{transform:scale(2.1) rotate(-6deg); opacity:0; filter:brightness(4) blur(4px);}}
+  #app.lowhp::after{content:""; position:absolute; inset:0; pointer-events:none; z-index:6; border-radius:18px;
+    box-shadow:inset 0 0 90px rgba(255,84,112,.5); animation:lowbeat 1.1s infinite;}
+  @keyframes lowbeat{0%,100%{opacity:.45;}50%{opacity:1;}}
+
+  /* 标题演出 */
+  .tagline{font-size:14px; letter-spacing:6px; color:var(--gold); text-shadow:0 0 18px rgba(255,207,77,.4);}
+  .btn.cta{animation:ctapulse 1.8s infinite;}
+  @keyframes ctapulse{0%,100%{box-shadow:0 12px 34px rgba(63,231,255,.32);}50%{box-shadow:0 12px 50px rgba(63,231,255,.6);}}
+  .gradeflavor{font-size:11px; letter-spacing:3px; display:block; margin-top:2px;}
+
   /* ============ mobile ============ */
   @media (max-width:720px){
     body{align-items:stretch;}
@@ -264,6 +303,8 @@
     .buildrow{min-height:18px;}
     .grade{width:70px; height:70px; font-size:38px;}
     .scorenum{font-size:26px;}
+    .vsg{font-size:54px;} .vsn{font-size:18px;} .vsq{font-size:12px;}
+    .tagline{font-size:12px; letter-spacing:4px;}
   }
 </style>
 </head>
@@ -272,12 +313,14 @@
 
   <!-- START -->
   <div id="start" class="screen">
-    <span class="tag">单人核心引擎 · v2 对战版</span>
+    <span class="tag">BRAIN ARENA</span>
     <h1>脑力竞技</h1>
-    <div class="sub">答题驱动的<b>质变构筑</b>对战。每节一个<b>会反击的敌人</b>——它的攻击条一直在涨,你答得越快、连击越高,它越没机会出手。<br>
-      速算 / 数列 / 方程 / 百分比混合出题。<b>你死,或它死。</b></div>
-    <button class="btn" onclick="startRun()">开 始 对 战</button>
-    <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙ 调参表 §14</button>
+    <div class="tagline">以 答 为 刃</div>
+    <div class="sub">心智之塔,三名守门者。<br>
+      <b>每一次答对都是一次出刀</b>——连击成风暴,能量成大招,海克斯改写你的武器。<br>
+      守门者的攻击条从不停止。<b>你死,或它死。</b></div>
+    <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
+    <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -353,6 +396,14 @@
     </div>
     <div class="banner" id="banner"></div>
     <div class="toast" id="toast"></div>
+    <div class="vsplash" id="vsplash">
+      <div class="vsk" id="vsSec">第 一 关</div>
+      <div class="vsg" id="vsGlyph">Σ</div>
+      <div class="vsn" id="vsName">守门者 · 磐石Σ</div>
+      <div class="vsq" id="vsQuote"></div>
+      <div class="vsload" id="vsLoad"></div>
+    </div>
+    <div id="flash"></div>
   </div>
 
   <!-- SECTION RESULT -->
@@ -425,10 +476,18 @@ const BENCH = {
 const TYPE_LABEL = {calc:'速算', seq:'数列', eq:'方程', pct:'百分比'};
 const TYPES = ['calc','seq','eq','pct'];
 const FOES = [
-  {name:'磐石 · Σ', glyph:'Σ', color:'var(--cyan)'},
-  {name:'猎手 · Ω', glyph:'Ω', color:'var(--purple)'},
-  {name:'霸主 · Δ', glyph:'Δ', color:'var(--red)'},
+  {name:'守门者 · 磐石Σ', glyph:'Σ', color:'var(--cyan)',
+   intro:'一万名挑战者,都碎在我面前。', taunts:['太慢。','就这?','石头都比你快。'],
+   phase2:'……有点意思。', defeat:'石…碎…了……'},
+  {name:'猎手 · Ω', glyph:'Ω', color:'var(--purple)',
+   intro:'我闻到你思维的破绽了。', taunts:['破绽!','逃不掉。','慌了?'],
+   phase2:'猎物竟敢反抗?!', defeat:'原来你才是……猎人……'},
+  {name:'霸主 · Δ', glyph:'Δ', color:'var(--red)',
+   intro:'塔顶,只站得下我一人。', taunts:['跪下。','蝼蚁。','放弃吧。'],
+   phase2:'你竟敢伤到本座?!', defeat:'塔……易主了……'},
 ];
+const SEC_CN = ['一','二','三','四','五','六'];
+const GRADE_FLAVOR = {S:'宗师', A:'高手', B:'熟练', C:'学徒', D:'梦游'};
 
 /* ============================== 海克斯种子卡 (§10.2) ============================== */
 const HEXES = [
@@ -610,7 +669,7 @@ function spawnFoe(){
   const i = Math.min(R.section-1, 2);
   const hp = K.ENEMY_HP[Math.min(R.section-1, K.ENEMY_HP.length-1)];
   E = {
-    name:FOES[i].name, glyph:FOES[i].glyph, color:FOES[i].color,
+    name:FOES[i].name, glyph:FOES[i].glyph, color:FOES[i].color, lines:FOES[i],
     hp, hpMax:hp,
     atk: K.ENEMY_ATK[Math.min(R.section-1, K.ENEMY_ATK.length-1)],
     chargeNeed: K.ENEMY_CHARGE[Math.min(R.section-1, K.ENEMY_CHARGE.length-1)],
@@ -654,6 +713,7 @@ function enemyAttack(){
   telem.dmgTaken += E.atk;
   SFX.foeHit();
   floatText(`−${E.atk}`, '#ff5470', false, false, 'you');
+  if(Math.random()<0.4) floatText(`「${E.lines.taunts[rnd(0,E.lines.taunts.length-1)]}」`, '#ff8aa0', true, false, 'foe');
   const av=document.getElementById('pAvatar'); av.classList.remove('hurt'); void av.offsetWidth; av.classList.add('hurt');
   shakeScene();
   updateSceneUI();
@@ -678,7 +738,7 @@ function beginDraft(){
   R.section++;
   rerollLeft = 1;
   const rar = RAR_BY_SECTION[Math.min(R.section-1, RAR_BY_SECTION.length-1)];
-  document.getElementById('draftTag').textContent = `第 ${R.section} 节抽取 · ${RAR_LABEL[rar]}`;
+  document.getElementById('draftTag').textContent = `第 ${SEC_CN[R.section-1]||R.section} 关 · 海克斯抽取 · ${RAR_LABEL[rar]}`;
   renderDraft(rar);
   show('draft');
 }
@@ -749,24 +809,36 @@ function beginSection(){
   R.qInSection=0; P.dotQueue=[]; P.chainCount=0; P.shieldUsed=false;
   spawnFoe();
   if(P._resSound){ SFX.res(); P._resSound=false; }
-  document.getElementById('bSec').textContent = `第 ${R.section} 节`;
+  document.getElementById('bSec').textContent = `第 ${SEC_CN[R.section-1]||R.section} 关`;
   document.getElementById('foeName').textContent = E.name;
   document.getElementById('coreGlyph').textContent = E.glyph;
+  const core=document.getElementById('core');
+  core.classList.remove('rage','shatter');
   document.getElementById('scene').style.setProperty('--enemy', E.color);
-  document.getElementById('core').classList.remove('rage');
   show('battle');
   renderBuild();
-  if(P._loadBanner){ banner(P._loadBanner); P._loadBanner=null; }
-  // 技能变形提示:主修流派变化 → 技能槽换形态
-  const sig = `${lightSkill().name}/${heavySkill().name}`;
-  if(sig !== P._skillSig){
-    P._skillSig = sig;
-    setTimeout(()=>{ if(CUR_SCREEN==='battle') toast(`⚔ 技能变形:${sig}`); }, 1250);
-  }
   stopLoop();
-  BATTLE_TIMER = setInterval(combatTick, 100);
+  // VS 演出:关卡亮相 + 守门者台词 + 本关装载,演出结束才开战
+  const sig = `${lightSkill().name}/${heavySkill().name}`;
+  const morphed = sig !== P._skillSig;
+  P._skillSig = sig;
+  document.getElementById('vsSec').textContent = `第 ${SEC_CN[R.section-1]||R.section} 关`;
+  document.getElementById('vsGlyph').textContent = E.glyph;
+  document.getElementById('vsGlyph').style.setProperty('--enemy', E.color);
+  document.getElementById('vsName').textContent = E.name;
+  document.getElementById('vsQuote').textContent = `「${E.lines.intro}」`;
+  document.getElementById('vsLoad').textContent = (P._loadBanner||'') + (morphed?`  ⚔ ${sig}`:'');
+  P._loadBanner=null;
+  const vs=document.getElementById('vsplash');
+  vs.classList.remove('play'); void vs.offsetWidth; vs.classList.add('play');
+  setTimeout(()=>{
+    if(CUR_SCREEN!=='battle') return;
+    E.lastTick = Date.now();
+    BATTLE_TIMER = setInterval(combatTick, 100);
+    updateHUD(); updateSceneUI();
+    nextQuestion();
+  }, 1900);
   updateHUD(); updateSceneUI();
-  nextQuestion();
 }
 function stopLoop(){ if(BATTLE_TIMER){ clearInterval(BATTLE_TIMER); BATTLE_TIMER=null; } }
 
@@ -807,13 +879,26 @@ function submitAnswer(){
   else onBreak('答错');
 }
 /* 反馈打在眼睛所在的位置:题目区本身 */
-function showQFeedback(type, text){
+function showQFeedback(type, text, cls){
   const pe=document.getElementById('qPrompt');
   pe.textContent=text;
-  pe.className='qprompt qp-l '+type;
+  pe.className='qprompt qp-l '+type+(cls?' '+cls:'');
   const qb=document.getElementById('qbox');
   qb.classList.remove('good','bad'); void qb.offsetWidth; qb.classList.add(type);
   document.getElementById('qInput').value='';
+}
+/* 鬼泣式升级喝彩 */
+function comboCallout(c){
+  if(c>=12) return {t:`无我境界 ×${c}`, cls:'co4'};
+  if(c>=9)  return {t:`心流!×${c}`,   cls:'co3'};
+  if(c>=6)  return {t:`凌厉 ×${c}`,   cls:'co2'};
+  if(c>=3)  return {t:`流畅 ×${c}`,   cls:'co1'};
+  return {t:'✓ 命中', cls:'co0'};
+}
+function flashFx(){
+  const f=document.getElementById('flash');
+  f.classList.add('on');
+  setTimeout(()=>f.classList.remove('on'), 90);
 }
 function onTyped(){
   const inp=document.getElementById('qInput');
@@ -845,7 +930,8 @@ function onCorrect(){
   telem.correct++;
   telem.maxCombo = Math.max(telem.maxCombo, P.combo);
   P._betweenQ = true;
-  showQFeedback('good', `✓ COMBO ${P.combo}`);
+  const co = comboCallout(P.combo);
+  showQFeedback('good', co.t, co.cls);
   SFX.correct(P.combo);
   // 共鸣·时间凝滞:快答冻结敌人充能
   if(fast && hasRes('神速系') && E && !E.dead){ E.frozenUntil = Date.now()+2000; }
@@ -1029,6 +1115,7 @@ function releaseBig(){   // 重技能槽
   telem.skillUse[sk.name]=(telem.skillUse[sk.name]||0)+1;
   SFX.big();
   hexFire('h10'); hexFire('h12');
+  flashFx();
   if(sk.stun) applyStun();
   if(sk.freeze && E) E.frozenUntil = Date.now()+sk.freeze;
   if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio)});
@@ -1049,10 +1136,16 @@ function dealDamage(amount, kind, color, secondary){
   if(!E.phase2 && E.hp>0 && E.hp<=E.hpMax*0.5){
     E.phase2=true; E.chargeNeed*=0.85;
     document.getElementById('core').classList.add('rage');
-    banner(`⚠️ ${E.name} 暴走!`);
+    banner('⚠️ 暴走!');
+    toast(`${E.glyph}「${E.lines.phase2}」`);
   }
   updateSceneUI();
-  if(E.hp<=0){ E.dead=true; SFX.kill(); clearTimeout(qTimer); setTimeout(sectionWin, 700); }
+  if(E.hp<=0){
+    E.dead=true; SFX.kill(); flashFx();
+    const core=document.getElementById('core'); core.classList.add('shatter');
+    for(let i=0;i<6;i++) floatText('✦','#fff',true,false,'foe');
+    clearTimeout(qTimer); setTimeout(sectionWin, 800);
+  }
 }
 
 function afterAction(isBreak){
@@ -1072,14 +1165,14 @@ function sectionWin(){
   const hpBefore = P.hp;
   P.hp = Math.min(K.PLAYER_HP, P.hp + heal);
   R.results.push({ section:R.section, q:R.qInSection, hpLeft:hpBefore, passed:true });
-  document.getElementById('secresTag').textContent = `第 ${R.section} 节 · ${E.name}`;
+  document.getElementById('secresTag').textContent = `第 ${SEC_CN[R.section-1]||R.section} 关 · ${E.name}`;
   const row=document.getElementById('secresRow'); row.innerHTML='';
   row.appendChild(seg(`${R.qInSection} 题`, '击杀用时', 'win'));
   row.appendChild(seg(hpBefore, '剩余 HP', hpBefore<=30?'lose':''));
   if(heal) row.appendChild(seg('+'+(P.hp-hpBefore), '节间回复', 'win'));
-  document.getElementById('secresMsg').innerHTML = R.section < K.SECTIONS
-    ? '下一个敌人更凶:攻击更疼、充能更快。选好你的海克斯。'
-    : '这是最后一个敌人——去看战报。';
+  document.getElementById('secresMsg').innerHTML = `<span style="color:var(--silver);font-style:italic">${E.glyph}「${E.lines.defeat}」</span><br>` + (R.section < K.SECTIONS
+    ? '下一名守门者更凶:攻击更疼、充能更快。选好你的海克斯。'
+    : '塔顶到了——去看战报。');
   document.getElementById('secresBtn').textContent = R.section >= K.SECTIONS ? '查看战报' : '下 一 节 抽 取';
   show('secres');
 }
@@ -1106,13 +1199,15 @@ function finishRun(defeat){
   if(defeat) SFX.lose(); else SFX.win();
   const won = R.results.filter(r=>r.passed).length;
   document.getElementById('finalTitle').textContent = defeat
-    ? `💀 阵亡于第 ${R.section} 节 · ${E?E.name:''}`
-    : (won===K.SECTIONS ? '🏆 全 部 击 破' : `战报 · ${won}/${K.SECTIONS}`);
+    ? `💀 陨落于第 ${SEC_CN[R.section-1]||R.section} 关 · ${E?E.name:''}`
+    : (won===K.SECTIONS ? '🏆 心智之塔 · 登顶' : `战报 · ${won}/${K.SECTIONS}`);
 
   // 得分 + 评级 + 纪录
   const score = calcScore();
   const g = gradeOf(score);
-  const gb=document.getElementById('gradeBox'); gb.textContent=g; gb.className='grade '+g;
+  const gb=document.getElementById('gradeBox');
+  gb.innerHTML = `${g}<span class="gradeflavor">${GRADE_FLAVOR[g]}</span>`;
+  gb.className='grade '+g;
   document.getElementById('scoreNum').textContent = score.toLocaleString();
   let best=0; try{ best=Number(localStorage.getItem('ba_best')||0); }catch(e){}
   const bt=document.getElementById('bestTag');
@@ -1123,7 +1218,7 @@ function finishRun(defeat){
   const row=document.getElementById('finalRow'); row.innerHTML='';
   R.results.forEach(r=>{
     const v = r.passed ? `${r.q} 题` : (r.foeMax ? `${Math.round(r.dmgDone/r.foeMax*100)}%` : '💀');
-    row.appendChild(seg(v, `第${r.section}节 ${r.passed?'击杀':'阵亡时血线'}`, r.passed?'win':'lose'));
+    row.appendChild(seg(v, `第${SEC_CN[r.section-1]||r.section}关 ${r.passed?'击破':'陨落时进度'}`, r.passed?'win':'lose'));
   });
   // 高光数据
   const st=document.getElementById('statsRow'); st.innerHTML='';
@@ -1167,6 +1262,7 @@ function updateSceneUI(){
   pf.style.width = (P.hp/K.PLAYER_HP*100)+'%';
   pf.className = 'hpfill' + (P.hp<=K.PLAYER_HP*0.3?' low':'');
   document.getElementById('pHpNum').textContent = `${P.hp} / ${K.PLAYER_HP}` + (P.shieldCharges>0?` 🛡×${P.shieldCharges}`:'');
+  document.getElementById('app').classList.toggle('lowhp', P.hp>0 && P.hp<=K.PLAYER_HP*0.3 && CUR_SCREEN==='battle');
   const ef=document.getElementById('eHpFill');
   ef.style.width = (E.hp/E.hpMax*100)+'%';
   ef.className = 'hpfill' + (E.hp<=E.hpMax*0.3?' low':'');
@@ -1183,7 +1279,11 @@ function updateSceneUI(){
   document.getElementById('foeStatus').innerHTML = st.join('');
 }
 function updateHUD(){
-  document.getElementById('sCombo').textContent = P.combo;
+  const sc=document.getElementById('sCombo');
+  sc.textContent = P.combo;
+  const tier=comboTier(P.combo);
+  ['t1','t2','t3'].forEach(t=>sc.classList.remove(t));
+  if(tier>0) sc.classList.add('t'+Math.min(tier,3));
   document.getElementById('sImm').textContent = immediateDamage();
   document.getElementById('sEnergy').textContent = Math.floor(P.energy);
   document.getElementById('sOver').textContent = P.overloadStacks;
@@ -1251,7 +1351,7 @@ function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg
 function clamp(x,a,b){ return Math.max(a,Math.min(b,x)); }
 function median(arr){ const a=arr.slice().sort((x,y)=>x-y); const n=a.length; return n? (n%2? a[(n-1)/2] : (a[n/2-1]+a[n/2])/2) : 0; }
 const SCREENS=['start','draft','battle','secres','final'];
-function show(id){ SCREENS.forEach(s=>document.getElementById(s).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); CUR_SCREEN=id; }
+function show(id){ SCREENS.forEach(s=>document.getElementById(s).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); CUR_SCREEN=id; if(id!=='battle') document.getElementById('app').classList.remove('lowhp'); }
 
 /* 调参表 UI */
 const TUNE_SCALARS = ['SECTIONS','BASE_IMMEDIATE','SPLASH_RATIO','ENERGY_BASE','ENERGY_PER_COMBO','ENERGY_MAX','SPEED_CAP','SMALL_RELEASE_COST','BIG_RELEASE_COST','SMALL_MULT','BIG_MULT','OVERLOAD_MAX','OVERLOAD_PER_STACK','TIMEOUT_FACTOR','PLAYER_HP','HEAL_PER_SECTION','STUN_SECONDS','SLOW_SECONDS','SLOW_FACTOR','ENRAGE_AFTER'];
