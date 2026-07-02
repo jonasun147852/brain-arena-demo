@@ -220,6 +220,13 @@
   .bslot.fire{animation:bfire .55s;}
   @keyframes bfire{0%{transform:scale(1);}30%{transform:scale(1.7); box-shadow:0 0 16px var(--gold);}100%{transform:scale(1);}}
   .reschip{font-size:9px; font-weight:800; padding:1px 7px; border-radius:10px; color:#ffb1e6; border:1px solid #ff6ec7; background:rgba(255,110,199,.14); white-space:nowrap;}
+  .reschip.bondchip{color:#ffb367; border-color:#ff9d4d; background:rgba(255,157,77,.14);}
+  .chiptag.bond{color:#ffb367; border-color:#ff9d4d; background:rgba(255,157,77,.15); animation:pulse 1s infinite;}
+  .chiptag.bondhint{color:var(--dim); border-color:var(--line2); border-style:dashed;}
+  .hexpill.bondgot{color:#ffb367; border-color:#ff9d4d;}
+  .missedbonds{font-size:12px; color:var(--dim); text-align:center; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center;}
+  .missedbonds .mb{color:#ffb367; border:1px dashed #ff9d4d; border-radius:14px; padding:3px 11px; opacity:.85;}
+  .missedbonds .mb i{color:var(--dim); font-style:normal; font-size:11px;}
   .odpips{display:flex; gap:3px; margin-top:2px; justify-content:center;}
   .odp{width:7px; height:7px; border-radius:50%; background:rgba(0,0,0,.5); border:1px solid #5a3f7a;}
   .odp.on{background:var(--purple); border-color:var(--purple); box-shadow:0 0 7px var(--purple);}
@@ -434,6 +441,7 @@
     <div class="resrow" id="finalRow"></div>
     <div class="resrow" id="statsRow"></div>
     <div class="hexlist" id="finalHexes"></div>
+    <div class="missedbonds" id="missedBonds"></div>
     <button class="btn" onclick="location.reload()">再 来 一 局</button>
     <button class="btn ghost" style="padding:7px 18px; font-size:12px;" onclick="document.getElementById('telem').classList.toggle('hidden')">开发数据 §13</button>
     <div class="telem hidden" id="telem"></div>
@@ -497,21 +505,21 @@ const GRADE_FLAVOR = {S:'宗师', A:'高手', B:'熟练', C:'学徒', D:'梦游'
 
 /* ============================== 海克斯种子卡 (§10.2) ============================== */
 const HEXES = [
-  {id:'h01',name:'滚雪球',ico:'❄️',school:'连击系',rar:'silver',cat:'改写规则',ba:true,  fl:'雪,不问山有多高。',       desc:'连击质变档 3/6/9 → 2/4/6'},
-  {id:'h02',name:'连击护盾',ico:'🛡️',school:'连击系',rar:'gold',cat:'改写规则',ba:false, fl:'断处,即是接续之处。',     desc:'断连时,连击只回落到本档起点'},
-  {id:'h03',name:'提前双响',ico:'⚡',school:'连击系',rar:'prism',cat:'改写规则',ba:false, fl:'第七击起,回声先至。',     desc:'双响解锁:连击 9 → 7'},
-  {id:'h04',name:'急速充能',ico:'🚀',school:'神速系',rar:'silver',cat:'改写规则',ba:false,fl:'快,还能更快。',           desc:'速度奖池上限 30% → 50%'},
-  {id:'h05',name:'难题大师',ico:'🧠',school:'神速系',rar:'gold',cat:'改写规则',ba:false, fl:'难题是它们的墙,你的门。', desc:'★★★ 题基准 +50%,答对再 +15 能量'},
-  {id:'h06',name:'抢答',ico:'🎯',school:'神速系',rar:'prism',cat:'成长',ba:true,        fl:'题目开口之前,答案已出鞘。',desc:'连续 3 题快于基准 → 下一刀翻倍'},
-  {id:'h07',name:'稳定输出',ico:'🪨',school:'即时系',rar:'silver',cat:'改写规则',ba:true, fl:'不求惊雷,每一刀都在。',   desc:'基础刀威 10 → 16,能量收入 −40%'},
-  {id:'h08',name:'溅射强化',ico:'💥',school:'即时系',rar:'gold',cat:'改写规则',ba:false, fl:'一刀之内,皆是刀锋。',     desc:'溅射 30% → 60%'},
-  {id:'h09',name:'持续灼烧',ico:'🔥',school:'即时系',rar:'prism',cat:'转化',ba:false,    fl:'伤口,会记住你。',         desc:'每一刀附带灼烧:2 题内每题再受 50%'},
-  {id:'h10',name:'重锤',ico:'🔨',school:'蓄力系',rar:'silver',cat:'改写规则',ba:true,    fl:'收起小聪明,举起大锤。',   desc:'重技威力 ×1.5,封印轻技'},
-  {id:'h11',name:'过载专家',ico:'☢️',school:'蓄力系',rar:'gold',cat:'改写规则',ba:false, fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限 5 → 8'},
-  {id:'h12',name:'蓄能',ico:'🔋',school:'蓄力系',rar:'prism',cat:'改写规则',ba:false,    fl:'门槛,是用来磨低的。',     desc:'轻技 −10 / 重技 −20 能量门槛'},
-  {id:'h13',name:'能量虹吸',ico:'🌀',school:'蓄力系',rar:'gold',cat:'转化',ba:false,     fl:'它的痛,是你的粮。',       desc:'重技命中,回复 40 能量'},
-  {id:'h14',name:'招式解锁',ico:'🗝️',school:'通用',rar:'prism',cat:'成长',ba:false,     fl:'第五答,塔开一扇门。',     desc:'本关每答 5 题,附赠一记控制小招'},
-  {id:'h15',name:'减速领域',ico:'🧊',school:'即时系',rar:'gold',cat:'干扰',ba:false,     fl:'我的领域里,时间归我。',   desc:'减速时长 ×2,震慑 +2 秒'},
+  {id:'h01',name:'滚雪球',ico:'❄️',school:'连击系',rar:'silver',cat:'改写规则',ba:true,  fl:'雪,不问山有多高。',       desc:'每 <b>2</b> 连击攀一档质变——凡人需要 3'},
+  {id:'h02',name:'连击护盾',ico:'🛡️',school:'连击系',rar:'gold',cat:'改写规则',ba:false, fl:'断处,即是接续之处。',     desc:'断连时,雪只退到<b>本档门口</b>,不滚落谷底'},
+  {id:'h03',name:'提前双响',ico:'⚡',school:'连击系',rar:'prism',cat:'改写规则',ba:false, fl:'第七击起,回声先至。',     desc:'回声提前苏醒:第 <b>7</b> 击即双响'},
+  {id:'h04',name:'急速充能',ico:'🚀',school:'神速系',rar:'silver',cat:'改写规则',ba:false,fl:'快,还能更快。',           desc:'速度奖池撑大一半:上限三成 → <b>五成</b>'},
+  {id:'h05',name:'难题大师',ico:'🧠',school:'神速系',rar:'gold',cat:'改写规则',ba:false, fl:'难题是它们的墙,你的门。', desc:'★★★ 题的沙漏<b>多一半</b>,答对再饮 <b>15</b> 能量'},
+  {id:'h06',name:'抢答',ico:'🎯',school:'神速系',rar:'prism',cat:'成长',ba:true,        fl:'题目开口之前,答案已出鞘。',desc:'连快 <b>3</b> 题,下一刀出<b>双倍锋芒</b>'},
+  {id:'h07',name:'稳定输出',ico:'🪨',school:'即时系',rar:'silver',cat:'改写规则',ba:true, fl:'不求惊雷,每一刀都在。',   desc:'刀威生来 <b>16</b>(而非 10);代价:能量收成打六折'},
+  {id:'h08',name:'溅射强化',ico:'💥',school:'即时系',rar:'gold',cat:'改写规则',ba:false, fl:'一刀之内,皆是刀锋。',     desc:'裂刃吞掉<b>六成</b>刀威——原本只有三成'},
+  {id:'h09',name:'持续灼烧',ico:'🔥',school:'即时系',rar:'prism',cat:'转化',ba:false,    fl:'伤口,会记住你。',         desc:'每刀烙下<b>灼痕</b>:两题之内,各再燃半刀'},
+  {id:'h10',name:'重锤',ico:'🔨',school:'蓄力系',rar:'silver',cat:'改写规则',ba:true,    fl:'收起小聪明,举起大锤。',   desc:'重技威力<b>再加五成</b>;轻技入鞘,不得再拔'},
+  {id:'h11',name:'过载专家',ico:'☢️',school:'蓄力系',rar:'gold',cat:'改写规则',ba:false, fl:'深渊多看你一眼,你多攒一层。',desc:'深渊许你 <b>8</b> 层过载——凡人只有 5'},
+  {id:'h12',name:'蓄能',ico:'🔋',school:'蓄力系',rar:'prism',cat:'改写规则',ba:false,    fl:'门槛,是用来磨低的。',     desc:'轻技少 <b>10</b>,重技少 <b>20</b>——门槛为你磨低'},
+  {id:'h13',name:'能量虹吸',ico:'🌀',school:'蓄力系',rar:'gold',cat:'转化',ba:false,     fl:'它的痛,是你的粮。',       desc:'重技饮血,吞回 <b>40</b> 能量'},
+  {id:'h14',name:'招式解锁',ico:'🗝️',school:'通用',rar:'prism',cat:'成长',ba:false,     fl:'第五答,塔开一扇门。',     desc:'每答 <b>5</b> 题,塔赠你一记<b>控场小招</b>'},
+  {id:'h15',name:'减速领域',ico:'🧊',school:'即时系',rar:'gold',cat:'干扰',ba:false,     fl:'我的领域里,时间归我。',   desc:'减速<b>加倍</b>萦绕,震慑多缠 <b>2</b> 秒'},
 ];
 const RAR_LABEL = {silver:'白银',gold:'黄金',prism:'棱彩'};
 const RAR_BY_SECTION = ['silver','gold','prism'];
@@ -526,6 +534,18 @@ const RESONANCE = {
 function schoolCount(s){ return P.hexes.filter(h=>h.school===s).length; }
 function hasRes(s){ return schoolCount(s)>=2; }
 function activeResonances(){ return Object.keys(RESONANCE).filter(hasRes); }
+
+/* ============================== 羁绊(跨流派特定组合;与共鸣抢卡位 = 赌感与遗憾感的引擎) ============================== */
+const BONDS = [
+  {id:'b1', name:'风暴眼', ico:'🌀', pieces:['h06','h03'], desc:'抢答只需连快 2 题'},
+  {id:'b2', name:'熔炉',   ico:'🔥', pieces:['h09','h11'], desc:'每层过载,灼痕伤害 +20%'},
+  {id:'b3', name:'永动机', ico:'♾️', pieces:['h13','h04'], desc:'虹吸回能 40 → 70'},
+  {id:'b4', name:'斩首令', ico:'🗡️', pieces:['h10','h05'], desc:'★★★ 答对,直接 +1 过载层'},
+  {id:'b5', name:'裂变',   ico:'💥', pieces:['h01','h08'], desc:'双响的回声也触发裂刃'},
+];
+function bondOn(id){ const b=BONDS.find(x=>x.id===id); return b.pieces.every(p=>has(p)); }
+function activeBonds(){ return BONDS.filter(b=>b.pieces.every(p=>has(p))); }
+function missedBonds(){ return BONDS.filter(b=>{ const n=b.pieces.filter(p=>has(p)).length; return n>0 && n<b.pieces.length; }); }
 
 /* ============================== 音效(WebAudio 合成,零素材) ============================== */
 const AU = { ctx:null, muted:false };
@@ -762,13 +782,15 @@ function beginDraft(){
 function rollOffer(rar){
   const pool = HEXES.filter(h=>h.rar===rar && !P.hexes.some(x=>x.id===h.id));
   const src = pool.length>=3 ? pool : HEXES.filter(h=>!P.hexes.some(x=>x.id===h.id));
-  // 抽卡倾斜:已持有流派的卡 60% 概率优先入选 → 组套路是选择,不是运气
+  // 抽卡倾斜:已持流派 + 差一张的羁绊搭子,60% 概率优先入选 → 追牌是选择,不是纯运气
   const ownedSchools = new Set(P.hexes.map(h=>h.school));
+  const wantIds = new Set();
+  BONDS.forEach(b=>{ const n=b.pieces.filter(p=>has(p)).length; if(n>0 && n<b.pieces.length) b.pieces.forEach(p=>{ if(!has(p)) wantIds.add(p); }); });
   const picks=[]; const copy=src.slice();
   for(let i=0;i<3 && copy.length;i++){
     let cand = copy;
-    if(ownedSchools.size && Math.random()<0.6){
-      const syn = copy.filter(h=>ownedSchools.has(h.school));
+    if((ownedSchools.size||wantIds.size) && Math.random()<0.6){
+      const syn = copy.filter(h=>ownedSchools.has(h.school) || wantIds.has(h.id));
       if(syn.length) cand = syn;
     }
     const chosen = cand[rnd(0,cand.length-1)];
@@ -791,11 +813,18 @@ function renderDraft(rar){
                  : (RESONANCE[h.school] && sc>=2) ? `<span class="chiptag res">🔗 共鸣已激活</span>` : '';
     const morphTag = (h.school!=='通用' && dominantOf(P.hexes.concat([h])) !== dominantSchool())
                  ? `<span class="chiptag ba">⚔ 技能变形</span>` : '';
+    const bondTags = BONDS.filter(b=>b.pieces.includes(h.id)).map(b=>{
+      const others = b.pieces.filter(p=>p!==h.id);
+      const ready = others.every(p=>has(p));
+      const oh = HEXES.find(x=>x.id===others[0]);
+      return ready ? `<span class="chiptag bond" title="${b.desc}">⛓ 选它结成「${b.name}」!</span>`
+                   : `<span class="chiptag bondhint" title="${b.desc}">⛓ 羁绊「${b.name}」缺 ${oh.ico}${oh.name}</span>`;
+    }).join('');
     el.innerHTML=`<div class="ico">${h.ico}</div><div class="name">${h.name}</div>
       <div class="flavor">「${h.fl}」</div>
       <div class="row1"><span class="chiptag school">${h.school}${sc?` ${sc}张`:''}</span><span class="chiptag cat">${h.cat}</span>${h.ba?'<span class="chiptag ba">★流派核心</span>':''}</div>
       <div class="desc">${h.desc}${resTag?`<br><span style="color:#ffb1e6">共鸣:${RESONANCE[h.school].desc}</span>`:''}</div>
-      <div class="row1">${resTag}${morphTag}</div>
+      <div class="row1">${resTag}${morphTag}${bondTags}</div>
       <div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`;
     el.onclick=()=>pickHex(h);
     wrap.appendChild(el);
@@ -810,18 +839,23 @@ function reroll(){
   renderDraft(RAR_BY_SECTION[Math.min(R.section-1, RAR_BY_SECTION.length-1)]);
 }
 function pickHex(h){
-  const before = activeResonances().length;
+  const resBefore = activeResonances().length;
+  const bondsBefore = activeBonds().map(b=>b.id);
   P.hexes.push(h);
-  const now = activeResonances();
-  if(now.length>before){
-    const r = RESONANCE[h.school];
-    P._loadBanner = `🔗 共鸣觉醒 · ${r.name}!`;
+  const newBond = activeBonds().find(b=>!bondsBefore.includes(b.id));
+  if(newBond){   // 羁绊结成优先播报
+    P._loadBanner = `⛓ 羁绊结成 · ${newBond.ico}${newBond.name}!`;
+    P._resSound = true;
+    if(activeResonances().length>resBefore) toastQueue = `🔗 共鸣同时觉醒:${RESONANCE[h.school].name}`;
+  } else if(activeResonances().length>resBefore){
+    P._loadBanner = `🔗 共鸣觉醒 · ${RESONANCE[h.school].name}!`;
     P._resSound = true;
   } else {
     P._loadBanner = `${h.ico} ${h.name} · 已装载`;
   }
   beginSection();
 }
+let toastQueue = null;
 
 function beginSection(){
   R.qInSection=0; P.dotQueue=[]; P.chainCount=0; P.shieldUsed=false;
@@ -851,6 +885,7 @@ function beginSection(){
   vs.classList.remove('play'); void vs.offsetWidth; vs.classList.add('play');
   setTimeout(()=>{
     if(CUR_SCREEN!=='battle') return;
+    if(toastQueue){ toast(toastQueue); toastQueue=null; }
     E.lastTick = Date.now();
     BATTLE_TIMER = setInterval(combatTick, 100);
     updateHUD(); updateSceneUI();
@@ -939,11 +974,6 @@ function onCorrect(){
   if(s > 0.30) hexFire('h04','超速充能');
   P.energy = Math.min(K.ENERGY_MAX, P.energy + perQ);
 
-  if(has('h06')){
-    if(fast){ P.consecutiveFast++; if(P.consecutiveFast>=3){ P.nextImmDouble=true; P.consecutiveFast=0; banner('🎯 抢答!下一题伤害翻倍'); hexFire('h06'); } }
-    else P.consecutiveFast=0;
-  }
-
   const uPrev = tierUnlocks(P.combo);
   P.combo++;
   telem.correct++;
@@ -966,7 +996,11 @@ function onCorrect(){
   if(u.double && !uPrev.double){ banner('🔓 双响 解锁!'); SFX.tierUp(); hexFire('h03'); hexFire('h01'); }
   if(u.splash){ dealDamage(Math.round(dmg*splashRatio()), '溅射', '#3fe7ff', true); hexFire('h08'); }
   if(u.slow) applySlow();
-  if(u.double) dealDamage(immediateDamageRaw(), '双响', '#b561ff');
+  if(u.double){
+    const d2 = immediateDamageRaw();
+    dealDamage(d2, '双响', '#b561ff');
+    if(bondOn('b5')) dealDamage(Math.round(d2*splashRatio()), '裂变', '#ffb1e6', true);   // 羁绊·裂变
+  }
 
   // 共鸣·三连锁:每第 3 次答对,即时层整套再触发一次
   if(hasRes('即时系')){
@@ -983,11 +1017,24 @@ function onCorrect(){
   resolveDot();
   if(has('h09')) P.dotQueue.push({ left:2, amount:Math.round(dmg*0.5) });
 
+  // 抢答:伤害结算之后再上膛,保证翻倍作用于「下一刀」而非本刀
+  if(has('h06')){
+    const need = bondOn('b1') ? 2 : 3;   // 羁绊·风暴眼
+    if(fast){ P.consecutiveFast++; if(P.consecutiveFast>=need){ P.nextImmDouble=true; P.consecutiveFast=0; banner('🎯 抢答!下一刀翻倍'); hexFire('h06'); } }
+    else P.consecutiveFast=0;
+  }
+
   if(P.energy >= bigCost() && P.overloadStacks < overloadMax()){
     P.overloadStacks++; telem.overloadUses++;
     SFX.odUp(P.overloadStacks);
     floatText(`过载 +1(${P.overloadStacks})`, '#b561ff', true, false, 'you');
     if(P.overloadStacks > K.OVERLOAD_MAX) hexFire('h11', `过载${P.overloadStacks}!`);
+  }
+  // 羁绊·斩首令:★★★ 答对直接攒层,不需满能量
+  if(q.difficulty==='hard' && bondOn('b4') && P.overloadStacks < overloadMax()){
+    P.overloadStacks++; telem.overloadUses++;
+    SFX.odUp(P.overloadStacks);
+    floatText('🗡 斩首令 +1层', '#ff9d4d', true, false, 'you');
   }
 
   if(has('h14') && R.qInSection % 5 === 0 && !E.dead){
@@ -1009,6 +1056,7 @@ function resolveDot(){
   let total=0;
   P.dotQueue.forEach(d=>{ if(d.left>0){ total+=d.amount; d.left--; } });
   P.dotQueue = P.dotQueue.filter(d=>d.left>0);
+  if(total>0 && bondOn('b2')) total = Math.round(total*(1+0.2*P.overloadStacks));   // 羁绊·熔炉
   if(total>0){ dealDamage(total,'灼烧','#ff5470',true); hexFire('h09'); }
 }
 
@@ -1129,7 +1177,7 @@ function releaseBig(){   // 重技能槽
   // 共鸣·稳压核心:重技能保留一半过载层
   P.overloadStacks = hasRes('蓄力系') ? Math.ceil(od/2) : 0;
   if(hasRes('蓄力系') && od>0) floatText(`🔗 稳压:保留${P.overloadStacks}层`, '#ffb1e6', true, false, 'you');
-  if(has('h13')){ P.energy = Math.min(K.ENERGY_MAX, P.energy+40); hexFire('h13','+40能量'); }
+  if(has('h13')){ const sip = bondOn('b3')?70:40; P.energy = Math.min(K.ENERGY_MAX, P.energy+sip); hexFire('h13',`+${sip}能量`); }   // 羁绊·永动机 40→70
   telem.releases.big++;
   telem.skillUse[sk.name]=(telem.skillUse[sk.name]||0)+1;
   SFX.big();
@@ -1248,6 +1296,16 @@ function finishRun(defeat){
 
   const hx=document.getElementById('finalHexes'); hx.innerHTML='';
   P.hexes.forEach(h=>{ const s=document.createElement('span'); s.className='hexpill'; s.textContent=`${h.ico} ${h.name}`; hx.appendChild(s); });
+  activeBonds().forEach(b=>{ const s=document.createElement('span'); s.className='hexpill bondgot'; s.textContent=`⛓ ${b.ico}${b.name}`; hx.appendChild(s); });
+  // 遗憾感:差一张没凑齐的羁绊,拍在脸上
+  const mb=document.getElementById('missedBonds');
+  const missed = missedBonds();
+  mb.innerHTML = missed.length
+    ? '差一张就凑齐:' + missed.map(b=>{
+        const lack = b.pieces.filter(p=>!has(p)).map(p=>{ const h=HEXES.find(x=>x.id===p); return `${h.ico}${h.name}`; }).join('、');
+        return `<span class="mb">⛓ ${b.name}<i>(缺 ${lack})</i></span>`;
+      }).join('')
+    : '';
   document.getElementById('telem').classList.add('hidden');
   renderTelem();
   show('final');
@@ -1351,6 +1409,7 @@ function renderBuild(){
   const row=document.getElementById('buildRow'); row.innerHTML='';
   P.hexes.forEach(h=>{ const s=document.createElement('span'); s.className='bslot r-'+h.rar; s.id='bs_'+h.id; s.textContent=h.ico; row.appendChild(s); });
   activeResonances().forEach(sc=>{ const r=RESONANCE[sc]; const c=document.createElement('span'); c.className='reschip'; c.textContent=`${r.ico}${r.name}`; c.title=r.desc; row.appendChild(c); });
+  activeBonds().forEach(b=>{ const c=document.createElement('span'); c.className='reschip bondchip'; c.textContent=`${b.ico}${b.name}`; c.title=b.desc; row.appendChild(c); });
 }
 function hexFire(id, label){
   if(!has(id)) return;
