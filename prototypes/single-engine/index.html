@@ -148,6 +148,10 @@
   .qdiff.easy{color:var(--green);} .qdiff.medium{color:var(--gold);} .qdiff.hard{color:var(--red);}
   .qprompt{font-weight:900; letter-spacing:2px; text-align:center; line-height:1.1; text-shadow:0 2px 16px rgba(63,231,255,.18);}
   .qprompt.qp-l{font-size:40px;} .qprompt.qp-m{font-size:30px;} .qprompt.qp-s{font-size:23px;}
+  .qprompt.good{color:var(--green); text-shadow:0 0 26px rgba(67,224,138,.5);}
+  .qprompt.bad{color:var(--red); text-shadow:0 0 26px rgba(255,84,112,.5);}
+  .qbox.good{border-color:var(--green); box-shadow:0 0 26px rgba(67,224,138,.22), inset 0 1px 0 rgba(255,255,255,.04);}
+  .qbox.bad{border-color:var(--red); box-shadow:0 0 26px rgba(255,84,112,.22), inset 0 1px 0 rgba(255,255,255,.04);}
   .qtimer{width:72%; height:7px; background:#0a1020; border-radius:5px; overflow:hidden; position:relative; border:1px solid var(--line);}
   .qtimerfill{height:100%; background:linear-gradient(90deg,var(--cyan),var(--blue)); width:100%; transition:width .1s linear;}
   .qtimer .bench{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--green); box-shadow:0 0 8px var(--green);}
@@ -185,6 +189,20 @@
   .telem .dimv{color:var(--dim);}
   .hexlist{display:flex; gap:7px; flex-wrap:wrap; justify-content:center;}
   .hexpill{font-size:11.5px; padding:4px 11px; border-radius:16px; border:1px solid var(--line2); background:rgba(0,0,0,.3);}
+
+  /* 战报 */
+  .gradewrap{display:flex; align-items:center; gap:18px;}
+  .grade{width:92px; height:92px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:52px; font-weight:900;
+    border:3px solid var(--line2); background:radial-gradient(circle at 38% 30%, rgba(255,255,255,.08), rgba(0,0,0,.35));}
+  .grade.S{color:var(--gold); border-color:var(--gold); box-shadow:0 0 44px rgba(255,207,77,.5); text-shadow:0 0 24px rgba(255,207,77,.8);}
+  .grade.A{color:var(--cyan); border-color:var(--cyan); box-shadow:0 0 34px rgba(63,231,255,.4);}
+  .grade.B{color:var(--silver); border-color:#8893ad;}
+  .grade.C,.grade.D{color:var(--dim); border-color:var(--line2);}
+  .scorecol{display:flex; flex-direction:column; gap:4px;}
+  .scorenum{font-size:34px; font-weight:900; letter-spacing:1px;}
+  .scorelab{font-size:11px; color:var(--dim); letter-spacing:2px;}
+  .besttag{font-size:11px; font-weight:800; color:var(--gold); border:1px solid var(--gold); border-radius:14px; padding:2px 10px; align-self:flex-start; animation:pulse 1.2s infinite;}
+  .besttag.old{color:var(--dim); border-color:var(--line2); animation:none;}
   .toast{position:absolute; bottom:16px; left:50%; transform:translateX(-50%) translateY(8px); background:rgba(11,17,32,.96); border:1px solid var(--purple); color:var(--text); padding:9px 18px; border-radius:24px; font-size:13px; opacity:0; transition:opacity .3s, transform .3s; pointer-events:none; z-index:9; max-width:90%; text-align:center; box-shadow:0 8px 30px rgba(181,97,255,.3);}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
@@ -239,6 +257,8 @@
     .banner{font-size:21px; letter-spacing:1px;}
     .bslot{width:18px; height:18px; font-size:11px; border-radius:6px;}
     .buildrow{min-height:18px;}
+    .grade{width:70px; height:70px; font-size:38px;}
+    .scorenum{font-size:26px;}
   }
 </style>
 </head>
@@ -305,7 +325,7 @@
       <span class="tc dbl hidden" id="tcDbl">下一题翻倍!</span>
     </div>
 
-    <div class="qbox">
+    <div class="qbox" id="qbox">
       <div class="qmeta"><span class="qtype" id="qType">速算</span><span class="qdiff" id="qDiff">EASY</span></div>
       <div class="qprompt qp-l" id="qPrompt">3 × 4 + 2</div>
       <div class="qtimer"><div class="qtimerfill" id="qTimerFill"></div><div class="bench" id="qBench"></div></div>
@@ -338,11 +358,21 @@
 
   <!-- FINAL -->
   <div id="final" class="screen hidden">
-    <h1 id="finalTitle" style="font-size:28px; letter-spacing:3px;">局末结算</h1>
+    <h1 id="finalTitle" style="font-size:26px; letter-spacing:3px;">战 报</h1>
+    <div class="gradewrap">
+      <div class="grade" id="gradeBox">S</div>
+      <div class="scorecol">
+        <div class="scorelab">得 分</div>
+        <div class="scorenum" id="scoreNum">0</div>
+        <div class="besttag" id="bestTag">🏅 新纪录!</div>
+      </div>
+    </div>
     <div class="resrow" id="finalRow"></div>
+    <div class="resrow" id="statsRow"></div>
     <div class="hexlist" id="finalHexes"></div>
-    <div class="telem" id="telem"></div>
     <button class="btn" onclick="location.reload()">再 来 一 局</button>
+    <button class="btn ghost" style="padding:7px 18px; font-size:12px;" onclick="document.getElementById('telem').classList.toggle('hidden')">开发数据 §13</button>
+    <div class="telem hidden" id="telem"></div>
   </div>
 
 </div>
@@ -427,6 +457,7 @@ function freshRun(){
     releases:{small:0, big:0}, overloadUses:0,
     breaks:0, recoveredAfterBreak:0,
     maxHit:0, maxHitCombo:0, maxHitOver:0, maxHitKind:'',
+    maxCombo:0, correct:0,
     dmgTaken:0, startTime:Date.now(),
   };
 }
@@ -642,6 +673,7 @@ function nextQuestion(){
   const qd=document.getElementById('qDiff'); qd.textContent=q.difficulty.toUpperCase(); qd.className='qdiff '+q.difficulty;
   const pe=document.getElementById('qPrompt'); pe.textContent=q.prompt;
   pe.className = 'qprompt ' + (q.prompt.length<=11?'qp-l':q.prompt.length<=18?'qp-m':'qp-s');
+  document.getElementById('qbox').classList.remove('good','bad');
   const inp=document.getElementById('qInput'); inp.value=''; inp.disabled=false;
   if(!IS_TOUCH) inp.focus();
   qStart = Date.now();
@@ -661,8 +693,19 @@ function submitAnswer(){
   const val = parseInt(document.getElementById('qInput').value,10);
   if(isNaN(val)) return;
   clearTimeout(qTimer);
+  const fill=document.getElementById('qTimerFill');
+  fill.style.transition='none'; fill.style.width='0%';   // 定住计时条,结束这一拍
   if(val===q.answer) onCorrect();
   else onBreak('答错');
+}
+/* 反馈打在眼睛所在的位置:题目区本身 */
+function showQFeedback(type, text){
+  const pe=document.getElementById('qPrompt');
+  pe.textContent=text;
+  pe.className='qprompt qp-l '+type;
+  const qb=document.getElementById('qbox');
+  qb.classList.remove('good','bad'); void qb.offsetWidth; qb.classList.add(type);
+  document.getElementById('qInput').value='';
 }
 function onTyped(){
   const inp=document.getElementById('qInput');
@@ -691,6 +734,9 @@ function onCorrect(){
 
   const uPrev = tierUnlocks(P.combo);
   P.combo++;
+  telem.correct++;
+  telem.maxCombo = Math.max(telem.maxCombo, P.combo);
+  showQFeedback('good', `✓ COMBO ${P.combo}`);
   const beforeTier = comboTier(P.combo-1);
   const dmg = immediateDamage();
   const consumedDouble = P.nextImmDouble;
@@ -739,6 +785,7 @@ function onTimeout(){ onBreak('超时'); }
 function onBreak(reason){
   document.getElementById('qInput').disabled=true;
   telem.breaks++;
+  showQFeedback('bad', `✗ 答案 ${q.answer}`);
   const t = thresholds();
   if(has('h02')){ P.combo = P.combo>=t[2]?t[2] : P.combo>=t[1]?t[1] : P.combo>=t[0]?t[0] : 0; hexFire('h02','护盾:档位保留'); }
   else { P.combo = Math.floor(P.combo/2); }
@@ -792,8 +839,8 @@ function dealDamage(amount, kind, color, secondary){
 function afterAction(isBreak){
   updateHUD();
   if(CUR_SCREEN!=='battle' || E.dead || P.hp<=0) return;
-  // 心流加速:连击越高,下一题来得越快;断连后停顿更长,让疼痛落地
-  const delay = isBreak ? 820 : Math.max(220, 540 - P.combo*25);
+  // 心流加速:连击越高,下一题来得越快;断连后停顿更长,让正确答案被看见
+  const delay = isBreak ? 1150 : Math.max(240, 560 - P.combo*25);
   setTimeout(nextQuestion, delay);
 }
 function markEvent(){ telem.eventQGaps.push(telem.globalQ - telem.lastEventQ); telem.lastEventQ = telem.globalQ; }
@@ -819,24 +866,54 @@ function sectionWin(){
 function runLose(){
   stopLoop();
   clearTimeout(qTimer);
-  R.results.push({ section:R.section, q:R.qInSection, hpLeft:0, passed:false });
+  R.results.push({ section:R.section, q:R.qInSection, hpLeft:0, passed:false, dmgDone:E?E.hpMax-E.hp:0, foeMax:E?E.hpMax:1 });
   finishRun(true);
 }
 function nextSection(){ if(R.section >= K.SECTIONS) finishRun(false); else beginDraft(); }
 function seg(v,k,cls){ const d=document.createElement('div'); d.className='resseg '+(cls||''); d.innerHTML=`<div class="big">${v}</div><div class="lab">${k}</div>`; return d; }
 
+function calcScore(){
+  const won = R.results.filter(r=>r.passed).length;
+  let s = won*1000 + P.hp*10 + telem.maxCombo*30 + telem.maxHit*2;
+  const last = R.results[R.results.length-1];
+  if(last && !last.passed && last.foeMax) s += Math.round(last.dmgDone/last.foeMax*600); // 阵亡节的进度分
+  return s;
+}
+function gradeOf(score){ return score>=4400?'S' : score>=3300?'A' : score>=2000?'B' : score>=900?'C' : 'D'; }
+
 function finishRun(defeat){
   stopLoop();
   const won = R.results.filter(r=>r.passed).length;
   document.getElementById('finalTitle').textContent = defeat
-    ? `💀 阵亡于第 ${R.section} 节`
-    : (won===K.SECTIONS ? '🏆 全 部 击 破' : `局末结算 · ${won}/${K.SECTIONS}`);
+    ? `💀 阵亡于第 ${R.section} 节 · ${E?E.name:''}`
+    : (won===K.SECTIONS ? '🏆 全 部 击 破' : `战报 · ${won}/${K.SECTIONS}`);
+
+  // 得分 + 评级 + 纪录
+  const score = calcScore();
+  const g = gradeOf(score);
+  const gb=document.getElementById('gradeBox'); gb.textContent=g; gb.className='grade '+g;
+  document.getElementById('scoreNum').textContent = score.toLocaleString();
+  let best=0; try{ best=Number(localStorage.getItem('ba_best')||0); }catch(e){}
+  const bt=document.getElementById('bestTag');
+  if(score>best){ bt.textContent='🏅 新纪录!'; bt.className='besttag'; try{ localStorage.setItem('ba_best', String(score)); }catch(e){} }
+  else { bt.textContent=`最高 ${best.toLocaleString()}`; bt.className='besttag old'; }
+
+  // 各节战果
   const row=document.getElementById('finalRow'); row.innerHTML='';
   R.results.forEach(r=>{
-    row.appendChild(seg(r.passed?`${r.q} 题`:'💀', `第${r.section}节 ${r.passed?'击杀':'阵亡'}`, r.passed?'win':'lose'));
+    const v = r.passed ? `${r.q} 题` : (r.foeMax ? `${Math.round(r.dmgDone/r.foeMax*100)}%` : '💀');
+    row.appendChild(seg(v, `第${r.section}节 ${r.passed?'击杀':'阵亡时血线'}`, r.passed?'win':'lose'));
   });
+  // 高光数据
+  const st=document.getElementById('statsRow'); st.innerHTML='';
+  st.appendChild(seg(telem.maxHit, `最大一发 · ${telem.maxHitKind||'—'}`, 'win'));
+  st.appendChild(seg(telem.maxCombo, '最高连击', ''));
+  st.appendChild(seg(telem.globalQ ? Math.round(telem.correct/telem.globalQ*100)+'%' : '—', '正确率', ''));
+  st.appendChild(seg(Math.round((Date.now()-telem.startTime)/1000)+'s', '用时', ''));
+
   const hx=document.getElementById('finalHexes'); hx.innerHTML='';
   P.hexes.forEach(h=>{ const s=document.createElement('span'); s.className='hexpill'; s.textContent=`${h.ico} ${h.name}`; hx.appendChild(s); });
+  document.getElementById('telem').classList.add('hidden');
   renderTelem();
   show('final');
 }
