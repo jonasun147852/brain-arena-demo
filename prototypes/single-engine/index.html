@@ -70,6 +70,9 @@
   .card .ico{font-size:32px;}
   .card .name{font-size:19px; font-weight:800;}
   .card .desc{font-size:12.5px; color:var(--silver); line-height:1.55; flex:1;}
+  .card .flavor{font-size:11px; color:#d8c07a; font-style:italic; opacity:.9; line-height:1.4; letter-spacing:.5px;}
+  .qbonus{font-size:11px; font-weight:800; color:var(--gold); border:1px solid rgba(255,207,77,.35); padding:2px 9px; border-radius:14px; background:rgba(255,207,77,.08); font-feature-settings:"tnum" 1;}
+  .qbonus.drained{color:var(--dim); border-color:var(--line); background:transparent;}
   .card .row1{display:flex; gap:5px; flex-wrap:wrap;}
   .chiptag{font-size:10px; font-weight:800; padding:2px 8px; border-radius:5px; background:rgba(0,0,0,.35); border:1px solid var(--line2); letter-spacing:.5px;}
   .chiptag.school{color:var(--cyan);} .chiptag.cat{color:var(--gold);} .chiptag.ba{color:var(--purple); border-color:var(--purple);}
@@ -124,12 +127,13 @@
   .shake{animation:shake .28s;}
   @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}60%{transform:translateX(8px);}}
 
-  .hud{width:100%; display:flex; gap:9px;}
-  .stat{flex:1; background:linear-gradient(180deg,var(--panel),#080e1c); border:1px solid var(--line); border-radius:12px; padding:8px 10px; text-align:center;}
-  .stat .v{font-size:21px; font-weight:900; line-height:1.1; transition:transform .12s;} .stat .v.bump{transform:scale(1.3);}
+  .hud{width:100%; display:flex; gap:10px; padding:0 6px;}
+  .stat{flex:1; background:linear-gradient(100deg,var(--panel2),#080e1c); border:1px solid var(--line); border-left-width:3px; border-radius:6px; padding:7px 8px; text-align:center; transform:skewX(-8deg);}
+  .stat>*{transform:skewX(8deg);}
+  .stat .v{font-size:21px; font-weight:900; line-height:1.1; transition:transform .12s;} .stat .v.bump{transform:skewX(8deg) scale(1.3);}
   .stat .k{font-size:9.5px; color:var(--dim); letter-spacing:1.5px; margin-top:2px;}
   .stat.combo .v{color:var(--cyan);} .stat.energy .v{color:var(--gold);} .stat.over .v{color:var(--purple);} .stat.imm .v{color:var(--green);}
-  .stat.combo{border-color:rgba(63,231,255,.25);} .stat.energy{border-color:rgba(255,207,77,.22);}
+  .stat.combo{border-left-color:var(--cyan);} .stat.imm{border-left-color:var(--green);} .stat.energy{border-left-color:var(--gold);} .stat.over{border-left-color:var(--purple);}
   .energybar{height:6px; background:#0a1020; border-radius:4px; margin-top:5px; overflow:hidden; position:relative;}
   .energyfill{height:100%; background:linear-gradient(90deg,var(--gold),var(--red)); width:0%; transition:width .25s; box-shadow:0 0 10px rgba(255,207,77,.6);}
   .energybar .gmark{position:absolute; top:-1px; bottom:-1px; width:2px; background:rgba(255,255,255,.45);}
@@ -179,7 +183,8 @@
 
   /* result */
   .resrow{display:flex; gap:14px; margin:6px 0; flex-wrap:wrap; justify-content:center;}
-  .resseg{background:linear-gradient(180deg,var(--panel),#080e1c); border:1px solid var(--line); border-radius:13px; padding:15px 22px; text-align:center; min-width:120px;}
+  .resseg{background:linear-gradient(100deg,var(--panel2),#080e1c); border:1px solid var(--line); border-left-width:3px; border-radius:8px; padding:15px 22px; text-align:center; min-width:120px; transform:skewX(-6deg);}
+  .resseg>*{transform:skewX(6deg);}
   .resseg .big{font-size:28px; font-weight:900;} .resseg.win .big{color:var(--green);} .resseg.lose .big{color:var(--red);}
   .resseg.win{border-color:rgba(67,224,138,.4);} .resseg.lose{border-color:rgba(255,84,112,.35);}
   .resseg .lab{font-size:11px; color:var(--dim); letter-spacing:1px; margin-top:3px;}
@@ -362,11 +367,11 @@
     </div>
 
     <div class="hud">
-      <div class="stat combo"><div class="v" id="sCombo">0</div><div class="k">连击</div></div>
-      <div class="stat imm"><div class="v" id="sImm">10</div><div class="k">即时伤害</div></div>
-      <div class="stat energy"><div class="v" id="sEnergy">0</div><div class="k">能量</div>
+      <div class="stat combo"><div class="v" id="sCombo">0</div><div class="k">🔥 连 击</div></div>
+      <div class="stat imm"><div class="v" id="sImm">10</div><div class="k">⚔ 刀 威</div></div>
+      <div class="stat energy"><div class="v" id="sEnergy">0</div><div class="k">⚡ 能 量</div>
         <div class="energybar"><div class="energyfill" id="energyFill"></div><div class="gmark" id="gmS"></div><div class="gmark" id="gmB"></div></div></div>
-      <div class="stat over"><div class="v" id="sOver">0</div><div class="k">过载层</div></div>
+      <div class="stat over"><div class="v" id="sOver">0</div><div class="k">☢ 过 载</div></div>
     </div>
     <div class="tierchips" id="tierChips">
       <span class="tc on">单体</span>
@@ -377,7 +382,7 @@
     </div>
 
     <div class="qbox" id="qbox">
-      <div class="qmeta"><span class="qtype" id="qType">速算</span><span class="qdiff" id="qDiff">EASY</span></div>
+      <div class="qmeta"><span class="qtype" id="qType">速算</span><span class="qdiff" id="qDiff">★</span><span class="qbonus" id="qBonus">⚡+0</span></div>
       <div class="qprompt qp-l" id="qPrompt">3 × 4 + 2</div>
       <div class="qtimer"><div class="qtimerfill" id="qTimerFill"></div><div class="bench" id="qBench"></div></div>
       <input class="qinput" id="qInput" inputmode="numeric" autocomplete="off" placeholder="答案">
@@ -447,6 +452,7 @@ const DEFAULTS = {
   ENERGY_PER_COMBO: 2,
   ENERGY_MAX: 150,
   SPEED_CAP: 0.30,
+  DECAY_WINDOW: 1.5,   // 速度奖池在 基准×此值 时间内衰减到 0
   SMALL_RELEASE_COST: 50,
   BIG_RELEASE_COST: 100,
   SMALL_MULT: 3,
@@ -491,21 +497,21 @@ const GRADE_FLAVOR = {S:'宗师', A:'高手', B:'熟练', C:'学徒', D:'梦游'
 
 /* ============================== 海克斯种子卡 (§10.2) ============================== */
 const HEXES = [
-  {id:'h01',name:'滚雪球',ico:'❄️',school:'连击系',rar:'silver',cat:'改写规则',ba:true,  desc:'滚动层每 2 连击解锁一档(默认 3)'},
-  {id:'h02',name:'连击护盾',ico:'🛡️',school:'连击系',rar:'gold',cat:'改写规则',ba:false,desc:'断连改为回落到当前档起点,而非减半'},
-  {id:'h03',name:'提前双响',ico:'⚡',school:'连击系',rar:'prism',cat:'改写规则',ba:false,desc:'连击 7 即解锁双响(默认 9)'},
-  {id:'h04',name:'急速充能',ico:'🚀',school:'神速系',rar:'silver',cat:'改写规则',ba:false,desc:'速度系数上限 0.30 → 0.50(仍封顶)'},
-  {id:'h05',name:'难题大师',ico:'🧠',school:'神速系',rar:'gold',cat:'改写规则',ba:false,desc:'hard 基准时间 +50%,答对额外 +15 能量'},
-  {id:'h06',name:'抢答',ico:'🎯',school:'神速系',rar:'prism',cat:'成长',ba:true,    desc:'连续 3 题快于基准 → 下一题即时伤害翻倍'},
-  {id:'h07',name:'稳定输出',ico:'🪨',school:'即时系',rar:'silver',cat:'改写规则',ba:true, desc:'基础即时 10 → 16,但能量增速 −40%'},
-  {id:'h08',name:'溅射强化',ico:'💥',school:'即时系',rar:'gold',cat:'改写规则',ba:false,desc:'溅射 30% → 60%'},
-  {id:'h09',name:'持续灼烧',ico:'🔥',school:'即时系',rar:'prism',cat:'转化',ba:false,desc:'即时伤害附带 2 题 DoT(每题 50%)'},
-  {id:'h10',name:'重锤',ico:'🔨',school:'蓄力系',rar:'silver',cat:'改写规则',ba:true,  desc:'大招 ×6 → ×9,但禁用小放'},
-  {id:'h11',name:'过载专家',ico:'☢️',school:'蓄力系',rar:'gold',cat:'改写规则',ba:false,desc:'过载层上限 5 → 8'},
-  {id:'h12',name:'蓄能',ico:'🔋',school:'蓄力系',rar:'prism',cat:'改写规则',ba:false,desc:'小放门槛 50→40,大放门槛 100→80'},
-  {id:'h13',name:'能量虹吸',ico:'🌀',school:'蓄力系',rar:'gold',cat:'转化',ba:false,  desc:'大招命中回复 40 能量'},
-  {id:'h14',name:'招式解锁',ico:'🗝️',school:'通用',rar:'prism',cat:'成长',ba:false,  desc:'本节每答 5 题,附赠一次范围控制小招'},
-  {id:'h15',name:'减速领域',ico:'🧊',school:'即时系',rar:'gold',cat:'干扰',ba:false, desc:'减速持续翻倍,大放震慑 +2 秒'},
+  {id:'h01',name:'滚雪球',ico:'❄️',school:'连击系',rar:'silver',cat:'改写规则',ba:true,  fl:'雪,不问山有多高。',       desc:'连击质变档 3/6/9 → 2/4/6'},
+  {id:'h02',name:'连击护盾',ico:'🛡️',school:'连击系',rar:'gold',cat:'改写规则',ba:false, fl:'断处,即是接续之处。',     desc:'断连时,连击只回落到本档起点'},
+  {id:'h03',name:'提前双响',ico:'⚡',school:'连击系',rar:'prism',cat:'改写规则',ba:false, fl:'第七击起,回声先至。',     desc:'双响解锁:连击 9 → 7'},
+  {id:'h04',name:'急速充能',ico:'🚀',school:'神速系',rar:'silver',cat:'改写规则',ba:false,fl:'快,还能更快。',           desc:'速度奖池上限 30% → 50%'},
+  {id:'h05',name:'难题大师',ico:'🧠',school:'神速系',rar:'gold',cat:'改写规则',ba:false, fl:'难题是它们的墙,你的门。', desc:'★★★ 题基准 +50%,答对再 +15 能量'},
+  {id:'h06',name:'抢答',ico:'🎯',school:'神速系',rar:'prism',cat:'成长',ba:true,        fl:'题目开口之前,答案已出鞘。',desc:'连续 3 题快于基准 → 下一刀翻倍'},
+  {id:'h07',name:'稳定输出',ico:'🪨',school:'即时系',rar:'silver',cat:'改写规则',ba:true, fl:'不求惊雷,每一刀都在。',   desc:'基础刀威 10 → 16,能量收入 −40%'},
+  {id:'h08',name:'溅射强化',ico:'💥',school:'即时系',rar:'gold',cat:'改写规则',ba:false, fl:'一刀之内,皆是刀锋。',     desc:'溅射 30% → 60%'},
+  {id:'h09',name:'持续灼烧',ico:'🔥',school:'即时系',rar:'prism',cat:'转化',ba:false,    fl:'伤口,会记住你。',         desc:'每一刀附带灼烧:2 题内每题再受 50%'},
+  {id:'h10',name:'重锤',ico:'🔨',school:'蓄力系',rar:'silver',cat:'改写规则',ba:true,    fl:'收起小聪明,举起大锤。',   desc:'重技威力 ×1.5,封印轻技'},
+  {id:'h11',name:'过载专家',ico:'☢️',school:'蓄力系',rar:'gold',cat:'改写规则',ba:false, fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限 5 → 8'},
+  {id:'h12',name:'蓄能',ico:'🔋',school:'蓄力系',rar:'prism',cat:'改写规则',ba:false,    fl:'门槛,是用来磨低的。',     desc:'轻技 −10 / 重技 −20 能量门槛'},
+  {id:'h13',name:'能量虹吸',ico:'🌀',school:'蓄力系',rar:'gold',cat:'转化',ba:false,     fl:'它的痛,是你的粮。',       desc:'重技命中,回复 40 能量'},
+  {id:'h14',name:'招式解锁',ico:'🗝️',school:'通用',rar:'prism',cat:'成长',ba:false,     fl:'第五答,塔开一扇门。',     desc:'本关每答 5 题,附赠一记控制小招'},
+  {id:'h15',name:'减速领域',ico:'🧊',school:'即时系',rar:'gold',cat:'干扰',ba:false,     fl:'我的领域里,时间归我。',   desc:'减速时长 ×2,震慑 +2 秒'},
 ];
 const RAR_LABEL = {silver:'白银',gold:'黄金',prism:'棱彩'};
 const RAR_BY_SECTION = ['silver','gold','prism'];
@@ -684,6 +690,17 @@ function combatTick(){
   let dt = now - E.lastTick;
   E.lastTick = now;
   if(dt<=0){ return; }
+  // 速度奖池实时蒸发(眼看着奖励流走 → 催促感)
+  if(q && !P._betweenQ){
+    let base = K.ENERGY_BASE + K.ENERGY_PER_COMBO*P.combo;
+    if(has('h07')) base *= 0.6;
+    const t=(now-qStart)/1000;
+    const sNow = clamp(1 - t/(q.benchmark*K.DECAY_WINDOW), 0, 1) * speedCap();
+    const v = Math.round(base*sNow);
+    const b=document.getElementById('qBonus');
+    b.textContent = '⚡+'+v;
+    b.classList.toggle('drained', v<=0);
+  }
   if(now < E.stunnedUntil || now < E.frozenUntil){ updateSceneUI(); return; }
   let rate = 1;
   if(now < E.slowedUntil) rate *= K.SLOW_FACTOR;
@@ -775,6 +792,7 @@ function renderDraft(rar){
     const morphTag = (h.school!=='通用' && dominantOf(P.hexes.concat([h])) !== dominantSchool())
                  ? `<span class="chiptag ba">⚔ 技能变形</span>` : '';
     el.innerHTML=`<div class="ico">${h.ico}</div><div class="name">${h.name}</div>
+      <div class="flavor">「${h.fl}」</div>
       <div class="row1"><span class="chiptag school">${h.school}${sc?` ${sc}张`:''}</span><span class="chiptag cat">${h.cat}</span>${h.ba?'<span class="chiptag ba">★流派核心</span>':''}</div>
       <div class="desc">${h.desc}${resTag?`<br><span style="color:#ffb1e6">共鸣:${RESONANCE[h.school].desc}</span>`:''}</div>
       <div class="row1">${resTag}${morphTag}</div>
@@ -849,10 +867,11 @@ function nextQuestion(){
   q = genQuestion(R.section-1);
   document.getElementById('qCount').textContent = `第 ${R.qInSection} 题`;
   document.getElementById('qType').textContent = TYPE_LABEL[q.type];
-  const qd=document.getElementById('qDiff'); qd.textContent=q.difficulty.toUpperCase(); qd.className='qdiff '+q.difficulty;
+  const qd=document.getElementById('qDiff'); qd.textContent={easy:'★',medium:'★★',hard:'★★★'}[q.difficulty]; qd.className='qdiff '+q.difficulty;
   const pe=document.getElementById('qPrompt'); pe.textContent=q.prompt;
   pe.className = 'qprompt ' + (q.prompt.length<=11?'qp-l':q.prompt.length<=18?'qp-m':'qp-s');
   document.getElementById('qbox').classList.remove('good','bad');
+  document.getElementById('qBonus').classList.remove('drained');
   const inp=document.getElementById('qInput'); inp.value=''; inp.disabled=false;
   P._betweenQ = false;
   if(!IS_TOUCH) inp.focus();
@@ -911,8 +930,8 @@ function onTyped(){
 function onCorrect(){
   const at = actualTime();
   const fast = at < q.benchmark;
-  const r = q.benchmark / Math.max(at,0.1);
-  const s = clamp(r-1,0,1) * speedCap();
+  // 时间递减奖池:满额起步,基准×DECAY_WINDOW 内线性蒸发(封顶不变,不超模)
+  const s = clamp(1 - at/(q.benchmark*K.DECAY_WINDOW), 0, 1) * speedCap();
   let base = K.ENERGY_BASE + K.ENERGY_PER_COMBO*P.combo;
   if(has('h07')) base *= 0.6;
   let perQ = base * (1+s);
@@ -1063,7 +1082,7 @@ function swapQuestion(){
   // 换题:弃掉当前题,原地换新(计时重置,不算断连)
   q = genQuestion(R.section-1);
   document.getElementById('qType').textContent = TYPE_LABEL[q.type];
-  const qd=document.getElementById('qDiff'); qd.textContent=q.difficulty.toUpperCase(); qd.className='qdiff '+q.difficulty;
+  const qd=document.getElementById('qDiff'); qd.textContent={easy:'★',medium:'★★',hard:'★★★'}[q.difficulty]; qd.className='qdiff '+q.difficulty;
   const pe=document.getElementById('qPrompt'); pe.textContent=q.prompt;
   pe.className = 'qprompt ' + (q.prompt.length<=11?'qp-l':q.prompt.length<=18?'qp-m':'qp-s');
   const inp=document.getElementById('qInput'); inp.value=''; inp.disabled=false;
@@ -1354,7 +1373,7 @@ const SCREENS=['start','draft','battle','secres','final'];
 function show(id){ SCREENS.forEach(s=>document.getElementById(s).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); CUR_SCREEN=id; if(id!=='battle') document.getElementById('app').classList.remove('lowhp'); }
 
 /* 调参表 UI */
-const TUNE_SCALARS = ['SECTIONS','BASE_IMMEDIATE','SPLASH_RATIO','ENERGY_BASE','ENERGY_PER_COMBO','ENERGY_MAX','SPEED_CAP','SMALL_RELEASE_COST','BIG_RELEASE_COST','SMALL_MULT','BIG_MULT','OVERLOAD_MAX','OVERLOAD_PER_STACK','TIMEOUT_FACTOR','PLAYER_HP','HEAL_PER_SECTION','STUN_SECONDS','SLOW_SECONDS','SLOW_FACTOR','ENRAGE_AFTER'];
+const TUNE_SCALARS = ['SECTIONS','BASE_IMMEDIATE','SPLASH_RATIO','ENERGY_BASE','ENERGY_PER_COMBO','ENERGY_MAX','SPEED_CAP','DECAY_WINDOW','SMALL_RELEASE_COST','BIG_RELEASE_COST','SMALL_MULT','BIG_MULT','OVERLOAD_MAX','OVERLOAD_PER_STACK','TIMEOUT_FACTOR','PLAYER_HP','HEAL_PER_SECTION','STUN_SECONDS','SLOW_SECONDS','SLOW_FACTOR','ENRAGE_AFTER'];
 const TUNE_ARRAYS = ['COMBO_TIER_THRESHOLDS','TIER_DAMAGE','ENEMY_HP','ENEMY_ATK','ENEMY_CHARGE'];
 function buildTuner(){
   const g=document.getElementById('tunerGrid'); g.innerHTML='';
