@@ -73,6 +73,7 @@
   .card .row1{display:flex; gap:5px; flex-wrap:wrap;}
   .chiptag{font-size:10px; font-weight:800; padding:2px 8px; border-radius:5px; background:rgba(0,0,0,.35); border:1px solid var(--line2); letter-spacing:.5px;}
   .chiptag.school{color:var(--cyan);} .chiptag.cat{color:var(--gold);} .chiptag.ba{color:var(--purple); border-color:var(--purple);}
+  .chiptag.res{color:#ffb1e6; border-color:#ff6ec7; background:rgba(255,110,199,.12); animation:pulse 1.2s infinite;}
   .rarbadge{align-self:flex-start; font-size:10px; font-weight:800; letter-spacing:2px; padding:3px 10px; border-radius:20px;}
   .rarbadge.silver{color:#c3ccde; border:1px solid #6c7790;} .rarbadge.gold{color:var(--gold); border:1px solid var(--gold);} .rarbadge.prism{color:var(--purple); border:1px solid var(--purple); background:rgba(181,97,255,.1);}
 
@@ -213,6 +214,10 @@
   .bslot.r-prism{border-color:var(--purple); box-shadow:0 0 8px rgba(181,97,255,.35);}
   .bslot.fire{animation:bfire .55s;}
   @keyframes bfire{0%{transform:scale(1);}30%{transform:scale(1.7); box-shadow:0 0 16px var(--gold);}100%{transform:scale(1);}}
+  .reschip{font-size:9px; font-weight:800; padding:1px 7px; border-radius:10px; color:#ffb1e6; border:1px solid #ff6ec7; background:rgba(255,110,199,.14); white-space:nowrap;}
+  .odpips{display:flex; gap:3px; margin-top:2px; justify-content:center;}
+  .odp{width:7px; height:7px; border-radius:50%; background:rgba(0,0,0,.5); border:1px solid #5a3f7a;}
+  .odp.on{background:var(--purple); border-color:var(--purple); box-shadow:0 0 7px var(--purple);}
   .curbuild{display:flex; gap:6px; align-items:center; font-size:12px; color:var(--dim); flex-wrap:wrap; justify-content:center;}
   .curbuild .bslot{width:26px; height:26px; font-size:15px;}
 
@@ -291,7 +296,10 @@
     <div class="topbar">
       <span class="sec" id="bSec">第 1 节</span>
       <span class="foename" id="foeName">磐石 · Σ</span>
-      <span class="qpill" id="qCount">第 1 题</span>
+      <span style="display:flex; gap:6px; align-items:center;">
+        <span class="qpill" id="qCount">第 1 题</span>
+        <button class="tunbtn" id="sndBtn" onclick="toggleMute()" style="padding:3px 9px;">🔊</button>
+      </span>
     </div>
 
     <div class="scene" id="scene">
@@ -334,7 +342,7 @@
 
     <div class="releases">
       <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><span class="kbd">1</span>小放<span class="cost" id="rSmallCost">需 50</span><span class="od" id="rSmallOd">即时 × 3</span></button>
-      <button class="rbtn big" id="rBig" onclick="releaseBig()"><span class="kbd">2</span>大放<span class="cost" id="rBigCost">需 100</span><span class="od" id="rBigOd">即时 × 6 + 震慑</span></button>
+      <button class="rbtn big" id="rBig" onclick="releaseBig()"><span class="kbd">2</span>大放<span class="cost" id="rBigCost">需 100</span><span class="od" id="rBigOd">即时 × 6 + 震慑</span><span class="odpips" id="odPips"></span></button>
     </div>
 
     <div class="keypad" id="keypad">
@@ -443,13 +451,68 @@ const HEXES = [
 const RAR_LABEL = {silver:'白银',gold:'黄金',prism:'棱彩'};
 const RAR_BY_SECTION = ['silver','gold','prism'];
 
+/* ============================== 共鸣(同流派×2 质变联动;团队层标签计数接口的单人预演) ============================== */
+const RESONANCE = {
+  '连击系':{name:'不灭雪球', ico:'🛡❄', desc:'每节首次断连,连击不回落'},
+  '神速系':{name:'时间凝滞', ico:'⏸', desc:'快于基准答对时,冻结敌人充能 2 秒'},
+  '即时系':{name:'三连锁', ico:'⛓', desc:'每第 3 次答对,即时层整套再触发一次'},
+  '蓄力系':{name:'稳压核心', ico:'🔗', desc:'大放后保留一半过载层(向上取整)'},
+};
+function schoolCount(s){ return P.hexes.filter(h=>h.school===s).length; }
+function hasRes(s){ return schoolCount(s)>=2; }
+function activeResonances(){ return Object.keys(RESONANCE).filter(hasRes); }
+
+/* ============================== 音效(WebAudio 合成,零素材) ============================== */
+const AU = { ctx:null, muted:false };
+try{ AU.muted = localStorage.getItem('ba_mute')==='1'; }catch(e){}
+function au(){
+  if(!AU.ctx){ try{ AU.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+  return AU.ctx;
+}
+function beep(o){
+  const c=au(); if(!c || AU.muted) return;
+  try{
+    if(c.state==='suspended') c.resume();
+    const t=c.currentTime + (o.delay||0);
+    const osc=c.createOscillator(), g=c.createGain();
+    osc.type=o.type||'sine';
+    osc.frequency.setValueAtTime(o.f||440, t);
+    if(o.f2) osc.frequency.exponentialRampToValueAtTime(Math.max(20,o.f2), t+(o.dur||0.12));
+    g.gain.setValueAtTime(o.gain||0.13, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t+(o.dur||0.12));
+    osc.connect(g); g.connect(c.destination);
+    osc.start(t); osc.stop(t+(o.dur||0.12)+0.03);
+  }catch(e){}
+}
+const SFX = {
+  correct(combo){ const f=440*Math.pow(2, Math.min(combo,14)/12);   // 连击音高逐级爬升
+    beep({f, f2:f*1.22, dur:.09, type:'triangle', gain:.14});
+    if(combo>=6) beep({f:f*1.5, dur:.07, type:'sine', gain:.07, delay:.04}); },
+  wrong(){ beep({f:140, f2:65, dur:.32, type:'sawtooth', gain:.18}); },
+  tierUp(){ [523,659,784].forEach((f,i)=>beep({f, dur:.1, type:'triangle', gain:.13, delay:i*0.07})); },
+  foeHit(){ beep({f:95, f2:48, dur:.18, type:'square', gain:.2}); },
+  small(){ beep({f:300, f2:620, dur:.16, type:'sawtooth', gain:.13}); },
+  big(){ beep({f:180, f2:820, dur:.32, type:'sawtooth', gain:.17}); beep({f:70, f2:40, dur:.4, type:'square', gain:.2, delay:.1}); },
+  kill(){ beep({f:660, dur:.1, type:'square', gain:.15}); beep({f:990, dur:.22, type:'square', gain:.15, delay:.1}); },
+  odUp(n){ beep({f:520+70*n, dur:.06, type:'square', gain:.1}); },
+  odCrash(){ beep({f:600, f2:90, dur:.4, type:'sawtooth', gain:.18}); },
+  res(){ [392,494,587,784].forEach((f,i)=>beep({f, dur:.14, type:'triangle', gain:.12, delay:i*0.08})); },
+  win(){ [523,659,784,1047].forEach((f,i)=>beep({f, dur:.16, type:'triangle', gain:.14, delay:i*0.12})); },
+  lose(){ [330,262,196,131].forEach((f,i)=>beep({f, dur:.2, type:'sine', gain:.14, delay:i*0.14})); },
+};
+function toggleMute(){
+  AU.muted=!AU.muted;
+  try{ localStorage.setItem('ba_mute', AU.muted?'1':'0'); }catch(e){}
+  const b=document.getElementById('sndBtn'); if(b) b.textContent = AU.muted?'🔇':'🔊';
+}
+
 /* ============================== 运行时状态 (§3) ============================== */
 let P, R, E, q, qTimer, qStart, rerollLeft, telem;
 let CUR_SCREEN = 'start';
 let BATTLE_TIMER = null;
 
 function freshRun(){
-  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[] };
+  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false };
   R = { section:0, qInSection:0, results:[] };
   E = null;
   telem = {
@@ -457,7 +520,7 @@ function freshRun(){
     releases:{small:0, big:0}, overloadUses:0,
     breaks:0, recoveredAfterBreak:0,
     maxHit:0, maxHitCombo:0, maxHitOver:0, maxHitKind:'',
-    maxCombo:0, correct:0,
+    maxCombo:0, correct:0, odCrash:0,
     dmgTaken:0, startTime:Date.now(),
   };
 }
@@ -551,7 +614,7 @@ function spawnFoe(){
     hp, hpMax:hp,
     atk: K.ENEMY_ATK[Math.min(R.section-1, K.ENEMY_ATK.length-1)],
     chargeNeed: K.ENEMY_CHARGE[Math.min(R.section-1, K.ENEMY_CHARGE.length-1)],
-    charge:0, stunnedUntil:0, slowedUntil:0, dead:false, phase2:false,
+    charge:0, stunnedUntil:0, slowedUntil:0, frozenUntil:0, dead:false, phase2:false,
     lastTick:Date.now(), enrToast:false,
   };
 }
@@ -562,7 +625,7 @@ function combatTick(){
   let dt = now - E.lastTick;
   E.lastTick = now;
   if(dt<=0){ return; }
-  if(now < E.stunnedUntil){ updateSceneUI(); return; }
+  if(now < E.stunnedUntil || now < E.frozenUntil){ updateSceneUI(); return; }
   let rate = 1;
   if(now < E.slowedUntil) rate *= K.SLOW_FACTOR;
   const enraged = R.qInSection > K.ENRAGE_AFTER;
@@ -582,6 +645,7 @@ function combatTick(){
 function enemyAttack(){
   P.hp = Math.max(0, P.hp - E.atk);
   telem.dmgTaken += E.atk;
+  SFX.foeHit();
   floatText(`−${E.atk}`, '#ff5470', false, false, 'you');
   const av=document.getElementById('pAvatar'); av.classList.remove('hurt'); void av.offsetWidth; av.classList.add('hurt');
   shakeScene();
@@ -614,8 +678,19 @@ function beginDraft(){
 function rollOffer(rar){
   const pool = HEXES.filter(h=>h.rar===rar && !P.hexes.some(x=>x.id===h.id));
   const src = pool.length>=3 ? pool : HEXES.filter(h=>!P.hexes.some(x=>x.id===h.id));
+  // 抽卡倾斜:已持有流派的卡 60% 概率优先入选 → 组套路是选择,不是运气
+  const ownedSchools = new Set(P.hexes.map(h=>h.school));
   const picks=[]; const copy=src.slice();
-  for(let i=0;i<3 && copy.length;i++){ picks.push(copy.splice(rnd(0,copy.length-1),1)[0]); }
+  for(let i=0;i<3 && copy.length;i++){
+    let cand = copy;
+    if(ownedSchools.size && Math.random()<0.6){
+      const syn = copy.filter(h=>ownedSchools.has(h.school));
+      if(syn.length) cand = syn;
+    }
+    const chosen = cand[rnd(0,cand.length-1)];
+    copy.splice(copy.indexOf(chosen),1);
+    picks.push(chosen);
+  }
   return picks;
 }
 function renderDraft(rar){
@@ -627,9 +702,13 @@ function renderDraft(rar){
   const wrap = document.getElementById('draftCards'); wrap.innerHTML='';
   offer.forEach(h=>{
     const el=document.createElement('div'); el.className=`card r-${h.rar}`;
+    const sc = schoolCount(h.school);
+    const resTag = (RESONANCE[h.school] && sc===1) ? `<span class="chiptag res">🔗 选它触发共鸣「${RESONANCE[h.school].name}」</span>`
+                 : (RESONANCE[h.school] && sc>=2) ? `<span class="chiptag res">🔗 共鸣已激活</span>` : '';
     el.innerHTML=`<div class="ico">${h.ico}</div><div class="name">${h.name}</div>
-      <div class="row1"><span class="chiptag school">${h.school}</span><span class="chiptag cat">${h.cat}</span>${h.ba?'<span class="chiptag ba">★流派核心</span>':''}</div>
-      <div class="desc">${h.desc}</div>
+      <div class="row1"><span class="chiptag school">${h.school}${sc?` ${sc}张`:''}</span><span class="chiptag cat">${h.cat}</span>${h.ba?'<span class="chiptag ba">★流派核心</span>':''}</div>
+      <div class="desc">${h.desc}${resTag?`<br><span style="color:#ffb1e6">共鸣:${RESONANCE[h.school].desc}</span>`:''}</div>
+      <div class="row1">${resTag}</div>
       <div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`;
     el.onclick=()=>pickHex(h);
     wrap.appendChild(el);
@@ -643,11 +722,24 @@ function reroll(){
   rerollLeft--;
   renderDraft(RAR_BY_SECTION[Math.min(R.section-1, RAR_BY_SECTION.length-1)]);
 }
-function pickHex(h){ P.hexes.push(h); P._loadBanner=`${h.ico} ${h.name} · 已装载`; beginSection(); }
+function pickHex(h){
+  const before = activeResonances().length;
+  P.hexes.push(h);
+  const now = activeResonances();
+  if(now.length>before){
+    const r = RESONANCE[h.school];
+    P._loadBanner = `🔗 共鸣觉醒 · ${r.name}!`;
+    P._resSound = true;
+  } else {
+    P._loadBanner = `${h.ico} ${h.name} · 已装载`;
+  }
+  beginSection();
+}
 
 function beginSection(){
-  R.qInSection=0; P.dotQueue=[];
+  R.qInSection=0; P.dotQueue=[]; P.chainCount=0; P.shieldUsed=false;
   spawnFoe();
+  if(P._resSound){ SFX.res(); P._resSound=false; }
   document.getElementById('bSec').textContent = `第 ${R.section} 节`;
   document.getElementById('foeName').textContent = E.name;
   document.getElementById('coreGlyph').textContent = E.glyph;
@@ -737,6 +829,9 @@ function onCorrect(){
   telem.correct++;
   telem.maxCombo = Math.max(telem.maxCombo, P.combo);
   showQFeedback('good', `✓ COMBO ${P.combo}`);
+  SFX.correct(P.combo);
+  // 共鸣·时间凝滞:快答冻结敌人充能
+  if(fast && hasRes('神速系') && E && !E.dead){ E.frozenUntil = Date.now()+2000; }
   const beforeTier = comboTier(P.combo-1);
   const dmg = immediateDamage();
   const consumedDouble = P.nextImmDouble;
@@ -744,18 +839,32 @@ function onCorrect(){
   dealDamage(dmg, '即时', '#43e08a');
 
   const u = tierUnlocks(P.combo);
-  if(u.splash && !uPrev.splash){ banner('🔓 溅射 解锁!'); hexFire('h01'); }
-  if(u.slow && !uPrev.slow){ banner('🔓 减速 解锁!'); hexFire('h01'); }
-  if(u.double && !uPrev.double){ banner('🔓 双响 解锁!'); hexFire('h03'); hexFire('h01'); }
+  if(u.splash && !uPrev.splash){ banner('🔓 溅射 解锁!'); SFX.tierUp(); hexFire('h01'); }
+  if(u.slow && !uPrev.slow){ banner('🔓 减速 解锁!'); SFX.tierUp(); hexFire('h01'); }
+  if(u.double && !uPrev.double){ banner('🔓 双响 解锁!'); SFX.tierUp(); hexFire('h03'); hexFire('h01'); }
   if(u.splash){ dealDamage(Math.round(dmg*splashRatio()), '溅射', '#3fe7ff', true); hexFire('h08'); }
   if(u.slow) applySlow();
   if(u.double) dealDamage(immediateDamageRaw(), '双响', '#b561ff');
+
+  // 共鸣·三连锁:每第 3 次答对,即时层整套再触发一次
+  if(hasRes('即时系')){
+    P.chainCount++;
+    if(P.chainCount>=3 && E && !E.dead){
+      P.chainCount=0;
+      const extra = immediateDamageRaw();
+      dealDamage(extra, '连锁', '#ffb1e6');
+      if(u.splash) dealDamage(Math.round(extra*splashRatio()), '连锁溅射', '#ffb1e6', true);
+      floatText('⛓ 三连锁!', '#ffb1e6', true, false, 'you');
+    }
+  }
 
   resolveDot();
   if(has('h09')) P.dotQueue.push({ left:2, amount:Math.round(dmg*0.5) });
 
   if(P.energy >= bigCost() && P.overloadStacks < overloadMax()){
     P.overloadStacks++; telem.overloadUses++;
+    SFX.odUp(P.overloadStacks);
+    floatText(`过载 +1(${P.overloadStacks})`, '#b561ff', true, false, 'you');
     if(P.overloadStacks > K.OVERLOAD_MAX) hexFire('h11', `过载${P.overloadStacks}!`);
   }
 
@@ -786,9 +895,23 @@ function onBreak(reason){
   document.getElementById('qInput').disabled=true;
   telem.breaks++;
   showQFeedback('bad', `✗ 答案 ${q.answer}`);
-  const t = thresholds();
-  if(has('h02')){ P.combo = P.combo>=t[2]?t[2] : P.combo>=t[1]?t[1] : P.combo>=t[0]?t[0] : 0; hexFire('h02','护盾:档位保留'); }
-  else { P.combo = Math.floor(P.combo/2); }
+  SFX.wrong();
+  // 共鸣·不灭雪球:每节首次断连,连击不回落
+  if(hasRes('连击系') && !P.shieldUsed){
+    P.shieldUsed = true;
+    banner('🛡 不灭雪球!连击保住了');
+  } else {
+    const t = thresholds();
+    if(has('h02')){ P.combo = P.combo>=t[2]?t[2] : P.combo>=t[1]?t[1] : P.combo>=t[0]?t[0] : 0; hexFire('h02','护盾:档位保留'); }
+    else { P.combo = Math.floor(P.combo/2); }
+  }
+  // 赌局的风险端(SPEC §9:没放出去就断连 = 白攒):过载层崩塌
+  if(P.overloadStacks>0){
+    telem.odCrash++;
+    banner(`💥 过载崩塌 −${P.overloadStacks}层`);
+    SFX.odCrash();
+    P.overloadStacks = 0;
+  }
   P._wasBroken = true;
   if(E && !E.dead) E.charge += E.chargeNeed*1000*0.25;   // 乘虚而入:攻击充能突进
   shakeScene();
@@ -801,6 +924,7 @@ function releaseSmall(){
   const dmg = immediateDamage()*K.SMALL_MULT;
   P.energy -= smallCost();
   telem.releases.small++;
+  SFX.small();
   hexFire('h12');
   dealDamage(dmg,'小放','#3fe7ff'); markEvent(); bumpStats(); updateHUD();
 }
@@ -809,9 +933,13 @@ function releaseBig(){
   const mult = bigMult() * (1 + K.OVERLOAD_PER_STACK*P.overloadStacks);
   const dmg = Math.round(immediateDamage()*mult);
   P.energy -= bigCost();
-  const od = P.overloadStacks; P.overloadStacks = 0;
+  const od = P.overloadStacks;
+  // 共鸣·稳压核心:大放保留一半过载层
+  P.overloadStacks = hasRes('蓄力系') ? Math.ceil(od/2) : 0;
+  if(hasRes('蓄力系') && od>0) floatText(`🔗 稳压:保留${P.overloadStacks}层`, '#ffb1e6', true, false, 'you');
   if(has('h13')){ P.energy = Math.min(K.ENERGY_MAX, P.energy+40); hexFire('h13','+40能量'); }
   telem.releases.big++;
+  SFX.big();
   hexFire('h10'); hexFire('h12');
   applyStun();   // 控场:打断敌人攻击充能
   dealDamage(dmg, od>0?`大放·过载${od}`:'大放','#ffcf4d'); markEvent(); bumpStats(); updateHUD();
@@ -833,7 +961,7 @@ function dealDamage(amount, kind, color, secondary){
     banner(`⚠️ ${E.name} 暴走!`);
   }
   updateSceneUI();
-  if(E.hp<=0){ E.dead=true; clearTimeout(qTimer); setTimeout(sectionWin, 700); }
+  if(E.hp<=0){ E.dead=true; SFX.kill(); clearTimeout(qTimer); setTimeout(sectionWin, 700); }
 }
 
 function afterAction(isBreak){
@@ -848,6 +976,7 @@ function markEvent(){ telem.eventQGaps.push(telem.globalQ - telem.lastEventQ); t
 /* ============================== 节末/局末 ============================== */
 function sectionWin(){
   stopLoop();
+  P.overloadStacks = 0;   // 节末白攒(SPEC §9 风险端)
   const heal = R.section < K.SECTIONS ? K.HEAL_PER_SECTION : 0;
   const hpBefore = P.hp;
   P.hp = Math.min(K.PLAYER_HP, P.hp + heal);
@@ -883,6 +1012,7 @@ function gradeOf(score){ return score>=4400?'S' : score>=3300?'A' : score>=2000?
 
 function finishRun(defeat){
   stopLoop();
+  if(defeat) SFX.lose(); else SFX.win();
   const won = R.results.filter(r=>r.passed).length;
   document.getElementById('finalTitle').textContent = defeat
     ? `💀 阵亡于第 ${R.section} 节 · ${E?E.name:''}`
@@ -928,7 +1058,7 @@ function renderTelem(){
   const releaseHealthy = telem.releases.small>0 && telem.releases.big>0;
   document.getElementById('telem').innerHTML = `<h3>§13 验证埋点</h3>
     <div class="ti"><span>① 无空白 · 决策/质变间题数中位数</span><b class="${pass1?'pass':'fail'}">${med.toFixed(1)} ${pass1?'✓ ≤3':'✗ >3'}</b></div>
-    <div class="ti"><span>② 释放分布(小 / 大 / 过载用过)</span><b>${telem.releases.small} / ${telem.releases.big} / ${usedOver?'是':'否'}</b></div>
+    <div class="ti"><span>② 释放分布(小 / 大 / 过载用过 / 过载崩塌)</span><b>${telem.releases.small} / ${telem.releases.big} / ${usedOver?'是':'否'} / ${telem.odCrash}</b></div>
     <div class="ti"><span>③ 断连次数 · 断后恢复</span><b>${telem.breaks} 次 · 恢复 ${telem.recoveredAfterBreak}</b></div>
     <div class="ti"><span>④ 总承伤 · 结局 HP</span><b>${telem.dmgTaken} · ${P.hp}</b></div>
     <div class="ti"><span>⑤ 截图冲动(最高一发)</span><b>${telem.maxHit} <span class="dimv">[${telem.maxHitKind} · 连${telem.maxHitCombo} · 过${telem.maxHitOver}]</span></b></div>
@@ -956,6 +1086,7 @@ function updateSceneUI(){
   core.classList.toggle('winding', pct>80 && now>=E.stunnedUntil);
   const st=[];
   if(now<E.stunnedUntil) st.push('<span class="st stun">⚡震慑</span>');
+  if(now<E.frozenUntil && now>=E.stunnedUntil) st.push('<span class="st slow">⏸凝滞</span>');
   if(now<E.slowedUntil) st.push('<span class="st slow">❄减速</span>');
   if(R.qInSection>K.ENRAGE_AFTER) st.push('<span class="st enr">🔥狂暴</span>');
   document.getElementById('foeStatus').innerHTML = st.join('');
@@ -991,6 +1122,8 @@ function updateHUD(){
   const killB = bOk && E && !E.dead && bigDmg >= E.hp;
   rb.classList.toggle('kill', !!killB);
   document.getElementById('rBigOd').textContent = killB ? `⚔ 斩杀!(${bigDmg})` : `即时 × ${m}${od>0?` (过载${od})`:''} + 震慑`;
+  const pips=document.getElementById('odPips');
+  pips.innerHTML = Array.from({length:overloadMax()},(_,i)=>`<span class="odp${i<od?' on':''}"></span>`).join('');
 }
 function bumpStats(){ ['sCombo','sImm','sEnergy','sOver'].forEach(id=>{ const e=document.getElementById(id); e.classList.add('bump'); setTimeout(()=>e.classList.remove('bump'),130); }); }
 function floatText(txt,color,small,crit,side){
@@ -1006,6 +1139,7 @@ function popCore(){ const c=document.getElementById('core'); c.classList.remove(
 function renderBuild(){
   const row=document.getElementById('buildRow'); row.innerHTML='';
   P.hexes.forEach(h=>{ const s=document.createElement('span'); s.className='bslot r-'+h.rar; s.id='bs_'+h.id; s.textContent=h.ico; row.appendChild(s); });
+  activeResonances().forEach(sc=>{ const r=RESONANCE[sc]; const c=document.createElement('span'); c.className='reschip'; c.textContent=`${r.ico}${r.name}`; c.title=r.desc; row.appendChild(c); });
 }
 function hexFire(id, label){
   if(!has(id)) return;
@@ -1071,6 +1205,9 @@ window.addEventListener('keydown', e=>{
   if(e.key==='1') releaseSmall();
   if(e.key==='2') releaseBig();
 });
+// 音频需要用户手势解锁(iOS/Chrome autoplay 策略)
+document.addEventListener('pointerdown', ()=>{ const c=au(); if(c && c.state==='suspended') c.resume(); }, {once:true});
+(()=>{ const b=document.getElementById('sndBtn'); if(b) b.textContent = AU.muted?'🔇':'🔊'; })();
 buildTuner();
 </script>
 </body>
