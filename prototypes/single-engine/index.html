@@ -118,6 +118,13 @@
   .core.winding{animation:wind .5s infinite;}
   @keyframes wind{0%,100%{box-shadow:0 0 30px color-mix(in srgb, var(--enemy) 60%, transparent);}50%{box-shadow:0 0 44px var(--red);}}
   .vs{font-size:17px; font-weight:900; color:var(--gold); text-shadow:0 0 16px rgba(255,207,77,.5);}
+  /* 塔脉血池:贯穿全局的一条血,构筑成长的舞台 */
+  .towerwrap{width:100%; display:flex; align-items:center; gap:9px;}
+  .towerbar{flex:1; height:13px; background:#0a1020; border:1px solid var(--line); border-radius:8px; overflow:hidden; position:relative;}
+  .towerfill{height:100%; width:100%; background:linear-gradient(90deg,#7a2038,var(--red) 40%,var(--gold)); transition:width .35s cubic-bezier(.2,.8,.2,1); box-shadow:0 0 14px rgba(255,84,112,.4);}
+  .towerfill.low{background:linear-gradient(90deg,#5a1428,#c22f4a);}
+  .tnotch{position:absolute; top:-2px; bottom:-2px; width:2px; background:rgba(255,255,255,.55); box-shadow:0 0 6px rgba(255,255,255,.4);}
+  .towernum{font-size:12px; font-weight:800; color:var(--silver); min-width:46px; text-align:right; font-feature-settings:"tnum" 1;}
   .hpbar{width:110px; height:7px; background:#0a1020; border:1px solid var(--line); border-radius:4px; overflow:hidden;}
   .hpfill{height:100%; background:linear-gradient(90deg,#2fae6d,#43e08a); width:100%; transition:width .2s;}
   .hpfill.low{background:linear-gradient(90deg,#c22f4a,var(--red));}
@@ -360,7 +367,7 @@
     <h1>脑力竞技</h1>
     <div class="tagline">以 答 为 刃</div>
     <div class="bestline hidden" id="bestLine"></div>
-    <div class="sub">心智之塔,三名守门者。<b>答对即出刀——你死,或它死。</b></div>
+    <div class="sub">三名守门者,共守一条塔脉。<b>答对即出刀——你死,或塔倾。</b></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
@@ -387,6 +394,11 @@
       </span>
     </div>
 
+    <div class="towerwrap">
+      <div class="towerbar"><div class="towerfill" id="towerFill"></div><div class="tnotch" id="tn1"></div><div class="tnotch" id="tn2"></div></div>
+      <div class="towernum" id="towerNum">1060</div>
+    </div>
+
     <div class="scene" id="scene">
       <div class="fighter">
         <div class="pavatar" id="pAvatar">🧠</div>
@@ -397,7 +409,6 @@
       <div class="vs">VS</div>
       <div class="fighter">
         <div class="core" id="core"><div class="ring r1"></div><div class="glyph" id="coreGlyph">Σ</div><div class="atkwarn hidden" id="atkWarn">!</div></div>
-        <div class="hpbar"><div class="hpfill" id="eHpFill"></div></div>
         <div class="chargebar"><div class="chargefill" id="chargeFill"></div></div>
         <div class="fstatus" id="foeStatus"></div>
       </div>
@@ -501,7 +512,7 @@ const DEFAULTS = {
   // v2 对战参数
   PLAYER_HP: 100,
   HEAL_PER_SECTION: 40,
-  ENEMY_HP: [150, 330, 540],
+  ENEMY_HP: [160, 340, 560],   // 各阶段血量预算,总和=塔脉血池(贯穿全局一条血)
   ENEMY_ATK: [7, 10, 13],
   ENEMY_CHARGE: [8, 6.5, 6],   // 秒/次攻击
   STUN_SECONDS: 3,
@@ -731,19 +742,31 @@ function genQuestion(section){
 /* ============================== 敌人系统 (v2 核心) ============================== */
 function spawnFoe(){
   const i = Math.min(R.section-1, 2);
-  const hp = K.ENEMY_HP[Math.min(R.section-1, K.ENEMY_HP.length-1)];
-  E = {
-    name:FOES[i].name, glyph:FOES[i].glyph, color:FOES[i].color, lines:FOES[i],
-    hp, hpMax:hp,
-    atk: K.ENEMY_ATK[Math.min(R.section-1, K.ENEMY_ATK.length-1)],
-    chargeNeed: K.ENEMY_CHARGE[Math.min(R.section-1, K.ENEMY_CHARGE.length-1)],
-    charge:0, stunnedUntil:0, slowedUntil:0, frozenUntil:0, dead:false, phase2:false,
+  const f = FOES[i];
+  if(R.section===1 || !E){
+    // 塔脉血池:一条血贯穿全局,守门者只是它的三段面孔
+    const budgets = K.ENEMY_HP;
+    const total = budgets.reduce((a,b)=>a+b,0);
+    E = { total, hp: total,
+      thresholds: [total-budgets[0], total-budgets[0]-(budgets[1]||0), 0] };
+    document.getElementById('tn1').style.left = (E.thresholds[0]/total*100)+'%';
+    document.getElementById('tn2').style.left = (E.thresholds[1]/total*100)+'%';
+  }
+  // 每阶段刷新:守门者面孔 + 攻击参数;血池 E.hp 原样保留(溢出伤害已穿透)
+  Object.assign(E, {
+    name:f.name, glyph:f.glyph, color:f.color, lines:f,
+    atk: K.ENEMY_ATK[Math.min(i, K.ENEMY_ATK.length-1)],
+    chargeNeed: K.ENEMY_CHARGE[Math.min(i, K.ENEMY_CHARGE.length-1)],
+    charge:0, stunnedUntil:0, slowedUntil:0, frozenUntil:0,
+    dead:false, phase2:false, phaseClear:false,
     lastTick:Date.now(), enrToast:false,
-  };
+  });
+  E.phaseStartHp = E.hp;
 }
+function phaseEndThreshold(){ return E.thresholds[Math.min(R.section-1, 2)]; }
 
 function combatTick(){
-  if(CUR_SCREEN!=='battle' || !E || E.dead || P.hp<=0) return;
+  if(CUR_SCREEN!=='battle' || !E || E.dead || E.phaseClear || P.hp<=0) return;
   const now = Date.now();
   let dt = now - E.lastTick;
   E.lastTick = now;
@@ -940,7 +963,7 @@ let vsStarter=null, vsTimer=null;
 function stopLoop(){ if(BATTLE_TIMER){ clearInterval(BATTLE_TIMER); BATTLE_TIMER=null; } }
 
 function nextQuestion(){
-  if(CUR_SCREEN!=='battle' || !E || E.dead || P.hp<=0) return;
+  if(CUR_SCREEN!=='battle' || !E || E.dead || E.phaseClear || P.hp<=0) return;
   R.qInSection++;
   telem.globalQ++;
   q = genQuestion(R.section-1);
@@ -1189,7 +1212,7 @@ function swapQuestion(){
   qTimer = setTimeout(()=>onTimeout(), timeout*1000);
 }
 function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
-  if(CUR_SCREEN!=='battle' || !smallEnabled() || E.dead) return;
+  if(CUR_SCREEN!=='battle' || !smallEnabled() || E.dead || E.phaseClear) return;
   const sk = lightSkill();
   if(P.energy < sk.cost) return;
   if(sk.key==='swap' && (P._betweenQ || document.getElementById('qInput').disabled)) return; // 只能换正在答的题
@@ -1215,7 +1238,7 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 function releaseBig(){   // 重技能槽
-  if(CUR_SCREEN!=='battle' || E.dead) return;
+  if(CUR_SCREEN!=='battle' || E.dead || E.phaseClear) return;
   const sk = heavySkill();
   if(P.energy < sk.cost) return;
   P.energy -= sk.cost;
@@ -1239,23 +1262,31 @@ function releaseBig(){   // 重技能槽
 function dealDamage(amount, kind, color, secondary){
   if(!E || E.dead) return;
   amount = Math.round(amount);
-  E.hp = Math.max(0, E.hp - amount);
+  E.hp = Math.max(0, E.hp - amount);   // 溢出穿透:超过阶段刻度的伤害照吃进血池
   const crit = !secondary && amount>=70;
   floatText(`${secondary?'':'−'}${amount}`, color, secondary, crit, 'foe');
   if(!secondary && amount>telem.maxHit){
     telem.maxHit=amount; telem.maxHitCombo=P.combo; telem.maxHitOver=P.overloadStacks; telem.maxHitKind=kind;
   }
   popCore();
-  if(!E.phase2 && E.hp>0 && E.hp<=E.hpMax*0.5){
+  const thr = phaseEndThreshold();
+  // 守门者暴走:本阶段血量窗口过半
+  if(!E.phase2 && E.hp>thr && E.hp <= (E.phaseStartHp+thr)/2){
     E.phase2=true; E.chargeNeed*=0.85;
     document.getElementById('core').classList.add('rage');
     banner('⚠️ 暴走!');
     toast(`${E.glyph}「${E.lines.phase2}」`);
   }
   updateSceneUI();
-  if(E.hp<=0){
+  if(E.hp<=0 && !E.dead){
     E.dead=true; SFX.kill(); flashFx();
-    const core=document.getElementById('core'); core.classList.add('shatter');
+    document.getElementById('core').classList.add('shatter');
+    for(let i=0;i<6;i++) floatText('✦','#fff',true,false,'foe');
+    clearTimeout(qTimer); setTimeout(sectionWin, 800);
+  } else if(!E.phaseClear && E.hp <= thr){
+    // 阶段击破:守门者倒下,血池不回,下一位接管
+    E.phaseClear=true; SFX.kill(); flashFx();
+    document.getElementById('core').classList.add('shatter');
     for(let i=0;i<6;i++) floatText('✦','#fff',true,false,'foe');
     clearTimeout(qTimer); setTimeout(sectionWin, 800);
   }
@@ -1263,7 +1294,7 @@ function dealDamage(amount, kind, color, secondary){
 
 function afterAction(isBreak){
   updateHUD();
-  if(CUR_SCREEN!=='battle' || E.dead || P.hp<=0) return;
+  if(CUR_SCREEN!=='battle' || E.dead || E.phaseClear || P.hp<=0) return;
   // 心流加速:连击越高,下一题来得越快;断连后停顿更长,让正确答案被看见
   const delay = isBreak ? 1150 : Math.max(240, 560 - P.combo*25);
   setTimeout(nextQuestion, delay);
@@ -1280,7 +1311,8 @@ function sectionWin(){
   R.results.push({ section:R.section, q:R.qInSection, hpLeft:hpBefore, passed:true });
   document.getElementById('secresTag').textContent = `第 ${SEC_CN[R.section-1]||R.section} 关 · ${E.name}`;
   const row=document.getElementById('secresRow'); row.innerHTML='';
-  row.appendChild(seg(`${R.qInSection} 题`, '击杀用时', 'win'));
+  row.appendChild(seg(`${R.qInSection} 题`, '击破用时', 'win'));
+  row.appendChild(seg(Math.round(E.hp/E.total*100)+'%', '塔脉剩余', E.hp<=0?'win':''));
   row.appendChild(seg(hpBefore, '剩余 HP', hpBefore<=30?'lose':''));
   if(heal) row.appendChild(seg('+'+(P.hp-hpBefore), '节间回复', 'win'));
   document.getElementById('secresMsg').innerHTML = `<span style="color:var(--silver);font-style:italic">${E.glyph}「${E.lines.defeat}」</span><br>` + (R.section < K.SECTIONS
@@ -1292,10 +1324,10 @@ function sectionWin(){
 function runLose(){
   stopLoop();
   clearTimeout(qTimer);
-  R.results.push({ section:R.section, q:R.qInSection, hpLeft:0, passed:false, dmgDone:E?E.hpMax-E.hp:0, foeMax:E?E.hpMax:1 });
+  R.results.push({ section:R.section, q:R.qInSection, hpLeft:0, passed:false, dmgDone:E?E.total-E.hp:0, foeMax:E?E.total:1 });
   finishRun(true);
 }
-function nextSection(){ if(R.section >= K.SECTIONS) finishRun(false); else beginDraft(); }
+function nextSection(){ if(R.section >= K.SECTIONS || (E && E.hp<=0)) finishRun(false); else beginDraft(); }
 function seg(v,k,cls){ const d=document.createElement('div'); d.className='resseg '+(cls||''); d.innerHTML=`<div class="big">${v}</div><div class="lab">${k}</div>`; return d; }
 
 function calcScore(){
@@ -1386,9 +1418,10 @@ function updateSceneUI(){
   pf.className = 'hpfill' + (P.hp<=K.PLAYER_HP*0.3?' low':'');
   document.getElementById('pHpNum').textContent = `${P.hp} / ${K.PLAYER_HP}` + (P.shieldCharges>0?` 🛡×${P.shieldCharges}`:'');
   document.getElementById('app').classList.toggle('lowhp', P.hp>0 && P.hp<=K.PLAYER_HP*0.3 && CUR_SCREEN==='battle');
-  const ef=document.getElementById('eHpFill');
-  ef.style.width = (E.hp/E.hpMax*100)+'%';
-  ef.className = 'hpfill' + (E.hp<=E.hpMax*0.3?' low':'');
+  const tf=document.getElementById('towerFill');
+  tf.style.width = (E.hp/E.total*100)+'%';
+  tf.className = 'towerfill' + (E.hp<=E.total*0.15?' low':'');
+  document.getElementById('towerNum').textContent = Math.ceil(E.hp);
   const pct = Math.min(100, E.charge/(E.chargeNeed*1000)*100);
   document.getElementById('chargeFill').style.width = pct+'%';
   const core=document.getElementById('core');
@@ -1429,7 +1462,8 @@ function updateHUD(){
   document.getElementById('rSmallName').textContent = lsk.name;
   document.getElementById('rSmallCost').textContent = `${lsk.cost}⚡`;
   document.getElementById('rSmallFill').style.width = Math.min(100, P.energy/lsk.cost*100)+'%';
-  const killS = sOk && E && !E.dead && lsk.dmg>0 && lsk.dmg >= E.hp;
+  const phaseLeft = E && !E.dead && !E.phaseClear ? E.hp - phaseEndThreshold() : Infinity;
+  const killS = sOk && lsk.dmg>0 && lsk.dmg >= phaseLeft;
   rs.classList.toggle('kill', !!killS);
   document.getElementById('rSmallOd').textContent = killS ? '⚔ 斩杀!' : lsk.od;
   const rb=document.getElementById('rBig'); const bOk=P.energy>=hsk.cost;
@@ -1438,7 +1472,7 @@ function updateHUD(){
   document.getElementById('rBigCost').textContent = `${hsk.cost}⚡`;
   document.getElementById('rBigFill').style.width = Math.min(100, P.energy/hsk.cost*100)+'%';
   const od=P.overloadStacks;
-  const killB = bOk && E && !E.dead && hsk.dmg >= E.hp;
+  const killB = bOk && hsk.dmg >= phaseLeft;
   rb.classList.toggle('kill', !!killB);
   document.getElementById('rBigOd').textContent = killB ? `⚔ 斩杀!(${hsk.dmg})` : `${hsk.od}${od>0?` (过载${od})`:''}`;
   const pips=document.getElementById('odPips');
