@@ -77,11 +77,18 @@
   .chiptag{font-size:10px; font-weight:800; padding:2px 8px; border-radius:5px; background:rgba(0,0,0,.35); border:1px solid var(--line2); letter-spacing:.5px;}
   .chiptag.school{color:var(--cyan);} .chiptag.cat{color:var(--gold);} .chiptag.ba{color:var(--purple); border-color:var(--purple);}
   .chiptag.res{color:#ffb1e6; border-color:#ff6ec7; background:rgba(255,110,199,.12); animation:pulse 1.2s infinite;}
-  .rarbadge{align-self:flex-start; font-size:10px; font-weight:800; letter-spacing:2px; padding:3px 10px; border-radius:20px;}
+  .rarbadge{position:absolute; top:10px; right:10px; font-size:9px; font-weight:800; letter-spacing:2px; padding:2px 9px; border-radius:20px; z-index:2;}
   .rarbadge.silver{color:#c3ccde; border:1px solid #6c7790;} .rarbadge.gold{color:var(--gold); border:1px solid var(--gold);} .rarbadge.prism{color:var(--purple); border:1px solid var(--purple); background:rgba(181,97,255,.1);}
+  /* 流派色左边框(比标签更快被眼睛读到) */
+  .card{border-left-width:4px;}
+  .card.sc-lj{border-left-color:var(--cyan);} .card.sc-ss{border-left-color:var(--blue);}
+  .card.sc-js{border-left-color:var(--green);} .card.sc-xl{border-left-color:var(--purple);} .card.sc-ty{border-left-color:var(--silver);}
+  .card .bastar{color:var(--gold); text-shadow:0 0 10px rgba(255,207,77,.7);}
+  .card .schooltag{font-size:10px; color:var(--dim); letter-spacing:1px;}
+  .card:active{transform:scale(.97); transition:transform .08s;}
 
   /* battle */
-  #battle{justify-content:flex-start; padding:14px 18px; gap:9px;}
+  #battle{justify-content:flex-start; padding:14px 18px; gap:8px;}
   .topbar{width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12px; color:var(--dim);}
   .topbar .sec{color:var(--text); font-weight:800; font-size:14px; letter-spacing:1px; display:flex; align-items:center; gap:7px;}
   .topbar .sec::before{content:""; width:8px; height:8px; border-radius:50%; background:var(--cyan); box-shadow:0 0 10px var(--cyan);}
@@ -89,7 +96,7 @@
   .qpill{font-size:11.5px; color:var(--silver); background:rgba(0,0,0,.3); border:1px solid var(--line); padding:5px 12px; border-radius:20px;}
 
   /* arena */
-  .scene{width:100%; height:128px; position:relative; display:flex; align-items:center; justify-content:space-around; overflow:hidden;
+  .scene{width:100%; height:118px; position:relative; display:flex; align-items:center; justify-content:space-around; overflow:hidden;
     background:radial-gradient(420px 160px at 72% 55%, color-mix(in srgb, var(--enemy) 18%, transparent), transparent 72%),
                radial-gradient(300px 140px at 22% 55%, rgba(63,231,255,.1), transparent 72%);
     border:1px solid var(--line); border-radius:14px; --enemy:var(--cyan);}
@@ -138,8 +145,8 @@
   .energyfill{height:100%; background:linear-gradient(90deg,var(--gold),var(--red)); width:0%; transition:width .25s; box-shadow:0 0 10px rgba(255,207,77,.6);}
   .energybar .gmark{position:absolute; top:-1px; bottom:-1px; width:2px; background:rgba(255,255,255,.45);}
 
-  .tierchips{width:100%; display:flex; gap:7px; align-items:center; justify-content:center; min-height:22px; flex-wrap:wrap;}
-  .tc{font-size:11px; font-weight:700; padding:2px 10px; border-radius:18px; border:1px solid var(--line); color:var(--dim); background:rgba(0,0,0,.25); letter-spacing:.5px; transition:all .25s;}
+  .tierchips{width:100%; display:flex; gap:5px; align-items:center; justify-content:center; min-height:17px; flex-wrap:wrap;}
+  .tc{font-size:10px; font-weight:700; padding:1px 8px; border-radius:16px; border:1px solid var(--line); color:var(--dim); background:rgba(0,0,0,.25); letter-spacing:.5px; transition:all .25s;}
   .tc.on{color:#04121d; border-color:transparent; background:linear-gradient(100deg,var(--cyan),var(--blue)); box-shadow:0 0 14px rgba(63,231,255,.4);}
   .tc.dbl{color:var(--gold); border-color:var(--gold); background:rgba(255,207,77,.12); animation:pulse 1s infinite;}
   @keyframes pulse{0%,100%{box-shadow:0 0 0 rgba(255,207,77,0);}50%{box-shadow:0 0 16px rgba(255,207,77,.6);}}
@@ -162,6 +169,7 @@
   .qtimer .bench{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--green); box-shadow:0 0 8px var(--green);}
   .qinput{font-size:26px; font-weight:800; text-align:center; width:210px; background:#05080f; border:2px solid var(--line2); color:var(--text); border-radius:11px; padding:8px; font-family:inherit; letter-spacing:1px;}
   .qinput:focus{outline:none; border-color:var(--cyan); box-shadow:0 0 0 4px rgba(63,231,255,.12);}
+  .qinput{caret-color:var(--cyan);}
 
   .releases{width:100%; display:flex; gap:9px;}
   .rbtn{flex:1; padding:9px 6px; border-radius:12px; font-size:13.5px; font-weight:800; border:1px solid var(--line2); background:linear-gradient(180deg,var(--panel),#080e1c); display:flex; flex-direction:column; gap:1px; align-items:center; transition:transform .1s, box-shadow .25s; position:relative;}
@@ -186,8 +194,12 @@
   body.touch .keypad{display:grid;}
   body.touch .kbd{display:none;}
   .kp{padding:11px 0; font-size:20px; font-weight:800; border-radius:10px; background:linear-gradient(180deg,var(--panel2),#0a1120); border:1px solid var(--line2); color:var(--text);}
-  .kp:active{background:var(--line2); transform:scale(.97);}
+  .kp:active{background:#1c2c4e; transform:scale(.93); border-color:var(--cyan);}
   .kp.fn{color:var(--cyan); font-size:17px;}
+  .rbtn:not(:disabled):active{transform:scale(.96);}
+  ::-webkit-scrollbar{width:8px; height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line2); border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
 
   /* result */
   .resrow{display:flex; gap:14px; margin:6px 0; flex-wrap:wrap; justify-content:center;}
@@ -266,6 +278,9 @@
   .vsn{font-size:24px; font-weight:900; letter-spacing:4px;}
   .vsq{font-size:14px; color:var(--silver); font-style:italic; letter-spacing:1px; max-width:80%; text-align:center;}
   .vsload{font-size:12px; color:var(--gold); border:1px solid rgba(255,207,77,.4); padding:4px 14px; border-radius:20px; margin-top:8px;}
+  .vsplash.play{pointer-events:auto; cursor:pointer;}
+  .vskip{position:absolute; bottom:18px; font-size:11px; color:var(--dim); letter-spacing:2px; opacity:.7;}
+  .bestline{font-size:12.5px; color:var(--gold); letter-spacing:1px; border:1px solid rgba(255,207,77,.3); padding:4px 16px; border-radius:20px; background:rgba(255,207,77,.06);}
 
   /* 连击喝彩分级(鬼泣式) */
   .qprompt.qin{animation:qin .28s cubic-bezier(.2,1.4,.4,1);}
@@ -344,9 +359,8 @@
     <span class="tag">BRAIN ARENA</span>
     <h1>脑力竞技</h1>
     <div class="tagline">以 答 为 刃</div>
-    <div class="sub">心智之塔,三名守门者。<br>
-      <b>每一次答对都是一次出刀</b>——连击成风暴,能量成大招,海克斯改写你的武器。<br>
-      守门者的攻击条从不停止。<b>你死,或它死。</b></div>
+    <div class="bestline hidden" id="bestLine"></div>
+    <div class="sub">心智之塔,三名守门者。<b>答对即出刀——你死,或它死。</b></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
@@ -392,8 +406,7 @@
     <div class="hud">
       <div class="stat combo"><div class="v" id="sCombo">0</div><div class="k">🔥 连 击</div></div>
       <div class="stat imm"><div class="v" id="sImm">10</div><div class="k">⚔ 刀 威</div></div>
-      <div class="stat energy"><div class="v" id="sEnergy">0</div><div class="k">⚡ 能 量</div>
-        <div class="energybar"><div class="energyfill" id="energyFill"></div><div class="gmark" id="gmS"></div><div class="gmark" id="gmB"></div></div></div>
+      <div class="stat energy"><div class="v" id="sEnergy">0</div><div class="k">⚡ 能 量</div></div>
       <div class="stat over"><div class="v" id="sOver">0</div><div class="k">☢ 过 载</div></div>
     </div>
     <div class="tierchips" id="tierChips">
@@ -430,6 +443,7 @@
       <div class="vsn" id="vsName">守门者 · 磐石Σ</div>
       <div class="vsq" id="vsQuote"></div>
       <div class="vsload" id="vsLoad"></div>
+      <div class="vskip">轻触跳过 ›</div>
     </div>
     <div id="flash"></div>
   </div>
@@ -505,6 +519,7 @@ const BENCH = {
 };
 const TYPE_LABEL = {calc:'速算', seq:'数列', eq:'方程', pct:'百分比'};
 const TYPES = ['calc','seq','eq','pct'];
+const SCHOOL_CLASS = {'连击系':'lj','神速系':'ss','即时系':'js','蓄力系':'xl','通用':'ty'};
 const FOES = [
   {name:'守门者 · 磐石Σ', glyph:'Σ', color:'var(--cyan)',
    intro:'一万名挑战者,都碎在我面前。', taunts:['太慢。','就这?','石头都比你快。'],
@@ -605,6 +620,13 @@ function toggleMute(){
   AU.muted=!AU.muted;
   try{ localStorage.setItem('ba_mute', AU.muted?'1':'0'); }catch(e){}
   const b=document.getElementById('sndBtn'); if(b) b.textContent = AU.muted?'🔇':'🔊';
+  refocus();
+}
+/* 桌面:按钮点击会偷走输入焦点,打字打空气——夺回来 */
+function refocus(){
+  if(IS_TOUCH || CUR_SCREEN!=='battle') return;
+  const i=document.getElementById('qInput');
+  if(!i.disabled) i.focus();
 }
 
 /* ============================== 运行时状态 (§3) ============================== */
@@ -823,7 +845,9 @@ function renderDraft(rar){
   const offer = rollOffer(rar);
   const wrap = document.getElementById('draftCards'); wrap.innerHTML='';
   offer.forEach(h=>{
-    const el=document.createElement('div'); el.className=`card r-${h.rar}`;
+    const el=document.createElement('div');
+    el.className=`card r-${h.rar} sc-${SCHOOL_CLASS[h.school]||'ty'}`;
+    el.title=h.cat;
     const sc = schoolCount(h.school);
     // 状态标签按优先级取前 2:羁绊就绪 > 共鸣就绪 > 技能变形 > 羁绊缺件(降噪)
     const tags = [];
@@ -837,12 +861,13 @@ function renderDraft(rar){
       tags.push({pri:2, html:`<span class="chiptag ba">⚔ 技能变形</span>`});
     const statusTags = tags.sort((a,b)=>a.pri-b.pri).slice(0,2).map(t=>t.html).join('');
     const resTag = (RESONANCE[h.school] && sc===1) ? '1' : '';   // 供 desc 共鸣预览判断
-    el.innerHTML=`<div class="ico">${h.ico}</div><div class="name">${h.name}</div>
+    el.innerHTML=`<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>
+      <div class="ico">${h.ico}</div>
+      <div class="name">${h.name}${h.ba?' <span class="bastar">★</span>':''}</div>
       <div class="flavor">「${h.fl}」</div>
-      <div class="row1"><span class="chiptag school">${h.school}${sc?` ${sc}张`:''}</span><span class="chiptag cat">${h.cat}</span>${h.ba?'<span class="chiptag ba">★流派核心</span>':''}</div>
       <div class="desc">${h.desc}${resTag?`<br><span style="color:#ffb1e6">共鸣:${RESONANCE[h.school].desc}</span>`:''}</div>
       <div class="row1">${statusTags}</div>
-      <div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`;
+      <div class="schooltag">${h.school}${sc?` · 已持 ${sc} 张`:''}</div>`;
     el.onclick=()=>pickHex(h);
     wrap.appendChild(el);
   });
@@ -900,16 +925,18 @@ function beginSection(){
   P._loadBanner=null;
   const vs=document.getElementById('vsplash');
   vs.classList.remove('play'); void vs.offsetWidth; vs.classList.add('play');
-  setTimeout(()=>{
+  vsStarter = ()=>{
     if(CUR_SCREEN!=='battle') return;
     if(toastQueue){ toast(toastQueue); toastQueue=null; }
     E.lastTick = Date.now();
     BATTLE_TIMER = setInterval(combatTick, 100);
     updateHUD(); updateSceneUI();
     nextQuestion();
-  }, 1900);
+  };
+  vsTimer = setTimeout(()=>{ if(vsStarter){ const f=vsStarter; vsStarter=null; f(); } }, 1900);
   updateHUD(); updateSceneUI();
 }
+let vsStarter=null, vsTimer=null;
 function stopLoop(){ if(BATTLE_TIMER){ clearInterval(BATTLE_TIMER); BATTLE_TIMER=null; } }
 
 function nextQuestion(){
@@ -1185,7 +1212,7 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
     P.dotQueue.push({left:2, amount:Math.round(immediateDamage()*0.5)});
   }
   else { SFX.small(); dealDamage(Math.round(sk.dmg),'小放','#3fe7ff'); }
-  markEvent(); bumpStats(); updateHUD(); updateSceneUI();
+  markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 function releaseBig(){   // 重技能槽
   if(CUR_SCREEN!=='battle' || E.dead) return;
@@ -1206,7 +1233,7 @@ function releaseBig(){   // 重技能槽
   if(sk.freeze && E) E.frozenUntil = Date.now()+sk.freeze;
   if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio)});
   dealDamage(sk.dmg, od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
-  markEvent(); bumpStats(); updateHUD(); updateSceneUI();
+  markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 
 function dealDamage(amount, kind, color, secondary){
@@ -1385,9 +1412,6 @@ function updateHUD(){
   document.getElementById('sImm').textContent = immediateDamage();
   document.getElementById('sEnergy').textContent = Math.floor(P.energy);
   document.getElementById('sOver').textContent = P.overloadStacks;
-  document.getElementById('energyFill').style.width = Math.min(100, P.energy/K.ENERGY_MAX*100)+'%';
-  document.getElementById('gmS').style.left = (lightSkill().cost/K.ENERGY_MAX*100)+'%';
-  document.getElementById('gmB').style.left = (heavySkill().cost/K.ENERGY_MAX*100)+'%';
 
   const qb=document.getElementById('qbox');
   ['g1','g2','g3'].forEach(g=>qb.classList.remove(g));
@@ -1496,11 +1520,31 @@ document.querySelectorAll('.kp').forEach(b=>b.addEventListener('click', ()=>{
   onTyped();
 }));
 window.addEventListener('keydown', e=>{
+  // Enter 直通:标题开局 / 结算续关 / 战报重开(桌面 QoL)
+  if(e.key==='Enter' && !(e.target && e.target.tagName==='INPUT')){
+    if(CUR_SCREEN==='start'){ startRun(); return; }
+    if(CUR_SCREEN==='secres'){ nextSection(); return; }
+    if(CUR_SCREEN==='final'){ location.reload(); return; }
+  }
   if(CUR_SCREEN!=='battle') return;
   if(e.target && e.target.id==='qInput'){ return; }
   if(e.key==='1') releaseSmall();
   if(e.key==='2') releaseBig();
 });
+// VS 演出轻触跳过
+document.getElementById('vsplash').addEventListener('click', ()=>{
+  if(!vsStarter) return;
+  clearTimeout(vsTimer);
+  document.getElementById('vsplash').classList.remove('play');
+  const f=vsStarter; vsStarter=null; f();
+});
+// 标题屏显示历史最高(进度感钩子)
+(()=>{ try{
+  const b=Number(localStorage.getItem('ba_best')||0);
+  if(b>0){ const el=document.getElementById('bestLine');
+    el.textContent=`🏅 最高纪录 ${b.toLocaleString()} · ${GRADE_FLAVOR[gradeOf(b)]}`;
+    el.classList.remove('hidden'); }
+}catch(e){} })();
 // 音频需要用户手势解锁(iOS/Chrome autoplay 策略)
 document.addEventListener('pointerdown', ()=>{ const c=au(); if(c && c.state==='suspended') c.resume(); }, {once:true});
 (()=>{ const b=document.getElementById('sndBtn'); if(b) b.textContent = AU.muted?'🔇':'🔊'; })();
