@@ -1,5 +1,9 @@
 name: Deploy single-engine prototype to Pages
 
+# Pages 站点为 legacy 模式(gh-pages 分支托管),此 workflow 负责把
+# prototypes/single-engine 同步到 gh-pages。弃用 actions/deploy-pages
+# (2026-07-02 连续两次 "Deployment failed, try again later")。
+
 on:
   push:
     branches: [main]
@@ -9,9 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
@@ -20,14 +22,15 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: prototypes/single-engine
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Push prototype to gh-pages branch
+        run: |
+          cd prototypes/single-engine
+          touch .nojekyll
+          git init -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Deploy ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" gh-pages
