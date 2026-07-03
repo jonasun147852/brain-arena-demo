@@ -171,7 +171,15 @@
   .rbtn.small.ready{border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 18px rgba(63,231,255,.25);} .rbtn.small.ready .od{color:var(--cyan);}
   .rbtn.big.ready{border-color:var(--gold); color:var(--gold); box-shadow:0 0 20px rgba(255,207,77,.3); animation:pulse 1.4s infinite;} .rbtn.big.ready .od{color:var(--gold);}
   .rbtn:not(:disabled):hover{transform:translateY(-2px);}
-  .rbtn:disabled{opacity:.4; cursor:not-allowed;}
+  .rbtn:disabled{cursor:not-allowed;}
+  .rbtn:disabled>*:not(.rfill){opacity:.45;}
+  /* 技能充能条:能量攒到多少,一眼可见(皇室战争圣水填充) */
+  .rbtn{overflow:hidden;}
+  .rbtn>*:not(.rfill){position:relative; z-index:1;}
+  .rfill{position:absolute; left:0; top:0; bottom:0; width:0%; z-index:0; transition:width .25s;
+    background:linear-gradient(90deg, rgba(63,231,255,.07), rgba(63,231,255,.22)); border-right:1px solid rgba(63,231,255,.35);}
+  .rbtn.big .rfill{background:linear-gradient(90deg, rgba(255,207,77,.07), rgba(255,207,77,.22)); border-right-color:rgba(255,207,77,.4);}
+  .rbtn.ready .rfill{border-right:none;}
 
   /* keypad (touch only) */
   .keypad{display:none; width:100%; grid-template-columns:repeat(3,1fr); gap:7px;}
@@ -260,6 +268,14 @@
   .vsload{font-size:12px; color:var(--gold); border:1px solid rgba(255,207,77,.4); padding:4px 14px; border-radius:20px; margin-top:8px;}
 
   /* 连击喝彩分级(鬼泣式) */
+  .qprompt.qin{animation:qin .28s cubic-bezier(.2,1.4,.4,1);}
+  @keyframes qin{0%{opacity:0; transform:translateY(12px) scale(.9);}100%{opacity:1; transform:none;}}
+  .qbox.g1{border-color:rgba(63,231,255,.4);}
+  .qbox.g2{border-color:rgba(255,207,77,.45); box-shadow:0 0 18px rgba(255,207,77,.12), inset 0 1px 0 rgba(255,255,255,.04);}
+  .qbox.g3{border-color:rgba(255,84,112,.5); box-shadow:0 0 24px rgba(255,84,112,.16), inset 0 1px 0 rgba(255,255,255,.04);}
+  .atkwarn{position:absolute; top:-14px; left:50%; transform:translateX(-50%); font-size:17px; font-weight:900; color:var(--red);
+    text-shadow:0 0 12px var(--red); animation:warnblink .4s infinite; pointer-events:none;}
+  @keyframes warnblink{0%,100%{opacity:1;}50%{opacity:.25;}}
   .qprompt.good.co1{color:var(--cyan);}
   .qprompt.good.co2{color:var(--gold); text-shadow:0 0 28px rgba(255,207,77,.6);}
   .qprompt.good.co3{color:#ff9d4d; text-shadow:0 0 30px rgba(255,157,77,.7); animation:coShake .3s;}
@@ -366,7 +382,7 @@
       </div>
       <div class="vs">VS</div>
       <div class="fighter">
-        <div class="core" id="core"><div class="ring r1"></div><div class="glyph" id="coreGlyph">Σ</div></div>
+        <div class="core" id="core"><div class="ring r1"></div><div class="glyph" id="coreGlyph">Σ</div><div class="atkwarn hidden" id="atkWarn">!</div></div>
         <div class="hpbar"><div class="hpfill" id="eHpFill"></div></div>
         <div class="chargebar"><div class="chargefill" id="chargeFill"></div></div>
         <div class="fstatus" id="foeStatus"></div>
@@ -396,8 +412,8 @@
     </div>
 
     <div class="releases">
-      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><span class="kbd">1</span><span id="rSmallName">小放</span><span class="cost" id="rSmallCost">需 50</span><span class="od" id="rSmallOd">即时 × 3</span></button>
-      <button class="rbtn big" id="rBig" onclick="releaseBig()"><span class="kbd">2</span><span id="rBigName">大放</span><span class="cost" id="rBigCost">需 100</span><span class="od" id="rBigOd">即时 × 6 + 震慑</span><span class="odpips" id="odPips"></span></button>
+      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span id="rSmallName">小放</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">即时 × 3</span></button>
+      <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span id="rBigName">大放</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">即时 × 6 + 震慑</span><span class="odpips" id="odPips"></span></button>
     </div>
 
     <div class="keypad" id="keypad">
@@ -505,21 +521,21 @@ const GRADE_FLAVOR = {S:'宗师', A:'高手', B:'熟练', C:'学徒', D:'梦游'
 
 /* ============================== 海克斯种子卡 (§10.2) ============================== */
 const HEXES = [
-  {id:'h01',name:'滚雪球',ico:'❄️',school:'连击系',rar:'silver',cat:'改写规则',ba:true,  fl:'雪,不问山有多高。',       desc:'每 <b>2</b> 连击攀一档质变——凡人需要 3'},
-  {id:'h02',name:'连击护盾',ico:'🛡️',school:'连击系',rar:'gold',cat:'改写规则',ba:false, fl:'断处,即是接续之处。',     desc:'断连时,雪只退到<b>本档门口</b>,不滚落谷底'},
-  {id:'h03',name:'提前双响',ico:'⚡',school:'连击系',rar:'prism',cat:'改写规则',ba:false, fl:'第七击起,回声先至。',     desc:'回声提前苏醒:第 <b>7</b> 击即双响'},
-  {id:'h04',name:'急速充能',ico:'🚀',school:'神速系',rar:'silver',cat:'改写规则',ba:false,fl:'快,还能更快。',           desc:'速度奖池撑大一半:上限三成 → <b>五成</b>'},
-  {id:'h05',name:'难题大师',ico:'🧠',school:'神速系',rar:'gold',cat:'改写规则',ba:false, fl:'难题是它们的墙,你的门。', desc:'★★★ 题的沙漏<b>多一半</b>,答对再饮 <b>15</b> 能量'},
-  {id:'h06',name:'抢答',ico:'🎯',school:'神速系',rar:'prism',cat:'成长',ba:true,        fl:'题目开口之前,答案已出鞘。',desc:'连快 <b>3</b> 题,下一刀出<b>双倍锋芒</b>'},
-  {id:'h07',name:'稳定输出',ico:'🪨',school:'即时系',rar:'silver',cat:'改写规则',ba:true, fl:'不求惊雷,每一刀都在。',   desc:'刀威生来 <b>16</b>(而非 10);代价:能量收成打六折'},
-  {id:'h08',name:'溅射强化',ico:'💥',school:'即时系',rar:'gold',cat:'改写规则',ba:false, fl:'一刀之内,皆是刀锋。',     desc:'裂刃吞掉<b>六成</b>刀威——原本只有三成'},
-  {id:'h09',name:'持续灼烧',ico:'🔥',school:'即时系',rar:'prism',cat:'转化',ba:false,    fl:'伤口,会记住你。',         desc:'每刀烙下<b>灼痕</b>:两题之内,各再燃半刀'},
-  {id:'h10',name:'重锤',ico:'🔨',school:'蓄力系',rar:'silver',cat:'改写规则',ba:true,    fl:'收起小聪明,举起大锤。',   desc:'重技威力<b>再加五成</b>;轻技入鞘,不得再拔'},
-  {id:'h11',name:'过载专家',ico:'☢️',school:'蓄力系',rar:'gold',cat:'改写规则',ba:false, fl:'深渊多看你一眼,你多攒一层。',desc:'深渊许你 <b>8</b> 层过载——凡人只有 5'},
-  {id:'h12',name:'蓄能',ico:'🔋',school:'蓄力系',rar:'prism',cat:'改写规则',ba:false,    fl:'门槛,是用来磨低的。',     desc:'轻技少 <b>10</b>,重技少 <b>20</b>——门槛为你磨低'},
-  {id:'h13',name:'能量虹吸',ico:'🌀',school:'蓄力系',rar:'gold',cat:'转化',ba:false,     fl:'它的痛,是你的粮。',       desc:'重技饮血,吞回 <b>40</b> 能量'},
-  {id:'h14',name:'招式解锁',ico:'🗝️',school:'通用',rar:'prism',cat:'成长',ba:false,     fl:'第五答,塔开一扇门。',     desc:'每答 <b>5</b> 题,塔赠你一记<b>控场小招</b>'},
-  {id:'h15',name:'减速领域',ico:'🧊',school:'即时系',rar:'gold',cat:'干扰',ba:false,     fl:'我的领域里,时间归我。',   desc:'减速<b>加倍</b>萦绕,震慑多缠 <b>2</b> 秒'},
+  {id:'h01',name:'滚雪球',ico:'❄️',school:'连击系',rar:'silver',cat:'改写规则',ba:true,  fl:'雪,不问山有多高。',       desc:'质变档 3/6/9 → <b>2/4/6</b>'},
+  {id:'h02',name:'连击护盾',ico:'🛡️',school:'连击系',rar:'gold',cat:'改写规则',ba:false, fl:'断处,即是接续之处。',     desc:'断连:连击只回落到<b>本档起点</b>'},
+  {id:'h03',name:'提前双响',ico:'⚡',school:'连击系',rar:'prism',cat:'改写规则',ba:false, fl:'第七击起,回声先至。',     desc:'双响解锁 9 → <b>7</b> 连击'},
+  {id:'h04',name:'急速充能',ico:'🚀',school:'神速系',rar:'silver',cat:'改写规则',ba:false,fl:'快,还能更快。',           desc:'⚡奖池上限 30% → <b>50%</b>'},
+  {id:'h05',name:'难题大师',ico:'🧠',school:'神速系',rar:'gold',cat:'改写规则',ba:false, fl:'难题是它们的墙,你的门。', desc:'★★★:时限 +50%,答对 <b>+15⚡</b>'},
+  {id:'h06',name:'抢答',ico:'🎯',school:'神速系',rar:'prism',cat:'成长',ba:true,        fl:'题目开口之前,答案已出鞘。',desc:'连快 3 题 → 下一刀 <b>×2</b>'},
+  {id:'h07',name:'稳定输出',ico:'🪨',school:'即时系',rar:'silver',cat:'改写规则',ba:true, fl:'不求惊雷,每一刀都在。',   desc:'刀威 10 → <b>16</b>,⚡收入 −40%'},
+  {id:'h08',name:'溅射强化',ico:'💥',school:'即时系',rar:'gold',cat:'改写规则',ba:false, fl:'一刀之内,皆是刀锋。',     desc:'溅射 30% → <b>60%</b>'},
+  {id:'h09',name:'持续灼烧',ico:'🔥',school:'即时系',rar:'prism',cat:'转化',ba:false,    fl:'伤口,会记住你。',         desc:'命中挂<b>灼痕</b>:2 题内,每题 50% 刀威'},
+  {id:'h10',name:'重锤',ico:'🔨',school:'蓄力系',rar:'silver',cat:'改写规则',ba:true,    fl:'收起小聪明,举起大锤。',   desc:'重技 <b>×1.5</b>,轻技封印'},
+  {id:'h11',name:'过载专家',ico:'☢️',school:'蓄力系',rar:'gold',cat:'改写规则',ba:false, fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限 5 → <b>8</b> 层'},
+  {id:'h12',name:'蓄能',ico:'🔋',school:'蓄力系',rar:'prism',cat:'改写规则',ba:false,    fl:'门槛,是用来磨低的。',     desc:'技能耗⚡:轻 <b>−10</b> / 重 <b>−20</b>'},
+  {id:'h13',name:'能量虹吸',ico:'🌀',school:'蓄力系',rar:'gold',cat:'转化',ba:false,     fl:'它的痛,是你的粮。',       desc:'重技命中 <b>+40⚡</b>'},
+  {id:'h14',name:'招式解锁',ico:'🗝️',school:'通用',rar:'prism',cat:'成长',ba:false,     fl:'第五答,塔开一扇门。',     desc:'每答 5 题 → 免费<b>控场小招</b>'},
+  {id:'h15',name:'减速领域',ico:'🧊',school:'即时系',rar:'gold',cat:'干扰',ba:false,     fl:'我的领域里,时间归我。',   desc:'减速时长 <b>×2</b>,震慑 <b>+2s</b>'},
 ];
 const RAR_LABEL = {silver:'白银',gold:'黄金',prism:'棱彩'};
 const RAR_BY_SECTION = ['silver','gold','prism'];
@@ -809,22 +825,23 @@ function renderDraft(rar){
   offer.forEach(h=>{
     const el=document.createElement('div'); el.className=`card r-${h.rar}`;
     const sc = schoolCount(h.school);
-    const resTag = (RESONANCE[h.school] && sc===1) ? `<span class="chiptag res">🔗 选它触发共鸣「${RESONANCE[h.school].name}」</span>`
-                 : (RESONANCE[h.school] && sc>=2) ? `<span class="chiptag res">🔗 共鸣已激活</span>` : '';
-    const morphTag = (h.school!=='通用' && dominantOf(P.hexes.concat([h])) !== dominantSchool())
-                 ? `<span class="chiptag ba">⚔ 技能变形</span>` : '';
-    const bondTags = BONDS.filter(b=>b.pieces.includes(h.id)).map(b=>{
+    // 状态标签按优先级取前 2:羁绊就绪 > 共鸣就绪 > 技能变形 > 羁绊缺件(降噪)
+    const tags = [];
+    BONDS.filter(b=>b.pieces.includes(h.id)).forEach(b=>{
       const others = b.pieces.filter(p=>p!==h.id);
-      const ready = others.every(p=>has(p));
-      const oh = HEXES.find(x=>x.id===others[0]);
-      return ready ? `<span class="chiptag bond" title="${b.desc}">⛓ 选它结成「${b.name}」!</span>`
-                   : `<span class="chiptag bondhint" title="${b.desc}">⛓ 羁绊「${b.name}」缺 ${oh.ico}${oh.name}</span>`;
-    }).join('');
+      if(others.every(p=>has(p))) tags.push({pri:0, html:`<span class="chiptag bond" title="${b.desc}">⛓ 结成「${b.name}」!</span>`});
+      else { const oh=HEXES.find(x=>x.id===others[0]); tags.push({pri:3, html:`<span class="chiptag bondhint" title="${b.desc}">⛓「${b.name}」缺 ${oh.ico}</span>`}); }
+    });
+    if(RESONANCE[h.school] && sc===1) tags.push({pri:1, html:`<span class="chiptag res">🔗 触发共鸣「${RESONANCE[h.school].name}」</span>`});
+    if(h.school!=='通用' && dominantOf(P.hexes.concat([h])) !== dominantSchool())
+      tags.push({pri:2, html:`<span class="chiptag ba">⚔ 技能变形</span>`});
+    const statusTags = tags.sort((a,b)=>a.pri-b.pri).slice(0,2).map(t=>t.html).join('');
+    const resTag = (RESONANCE[h.school] && sc===1) ? '1' : '';   // 供 desc 共鸣预览判断
     el.innerHTML=`<div class="ico">${h.ico}</div><div class="name">${h.name}</div>
       <div class="flavor">「${h.fl}」</div>
       <div class="row1"><span class="chiptag school">${h.school}${sc?` ${sc}张`:''}</span><span class="chiptag cat">${h.cat}</span>${h.ba?'<span class="chiptag ba">★流派核心</span>':''}</div>
       <div class="desc">${h.desc}${resTag?`<br><span style="color:#ffb1e6">共鸣:${RESONANCE[h.school].desc}</span>`:''}</div>
-      <div class="row1">${resTag}${morphTag}${bondTags}</div>
+      <div class="row1">${statusTags}</div>
       <div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`;
     el.onclick=()=>pickHex(h);
     wrap.appendChild(el);
@@ -905,6 +922,7 @@ function nextQuestion(){
   const qd=document.getElementById('qDiff'); qd.textContent={easy:'★',medium:'★★',hard:'★★★'}[q.difficulty]; qd.className='qdiff '+q.difficulty;
   const pe=document.getElementById('qPrompt'); pe.textContent=q.prompt;
   pe.className = 'qprompt ' + (q.prompt.length<=11?'qp-l':q.prompt.length<=18?'qp-m':'qp-s');
+  void pe.offsetWidth; pe.classList.add('qin');   // 新题落地拍
   document.getElementById('qbox').classList.remove('good','bad');
   document.getElementById('qBonus').classList.remove('drained');
   const inp=document.getElementById('qInput'); inp.value=''; inp.disabled=false;
@@ -1133,6 +1151,7 @@ function swapQuestion(){
   const qd=document.getElementById('qDiff'); qd.textContent={easy:'★',medium:'★★',hard:'★★★'}[q.difficulty]; qd.className='qdiff '+q.difficulty;
   const pe=document.getElementById('qPrompt'); pe.textContent=q.prompt;
   pe.className = 'qprompt ' + (q.prompt.length<=11?'qp-l':q.prompt.length<=18?'qp-m':'qp-s');
+  void pe.offsetWidth; pe.classList.add('qin');
   const inp=document.getElementById('qInput'); inp.value=''; inp.disabled=false;
   qStart = Date.now();
   const timeout = q.benchmark * K.TIMEOUT_FACTOR;
@@ -1347,7 +1366,9 @@ function updateSceneUI(){
   document.getElementById('chargeFill').style.width = pct+'%';
   const core=document.getElementById('core');
   core.classList.toggle('stunned', now<E.stunnedUntil);
-  core.classList.toggle('winding', pct>80 && now>=E.stunnedUntil);
+  const winding = pct>80 && now>=E.stunnedUntil && now>=E.frozenUntil;
+  core.classList.toggle('winding', winding);
+  document.getElementById('atkWarn').classList.toggle('hidden', !winding);
   const st=[];
   if(now<E.stunnedUntil) st.push('<span class="st stun">⚡震慑</span>');
   if(now<E.frozenUntil && now>=E.stunnedUntil) st.push('<span class="st slow">⏸凝滞</span>');
@@ -1368,6 +1389,9 @@ function updateHUD(){
   document.getElementById('gmS').style.left = (lightSkill().cost/K.ENERGY_MAX*100)+'%';
   document.getElementById('gmB').style.left = (heavySkill().cost/K.ENERGY_MAX*100)+'%';
 
+  const qb=document.getElementById('qbox');
+  ['g1','g2','g3'].forEach(g=>qb.classList.remove(g));
+  if(tier>0) qb.classList.add('g'+Math.min(tier,3));   // 题目区随连击档升温
   const u=tierUnlocks(P.combo);
   document.getElementById('tcSplash').className = 'tc'+(u.splash?' on':'');
   document.getElementById('tcSplash').textContent = `溅射${u.splash?' '+Math.round(splashRatio()*100)+'%':''}`;
@@ -1379,14 +1403,16 @@ function updateHUD(){
   const rs=document.getElementById('rSmall'); const sOk=smallEnabled()&&P.energy>=lsk.cost;
   rs.style.display = smallEnabled()?'flex':'none'; rs.disabled=!sOk; rs.classList.toggle('ready',sOk);
   document.getElementById('rSmallName').textContent = lsk.name;
-  document.getElementById('rSmallCost').textContent = `需 ${lsk.cost}`;
+  document.getElementById('rSmallCost').textContent = `${lsk.cost}⚡`;
+  document.getElementById('rSmallFill').style.width = Math.min(100, P.energy/lsk.cost*100)+'%';
   const killS = sOk && E && !E.dead && lsk.dmg>0 && lsk.dmg >= E.hp;
   rs.classList.toggle('kill', !!killS);
   document.getElementById('rSmallOd').textContent = killS ? '⚔ 斩杀!' : lsk.od;
   const rb=document.getElementById('rBig'); const bOk=P.energy>=hsk.cost;
   rb.disabled=!bOk; rb.classList.toggle('ready',bOk);
   document.getElementById('rBigName').textContent = hsk.name;
-  document.getElementById('rBigCost').textContent = `需 ${hsk.cost}`;
+  document.getElementById('rBigCost').textContent = `${hsk.cost}⚡`;
+  document.getElementById('rBigFill').style.width = Math.min(100, P.energy/hsk.cost*100)+'%';
   const od=P.overloadStacks;
   const killB = bOk && E && !E.dead && hsk.dmg >= E.hp;
   rb.classList.toggle('kill', !!killB);
