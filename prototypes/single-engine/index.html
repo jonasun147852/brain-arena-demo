@@ -79,10 +79,13 @@
   .chiptag.res{color:#ffb1e6; border-color:#ff6ec7; background:rgba(255,110,199,.12); animation:pulse 1.2s infinite;}
   .rarbadge{position:absolute; top:10px; right:10px; font-size:9px; font-weight:800; letter-spacing:2px; padding:2px 9px; border-radius:20px; z-index:2;}
   .rarbadge.silver{color:#c3ccde; border:1px solid #6c7790;} .rarbadge.gold{color:var(--gold); border:1px solid var(--gold);} .rarbadge.prism{color:var(--purple); border:1px solid var(--purple); background:rgba(181,97,255,.1);}
-  /* 流派色左边框(比标签更快被眼睛读到) */
+  /* 流派家族:左边框 + 底色水洗,一眼认门 */
   .card{border-left-width:4px;}
-  .card.sc-lj{border-left-color:var(--cyan);} .card.sc-ss{border-left-color:var(--blue);}
-  .card.sc-js{border-left-color:var(--green);} .card.sc-xl{border-left-color:var(--purple);} .card.sc-ty{border-left-color:var(--silver);}
+  .card.sc-lj{border-left-color:var(--cyan);   background:linear-gradient(180deg, rgba(63,231,255,.07), #080e1c 55%);}
+  .card.sc-ss{border-left-color:var(--blue);   background:linear-gradient(180deg, rgba(77,124,255,.09), #080e1c 55%);}
+  .card.sc-js{border-left-color:var(--green);  background:linear-gradient(180deg, rgba(67,224,138,.07), #080e1c 55%);}
+  .card.sc-xl{border-left-color:var(--purple); background:linear-gradient(180deg, rgba(181,97,255,.08), #080e1c 55%);}
+  .card.sc-ty{border-left-color:var(--silver); background:linear-gradient(180deg, rgba(195,204,222,.06), #080e1c 55%);}
   .card .bastar{color:var(--gold); text-shadow:0 0 10px rgba(255,207,77,.7);}
   .card .schooltag{font-size:10px; color:var(--dim); letter-spacing:1px;}
   .card:active{transform:scale(.97); transition:transform .08s;}
@@ -547,21 +550,21 @@ const GRADE_FLAVOR = {S:'宗师', A:'高手', B:'熟练', C:'学徒', D:'梦游'
 
 /* ============================== 海克斯种子卡 (§10.2) ============================== */
 const HEXES = [
-  {id:'h01',name:'滚雪球',ico:'❄️',school:'连击系',rar:'silver',cat:'改写规则',ba:true,  fl:'雪,不问山有多高。',       desc:'质变档 3/6/9 → <b>2/4/6</b>'},
-  {id:'h02',name:'连击护盾',ico:'🛡️',school:'连击系',rar:'gold',cat:'改写规则',ba:false, fl:'断处,即是接续之处。',     desc:'断连:连击只回落到<b>本档起点</b>'},
-  {id:'h03',name:'提前双响',ico:'⚡',school:'连击系',rar:'prism',cat:'改写规则',ba:false, fl:'第七击起,回声先至。',     desc:'双响解锁 9 → <b>7</b> 连击'},
-  {id:'h04',name:'急速充能',ico:'🚀',school:'神速系',rar:'silver',cat:'改写规则',ba:false,fl:'快,还能更快。',           desc:'⚡奖池上限 30% → <b>50%</b>'},
-  {id:'h05',name:'难题大师',ico:'🧠',school:'神速系',rar:'gold',cat:'改写规则',ba:false, fl:'难题是它们的墙,你的门。', desc:'★★★:时限 +50%,答对 <b>+15⚡</b>'},
-  {id:'h06',name:'抢答',ico:'🎯',school:'神速系',rar:'prism',cat:'成长',ba:true,        fl:'题目开口之前,答案已出鞘。',desc:'连快 3 题 → 下一刀 <b>×2</b>'},
-  {id:'h07',name:'稳定输出',ico:'🪨',school:'即时系',rar:'silver',cat:'改写规则',ba:true, fl:'不求惊雷,每一刀都在。',   desc:'刀威 10 → <b>16</b>,⚡收入 −40%'},
-  {id:'h08',name:'溅射强化',ico:'💥',school:'即时系',rar:'gold',cat:'改写规则',ba:false, fl:'一刀之内,皆是刀锋。',     desc:'溅射 30% → <b>60%</b>'},
-  {id:'h09',name:'持续灼烧',ico:'🔥',school:'即时系',rar:'prism',cat:'转化',ba:false,    fl:'伤口,会记住你。',         desc:'命中挂<b>灼痕</b>:2 题内,每题 50% 刀威'},
-  {id:'h10',name:'重锤',ico:'🔨',school:'蓄力系',rar:'silver',cat:'改写规则',ba:true,    fl:'收起小聪明,举起大锤。',   desc:'重技 <b>×1.5</b>,轻技封印'},
-  {id:'h11',name:'过载专家',ico:'☢️',school:'蓄力系',rar:'gold',cat:'改写规则',ba:false, fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限 5 → <b>8</b> 层'},
-  {id:'h12',name:'蓄能',ico:'🔋',school:'蓄力系',rar:'prism',cat:'改写规则',ba:false,    fl:'门槛,是用来磨低的。',     desc:'技能耗⚡:轻 <b>−10</b> / 重 <b>−20</b>'},
-  {id:'h13',name:'能量虹吸',ico:'🌀',school:'蓄力系',rar:'gold',cat:'转化',ba:false,     fl:'它的痛,是你的粮。',       desc:'重技命中 <b>+40⚡</b>'},
-  {id:'h14',name:'招式解锁',ico:'🗝️',school:'通用',rar:'prism',cat:'成长',ba:false,     fl:'第五答,塔开一扇门。',     desc:'每答 5 题 → 免费<b>控场小招</b>'},
-  {id:'h15',name:'减速领域',ico:'🧊',school:'即时系',rar:'gold',cat:'干扰',ba:false,     fl:'我的领域里,时间归我。',   desc:'减速时长 <b>×2</b>,震慑 <b>+2s</b>'},
+  {id:'h01',name:'早雪',ico:'❄️',school:'连击系',rar:'silver',cat:'改写规则',ba:true,   fl:'雪,比所有人先落。',       desc:'质变档 3/6/9 → <b>2/4/6</b>'},
+  {id:'h02',name:'不化的雪',ico:'🛡️',school:'连击系',rar:'gold',cat:'改写规则',ba:false,fl:'雪线之下,寸雪不失。',     desc:'断连:连击只回落到<b>本档起点</b>'},
+  {id:'h03',name:'山鸣',ico:'⚡',school:'连击系',rar:'prism',cat:'改写规则',ba:false,   fl:'山,替你喊出第二声。',     desc:'双响解锁 9 → <b>7</b> 连击'},
+  {id:'h04',name:'追风',ico:'🚀',school:'神速系',rar:'silver',cat:'改写规则',ba:false,  fl:'风未停,你已至。',         desc:'⚡奖池上限 30% → <b>50%</b>'},
+  {id:'h05',name:'破壁人',ico:'🧠',school:'神速系',rar:'gold',cat:'改写规则',ba:false,  fl:'墙,是门的原料。',         desc:'★★★:时限 +50%,答对 <b>+15⚡</b>'},
+  {id:'h06',name:'出鞘',ico:'🎯',school:'神速系',rar:'prism',cat:'成长',ba:true,       fl:'刀比题快。',               desc:'连快 3 题 → 下一刀 <b>×2</b>'},
+  {id:'h07',name:'钝刀',ico:'🪨',school:'即时系',rar:'silver',cat:'改写规则',ba:true,   fl:'钝,但从不缺席。',         desc:'刀威 10 → <b>16</b>,⚡收入 −40%'},
+  {id:'h08',name:'刀花',ico:'💥',school:'即时系',rar:'gold',cat:'改写规则',ba:false,    fl:'一朵刀,开成一片。',       desc:'溅射 30% → <b>60%</b>'},
+  {id:'h09',name:'余烬',ico:'🔥',school:'即时系',rar:'prism',cat:'转化',ba:false,       fl:'火走了,烫还在。',         desc:'命中挂<b>灼痕</b>:2 题内,每题 50% 刀威'},
+  {id:'h10',name:'一锤',ico:'🔨',school:'蓄力系',rar:'silver',cat:'改写规则',ba:true,   fl:'此生,只练这一锤。',       desc:'重技 <b>×1.5</b>,轻技封印'},
+  {id:'h11',name:'渊眼',ico:'☢️',school:'蓄力系',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限 5 → <b>8</b> 层'},
+  {id:'h12',name:'磨石',ico:'🔋',school:'蓄力系',rar:'prism',cat:'改写规则',ba:false,   fl:'门槛,是用来磨低的。',     desc:'技能耗⚡:轻 <b>−10</b> / 重 <b>−20</b>'},
+  {id:'h13',name:'饮血',ico:'🌀',school:'蓄力系',rar:'gold',cat:'转化',ba:false,        fl:'它的痛,是你的粮。',       desc:'重技命中 <b>+40⚡</b>'},
+  {id:'h14',name:'第五答',ico:'🗝️',school:'通用',rar:'prism',cat:'成长',ba:false,      fl:'塔,在第五答开门。',       desc:'每答 5 题 → 免费<b>控场小招</b>'},
+  {id:'h15',name:'冻土',ico:'🧊',school:'即时系',rar:'gold',cat:'干扰',ba:false,        fl:'这片土地,听我的。',       desc:'减速时长 <b>×2</b>,震慑 <b>+2s</b>'},
 ];
 const RAR_LABEL = {silver:'白银',gold:'黄金',prism:'棱彩'};
 const RAR_BY_SECTION = ['silver','gold','prism'];
@@ -1039,7 +1042,7 @@ function onCorrect(){
   if(has('h07')) base *= 0.6;
   let perQ = base * (1+s);
   if(q.difficulty==='hard' && has('h05')){ perQ += 15; hexFire('h05','+15能量'); }
-  if(s > 0.30) hexFire('h04','超速充能');
+  if(s > 0.30) hexFire('h04','超速');
   P.energy = Math.min(K.ENERGY_MAX, P.energy + perQ);
 
   const uPrev = tierUnlocks(P.combo);
@@ -1141,7 +1144,7 @@ function onBreak(reason){
     banner('🛡 不灭雪球!连击保住了');
   } else {
     const t = thresholds();
-    if(has('h02')){ P.combo = P.combo>=t[2]?t[2] : P.combo>=t[1]?t[1] : P.combo>=t[0]?t[0] : 0; hexFire('h02','护盾:档位保留'); }
+    if(has('h02')){ P.combo = P.combo>=t[2]?t[2] : P.combo>=t[1]?t[1] : P.combo>=t[0]?t[0] : 0; hexFire('h02','档位保留'); }
     else { P.combo = Math.floor(P.combo/2); }
   }
   // 赌局的风险端(SPEC §9:没放出去就断连 = 白攒):过载层崩塌
@@ -1499,7 +1502,8 @@ function hexFire(id, label){
   if(!has(id)) return;
   const el=document.getElementById('bs_'+id);
   if(el){ el.classList.remove('fire'); void el.offsetWidth; el.classList.add('fire'); }
-  if(label){ const h=HEXES.find(x=>x.id===id); floatText(`${h.ico}${label}`, '#ffcf4d', true, false, 'you'); }
+  // 触发喊名(Balatro 式复读机):名字被念得越多,记得越牢
+  if(label){ const h=HEXES.find(x=>x.id===id); floatText(`${h.ico}${h.name}·${label}`, '#ffcf4d', true, false, 'you'); }
 }
 function banner(msg){
   const b=document.getElementById('banner'); b.textContent=msg;
