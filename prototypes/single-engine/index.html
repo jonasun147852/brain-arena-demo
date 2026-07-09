@@ -419,7 +419,7 @@
 
     <div class="hud">
       <div class="stat combo"><div class="v" id="sCombo">0</div><div class="k">🔥 连 击</div></div>
-      <div class="stat imm"><div class="v" id="sImm">10</div><div class="k">⚔ 刀 威</div></div>
+      <div class="stat imm"><div class="v" id="sImm">10</div><div class="k">⚔ 攻 击</div></div>
       <div class="stat energy"><div class="v" id="sEnergy">0</div><div class="k">⚡ 能 量</div></div>
       <div class="stat over"><div class="v" id="sOver">0</div><div class="k">☢ 过 载</div></div>
     </div>
@@ -439,8 +439,8 @@
     </div>
 
     <div class="releases">
-      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span id="rSmallName">小放</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">即时 × 3</span></button>
-      <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span id="rBigName">大放</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">即时 × 6 + 震慑</span><span class="odpips" id="odPips"></span></button>
+      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span id="rSmallName">小放</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">攻击 × 3</span></button>
+      <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span id="rBigName">大放</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">攻击 × 6 + 震慑</span><span class="odpips" id="odPips"></span></button>
     </div>
 
     <div class="keypad" id="keypad">
@@ -550,19 +550,19 @@ const GRADE_FLAVOR = {S:'宗师', A:'高手', B:'熟练', C:'学徒', D:'梦游'
 
 /* ============================== 海克斯种子卡 (§10.2) ============================== */
 const HEXES = [
-  {id:'h01',name:'早雪',ico:'❄️',school:'连击系',rar:'silver',cat:'改写规则',ba:true,   fl:'雪,比所有人先落。',       desc:'质变档 3/6/9 → <b>2/4/6</b>'},
+  {id:'h01',name:'早雪',ico:'❄️',school:'连击系',rar:'silver',cat:'改写规则',ba:true,   fl:'雪,比所有人先落。',       desc:'连击解锁 3/6/9 → <b>2/4/6</b>'},
   {id:'h02',name:'不化的雪',ico:'🛡️',school:'连击系',rar:'gold',cat:'改写规则',ba:false,fl:'雪线之下,寸雪不失。',     desc:'断连:连击只回落到<b>本档起点</b>'},
   {id:'h03',name:'山鸣',ico:'⚡',school:'连击系',rar:'prism',cat:'改写规则',ba:false,   fl:'山,替你喊出第二声。',     desc:'双响解锁 9 → <b>7</b> 连击'},
   {id:'h04',name:'追风',ico:'🚀',school:'神速系',rar:'silver',cat:'成长',ba:false,     fl:'风未停,你已至。',         desc:'快答叠<b>风层</b>:每层 +6%⚡(至 5 层);慢答·断连清零'},
   {id:'h05',name:'破壁人',ico:'🧠',school:'神速系',rar:'gold',cat:'改写规则',ba:false,  fl:'墙,是门的原料。',         desc:'★★★:时限 +50%,答对 <b>+15⚡</b>'},
-  {id:'h06',name:'出鞘',ico:'🎯',school:'神速系',rar:'prism',cat:'成长',ba:true,       fl:'刀比题快。',               desc:'连快 3 题 → 下一刀 <b>×2</b>'},
-  {id:'h07',name:'钝刀',ico:'🪨',school:'即时系',rar:'silver',cat:'改写规则',ba:true,   fl:'钝,但从不缺席。',         desc:'刀威 10 → <b>16</b>,⚡收入 −40%'},
+  {id:'h06',name:'出鞘',ico:'🎯',school:'神速系',rar:'prism',cat:'成长',ba:true,       fl:'刀比题快。',               desc:'连快 3 题 → 下一击 <b>×2</b>'},
+  {id:'h07',name:'钝刀',ico:'🪨',school:'即时系',rar:'silver',cat:'改写规则',ba:true,   fl:'钝,但从不缺席。',         desc:'攻击 10 → <b>16</b>,⚡收入 −40%'},
   {id:'h08',name:'刀花',ico:'💥',school:'即时系',rar:'gold',cat:'改写规则',ba:false,    fl:'一朵刀,开成一片。',       desc:'溅射 <b>60%</b>;敌人<b>受控</b>时,溅射翻倍'},
-  {id:'h09',name:'余烬',ico:'🔥',school:'即时系',rar:'prism',cat:'转化',ba:false,       fl:'火走了,烫还在。',         desc:'命中挂<b>灼痕</b>:2 题内,每题 50% 刀威'},
+  {id:'h09',name:'余烬',ico:'🔥',school:'即时系',rar:'prism',cat:'转化',ba:false,       fl:'火走了,烫还在。',         desc:'命中挂<b>灼痕</b>:2 题内,每题再受 50% 攻击'},
   {id:'h10',name:'一锤',ico:'🔨',school:'蓄力系',rar:'silver',cat:'改写规则',ba:true,   fl:'此生,只练这一锤。',       desc:'重技 <b>×1.5</b>,轻技封印'},
-  {id:'h11',name:'渊眼',ico:'☢️',school:'蓄力系',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限 <b>8</b>;每层过载 <b>+2 刀威</b>'},
+  {id:'h11',name:'渊眼',ico:'☢️',school:'蓄力系',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限 <b>8</b>;每层过载 <b>+2 攻击</b>'},
   {id:'h12',name:'赌徒之门',ico:'🎲',school:'蓄力系',rar:'prism',cat:'转化',ba:false,   fl:'门后是什么,开了才知道。', desc:'技能门槛 <b>−20</b>;释放 20% <b>卡壳</b>(费照扣,效果减半)'},
-  {id:'h13',name:'饮血',ico:'🌀',school:'蓄力系',rar:'gold',cat:'成长',ba:false,        fl:'它的痛,是你的粮。',       desc:'重技命中 <b>+40⚡</b>,并本局<b>永久 +2 刀威</b>(至 +20)'},
+  {id:'h13',name:'饮血',ico:'🌀',school:'蓄力系',rar:'gold',cat:'成长',ba:false,        fl:'它的痛,是你的粮。',       desc:'重技命中 <b>+40⚡</b>,并本局<b>永久 +2 攻击</b>(至 +20)'},
   {id:'h14',name:'第五答',ico:'🗝️',school:'通用',rar:'prism',cat:'成长',ba:false,      fl:'塔,在第五答开门。',       desc:'每答 5 题 → 免费<b>控场小招</b>'},
   {id:'h15',name:'冻土',ico:'🧊',school:'即时系',rar:'gold',cat:'干扰',ba:false,        fl:'这片土地,听我的。',       desc:'减速时长 <b>×2</b>,震慑 <b>+2s</b>'},
 ];
@@ -571,10 +571,10 @@ const RAR_BY_SECTION = ['silver','gold','prism'];
 
 /* ============================== 共鸣(同流派×2 质变联动;团队层标签计数接口的单人预演) ============================== */
 const RESONANCE = {
-  '连击系':{name:'不灭雪球', ico:'🛡❄', desc:'每节首次断连,连击不回落'},
+  '连击系':{name:'不灭雪球', ico:'🛡❄', desc:'每关首次断连,连击不回落'},
   '神速系':{name:'时间凝滞', ico:'⏸', desc:'快于基准答对时,冻结敌人充能 2 秒'},
-  '即时系':{name:'三连锁', ico:'⛓', desc:'每第 3 次答对,即时层整套再触发一次'},
-  '蓄力系':{name:'稳压核心', ico:'🔗', desc:'大放后保留一半过载层(向上取整)'},
+  '即时系':{name:'三连锁', ico:'⛓', desc:'每第 3 次答对,再打一轮普攻+溅射'},
+  '蓄力系':{name:'稳压核心', ico:'🔗', desc:'重技后保留一半过载层(向上取整)'},
 };
 function schoolCount(s){ return P.hexes.filter(h=>h.school===s).length; }
 function hasRes(s){ return schoolCount(s)>=2; }
@@ -582,11 +582,11 @@ function activeResonances(){ return Object.keys(RESONANCE).filter(hasRes); }
 
 /* ============================== 羁绊(跨流派特定组合;与共鸣抢卡位 = 赌感与遗憾感的引擎) ============================== */
 const BONDS = [
-  {id:'b1', name:'风暴眼', ico:'🌀', pieces:['h06','h03'], desc:'抢答只需连快 2 题'},
+  {id:'b1', name:'风暴眼', ico:'🌀', pieces:['h06','h03'], desc:'出鞘只需连快 2 题'},
   {id:'b2', name:'熔炉',   ico:'🔥', pieces:['h09','h11'], desc:'每层过载,灼痕伤害 +20%'},
-  {id:'b3', name:'永动机', ico:'♾️', pieces:['h13','h04'], desc:'虹吸回能 40 → 70'},
+  {id:'b3', name:'永动机', ico:'♾️', pieces:['h13','h04'], desc:'饮血回能 40 → 70'},
   {id:'b4', name:'斩首令', ico:'🗡️', pieces:['h10','h05'], desc:'★★★ 答对,直接 +1 过载层'},
-  {id:'b5', name:'裂变',   ico:'💥', pieces:['h01','h08'], desc:'双响的回声也触发裂刃'},
+  {id:'b5', name:'裂变',   ico:'💥', pieces:['h01','h08'], desc:'双响也触发溅射'},
 ];
 function bondOn(id){ const b=BONDS.find(x=>x.id===id); return b.pieces.every(p=>has(p)); }
 function activeBonds(){ return BONDS.filter(b=>b.pieces.every(p=>has(p))); }
@@ -688,7 +688,7 @@ function immediateDamage(){
 function immediateDamageRaw(){
   const tier = comboTier(P.combo);
   let dmg = has('h07') ? [16,19,22,26][tier] : K.TIER_DAMAGE[tier];
-  dmg += (P.bloodBonus||0);                          // 饮血:局内养出来的刀威
+  dmg += (P.bloodBonus||0);                          // 饮血:局内养出来的攻击
   if(has('h11')) dmg += 2*(P.overloadStacks||0);     // 渊眼:囤过载=全技能变强
   return dmg;
 }
@@ -1066,7 +1066,7 @@ function onCorrect(){
   const dmg = immediateDamage();
   const consumedDouble = P.nextImmDouble;
   P.nextImmDouble=false;
-  dealDamage(dmg, '即时', '#43e08a');
+  dealDamage(dmg, '普攻', '#43e08a');
 
   const u = tierUnlocks(P.combo);
   if(u.splash && !uPrev.splash){ banner('🔓 溅射 解锁!'); SFX.tierUp(); hexFire('h01'); }
@@ -1196,7 +1196,7 @@ function lightSkill(){
   if(s==='蓄力系') return {key:'shield',name:'能量护盾',cost:50-disc, od:'挡下 2 次攻击', dmg:0};
   if(s==='连击系') return {key:'flurry',name:'疾风连打',cost:50-disc, od:'×2 + 连击+2', dmg:immediateDamage()*2};
   if(s==='即时系') return {key:'sear',  name:'灼热打击',cost:50-disc, od:'×2.5 + 灼烧', dmg:immediateDamage()*2.5};
-  return {key:'small', name:'小放', cost:50-disc, od:`即时 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
+  return {key:'small', name:'小放', cost:50-disc, od:`攻击 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
 }
 function heavySkill(){
   const s = dominantSchool();
@@ -1207,7 +1207,7 @@ function heavySkill(){
   if(s==='连击系')      v={key:'avalanche', name:'雪崩',   base:4*(1+0.02*P.combo), od:'×4·连击每点+2% + 震慑', stun:true};
   else if(s==='神速系') v={key:'timestop',  name:'时停',   base:4, od:'×4 + 冻结 5 秒', freeze:5000};
   else if(s==='即时系') v={key:'firestorm', name:'烈焰风暴',base:5, od:'×5 + 重灼烧', dot:{left:3, ratio:0.8}};
-  else                  v={key:'big',       name:'大放',   base:K.BIG_MULT, od:`即时 × ${K.BIG_MULT} + 震慑`, stun:true};
+  else                  v={key:'big',       name:'大放',   base:K.BIG_MULT, od:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
   v.cost = 100-disc;
   v.dmg = Math.round(immediateDamage()*v.base*hammer*odMult);
   return v;
@@ -1271,7 +1271,7 @@ function releaseBig(){   // 重技能槽
     const sip = bondOn('b3')?70:40;
     P.energy = Math.min(K.ENERGY_MAX, P.energy+sip);
     if(P.bloodBonus < 20){ P.bloodBonus += 2; }        // 饮血:局内养刀,封顶+20
-    hexFire('h13',`+${sip}⚡·刀威+2`);
+    hexFire('h13',`+${sip}⚡·攻击+2`);
   }   // 羁绊·永动机 40→70
   telem.releases.big++;
   telem.skillUse[sk.name]=(telem.skillUse[sk.name]||0)+1;
