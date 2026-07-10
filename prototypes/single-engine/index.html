@@ -74,6 +74,10 @@
   .card .desc{font-size:12.5px; color:var(--silver); line-height:1.55; flex:1;}
   .card .flavor{font-size:11px; color:#d8c07a; font-style:italic; opacity:.9; line-height:1.4; letter-spacing:.5px;}
   .card .delta{font-size:10.5px; color:var(--cyan); font-feature-settings:"tnum" 1;}
+  .card .syn{font-size:10.5px; line-height:1.5; border-top:1px dashed var(--line); padding-top:4px; margin-top:2px;}
+  .card .syn.bond{color:#ffb367;}
+  .card .syn.res{color:#ffb1e6;}
+  .card .syn.dim{color:var(--dim);}
   .card .delta b{color:var(--gold);}
   .qbonus{font-size:11px; font-weight:800; color:var(--gold); border:1px solid rgba(255,207,77,.35); padding:2px 9px; border-radius:14px; background:rgba(255,207,77,.08); font-feature-settings:"tnum" 1;}
   .qbonus.drained{color:var(--dim); border-color:var(--line); background:transparent;}
@@ -1234,25 +1238,28 @@ function renderDraft(rar){
     }
     P.hexes.pop();
     const sc = schoolCount(h.school);
-    // 状态标签按优先级取前 2:羁绊就绪 > 共鸣就绪 > 技能变形 > 羁绊缺件(降噪)
-    const tags = [];
+    // 联动信息=整行说明文(名词只是装饰,效果必须写明白;手机无悬停)
+    const syn = [];
     BONDS.filter(b=>b.pieces.includes(h.id)).forEach(b=>{
       const others = b.pieces.filter(p=>p!==h.id);
-      if(others.every(p=>has(p))) tags.push({pri:0, html:`<span class="chiptag bond" title="${b.desc}">⛓ 结成「${b.name}」!</span>`});
-      else { const oh=HEXES.find(x=>x.id===others[0]); tags.push({pri:3, html:`<span class="chiptag bondhint" title="${b.desc}">⛓「${b.name}」缺 ${oh.ico}</span>`}); }
+      if(others.every(p=>has(p)))
+        syn.push({pri:0, html:`<div class="syn bond">⛓ 选它凑成「${b.name}」→ ${b.desc}</div>`});
+      else {
+        const oh=HEXES.find(x=>x.id===others[0]);
+        syn.push({pri:3, html:`<div class="syn dim">⛓ 和 ${oh.ico}${oh.name} 能凑「${b.name}」→ ${b.desc}</div>`});
+      }
     });
-    if(RESONANCE[h.school] && sc===1) tags.push({pri:1, html:`<span class="chiptag res">🔗 触发共鸣「${RESONANCE[h.school].name}」</span>`});
-    if(h.school!=='通用' && dominantOf(P.hexes.concat([h])) !== dominantSchool())
-      tags.push({pri:2, html:`<span class="chiptag ba">⚔ 换技能</span>`});
-    const statusTags = tags.sort((a,b)=>a.pri-b.pri).slice(0,2).map(t=>t.html).join('');
-    const resTag = (RESONANCE[h.school] && sc===1) ? '1' : '';   // 供 desc 共鸣预览判断
+    if(RESONANCE[h.school] && sc===1)
+      syn.push({pri:1, html:`<div class="syn res">🔗 选它=第 2 张${h.school}卡,触发「${RESONANCE[h.school].name}」→ ${RESONANCE[h.school].desc}</div>`});
+    const statusTags = syn.sort((a,b)=>a.pri-b.pri).slice(0,2).map(t=>t.html).join('');
+    const resTag = '';   // 共鸣说明已并入联动行,不再重复
     el.innerHTML=`<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>
       <div class="ico">${h.ico}</div>
       <div class="name">${h.name}${h.ba?' <span class="bastar">★</span>':''}</div>
       <div class="flavor">「${h.fl}」</div>
-      <div class="desc">${h.desc}${resTag?`<br><span style="color:#ffb1e6">共鸣:${RESONANCE[h.school].desc}</span>`:''}</div>
+      <div class="desc">${h.desc}</div>
       ${delta}
-      <div class="row1">${statusTags}</div>
+      ${statusTags}
       <div class="schooltag">${SCHOOL_LABEL[h.school]||h.school}${sc?` · 已持 ${sc} 张`:''}</div>`;
     el.onclick=()=>pickHex(h);
     wrap.appendChild(el);
