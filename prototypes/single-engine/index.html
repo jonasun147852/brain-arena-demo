@@ -488,7 +488,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.1.1</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.1.2</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1359,8 +1359,10 @@ function rollOffer(roundIdx){
     picks.push(...weightedDraw(pool.filter(h=>h.rar===tier && !picks.includes(h)), n-picks.length, wf));
     R._offerRar = tier;
   }
-  while(picks.length < (roundIdx<3?4:3)){   // 池干涸兜底
-    const fb=HEXES.filter(h=>!has(h.id) && !picks.includes(h) && !gambleLocked(h) && h.cat!=='升级');
+  while(picks.length < (roundIdx<3?4:3)){   // 池干涸兜底:先同色补,再任意色;后两抽不放成长
+    const base=h=>!has(h.id) && !picks.includes(h) && !gambleLocked(h) && h.cat!=='升级' && (roundIdx<=2 || !h.grow);
+    let fb=HEXES.filter(h=>base(h) && (!R._offerRar || h.rar===R._offerRar));
+    if(!fb.length) fb=HEXES.filter(base);
     if(!fb.length) break;
     picks.push(pick(fb));
   }
@@ -1383,14 +1385,13 @@ function renderDraftCards(offer, wrap, roundIdx){
     el.title=h.cat;
     let delta='';
     P.hexes.push(h);
-    {
+    try{
       const parts=[];
       const a2=immediateDamage(); if(a2!==baseAtk) parts.push(`普攻 ${baseAtk}→<b>${a2}</b>`);
       const h2=heavySkill(); if(h2.name===baseHv.name && h2.dmg!==baseHv.dmg) parts.push(`${h2.name} ${baseHv.dmg}→<b>${h2.dmg}</b>`);
       const l2=lightSkill(); if(l2.cost!==baseLt.cost) parts.push(`轻技 ${baseLt.cost}⚡→<b>${l2.cost}⚡</b>`);
       if(parts.length) delta=`<div class="delta">${parts.slice(0,2).join(' · ')}</div>`;
-    }
-    P.hexes.pop();
+    } finally { P.hexes.pop(); }
     if(h.skillSlot){
       const cur = ownedSkill(h.skillSlot);
       const slotName = h.skillSlot==='light'?'轻技能':'重技能';
@@ -1444,6 +1445,7 @@ function renderBattleDraft(idx){
   rb.disabled = rerollLeft<=0; rb.textContent = rerollLeft>0 ? '🎲 重抽(全局仅 1 次)' : '已用完重抽';
 }
 function renderSecDraft(idx){
+  DRAFT_SHIELD_AT = Date.now();
   document.getElementById('secDraft').classList.remove('hidden');
   const offer = rollOffer(idx);
   document.getElementById('sdTag').textContent = draftRoundTag(idx)+' · 过关补给';
@@ -1455,12 +1457,15 @@ function renderSecDraft(idx){
 function reroll(){
   if(rerollLeft<=0) return;
   rerollLeft--;
+  DRAFT_SHIELD_AT = Date.now();
   if(DRAFT_OPEN) renderBattleDraft(R.draftPending);
   else if(R._secDraft!=null) renderSecDraft(R._secDraft);
 }
 /* ============================== 选牌 ============================== */
-function pickHexFromDraft(h){   // UI 唯一入口:双击/迟到点击直接吞掉(修重开本关 bug)
+let DRAFT_SHIELD_AT=0;   // 开屏点击护盾:发牌屏弹出瞬间,玩家连点答题的手还没停
+function pickHexFromDraft(h){   // UI 唯一入口:双击/迟到/开屏惯性点击直接吞掉
   if(!DRAFT_OPEN && R._secDraft==null) return;
+  if(Date.now() - DRAFT_SHIELD_AT < 400) return;
   pickHex(h);
 }
 function applyHexPick(h){
@@ -2446,6 +2451,7 @@ function openBattleDraft(){
   try{ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); }catch(e){}
   renderBattleDraft(R.draftPending);
   document.getElementById('bDraft').classList.remove('hidden');
+  DRAFT_SHIELD_AT = Date.now();
   SFX.tierUp();
   telem.draftShownAt.push(Math.round(R.fightMs));
 }
