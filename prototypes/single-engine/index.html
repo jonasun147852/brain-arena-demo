@@ -187,6 +187,18 @@
   .qdiff.easy{color:var(--green);} .qdiff.medium{color:var(--gold);} .qdiff.hard{color:var(--red);}
   .qprompt{font-weight:900; letter-spacing:2px; text-align:center; line-height:1.1; text-shadow:0 2px 16px rgba(63,231,255,.18);}
   .qprompt.qp-l{font-size:40px;} .qprompt.qp-m{font-size:30px;} .qprompt.qp-s{font-size:23px;}
+  .qprompt.qp-mc{font-size:19px; letter-spacing:.5px; line-height:1.45; max-width:94%;}
+  .qopts{width:92%; display:grid; grid-template-columns:1fr 1fr; gap:7px;}
+  .qopt{padding:9px 10px; border-radius:10px; background:linear-gradient(180deg,var(--panel2),#0a1120); border:1px solid var(--line2);
+    font-size:13.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:7px; transition:transform .08s, border-color .15s;}
+  .qopt:hover{border-color:var(--cyan);}
+  .qopt:active{transform:scale(.96);}
+  .qopt .qn{min-width:19px; height:19px; border-radius:6px; background:rgba(63,231,255,.12); border:1px solid rgba(63,231,255,.4);
+    color:var(--cyan); font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .subjrow{display:flex; gap:7px; flex-wrap:wrap; justify-content:center; max-width:92%;}
+  .sj{font-size:12.5px; font-weight:800; padding:5px 15px; border-radius:20px; border:1px solid var(--line2); color:var(--dim);
+    background:rgba(0,0,0,.25); cursor:pointer; letter-spacing:1px; transition:all .15s;}
+  .sj.on{color:#04121d; border-color:transparent; background:linear-gradient(100deg,var(--cyan),var(--blue)); box-shadow:0 0 12px rgba(63,231,255,.35);}
   .qprompt.good{color:var(--green); text-shadow:0 0 26px rgba(67,224,138,.5);}
   .qprompt.bad{color:var(--red); text-shadow:0 0 26px rgba(255,84,112,.5);}
   .qbox.good{border-color:var(--green); box-shadow:0 0 26px rgba(67,224,138,.22), inset 0 1px 0 rgba(255,255,255,.04);}
@@ -417,6 +429,7 @@
     <div class="tagline">以 答 为 刃</div>
     <div class="bestline hidden" id="bestLine"></div>
     <div class="sub">三名守门者,共守一条塔脉。<b>答对即出刀——你死,或塔倾。</b></div>
+    <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
@@ -482,6 +495,7 @@
     <div class="qbox" id="qbox">
       <div class="qmeta"><span class="qtype" id="qType">速算</span><span class="qdiff" id="qDiff">★</span><span class="qbonus" id="qBonus">⚡+0</span></div>
       <div class="qprompt qp-l" id="qPrompt">3 × 4 + 2</div>
+      <div class="qopts hidden" id="qOpts"></div>
       <div class="qtimer"><div class="qzone hidden" id="qZone"></div><div class="qtimerfill" id="qTimerFill"></div><div class="bench" id="qBench"></div></div>
       <input class="qinput" id="qInput" inputmode="numeric" autocomplete="off" placeholder="答案">
     </div>
@@ -584,9 +598,149 @@ const BENCH = {
   seq: {easy:5, medium:7, hard:10},
   eq:  {easy:5, medium:7, hard:10},
   pct: {easy:5, medium:6, hard:8},
+  mc:  {easy:5, medium:7, hard:9},
 };
-const TYPE_LABEL = {calc:'速算', seq:'数列', eq:'方程', pct:'百分比'};
+const TYPE_LABEL = {calc:'速算', seq:'数列', eq:'方程', pct:'百分比', chinese:'语文', english:'英语', history:'历史', geo:'地理', science:'科学'};
 const TYPES = ['calc','seq','eq','pct'];
+const SUBJECTS = {math:'数学', chinese:'语文', english:'英语', history:'历史', geo:'地理', science:'科学'};
+let SUBJ_ON = {math:true, chinese:true, english:true, history:true, geo:true, science:true};
+try{ const sv=JSON.parse(localStorage.getItem('ba_subjects')||'null'); if(sv) SUBJ_ON={...SUBJ_ON,...sv}; }catch(e){}
+function activeSubjects(){ const on=Object.keys(SUBJECTS).filter(k=>SUBJ_ON[k]); return on.length?on:['math']; }
+
+/* ============================== 全学科题库(四选一;答案=选项序号,与数字键盘/自动提交零冲突) ============================== */
+const BANK = {
+chinese:[
+ {q:'「守株待兔」讽刺的是?',o:['死守经验不知变通','勤劳肯干','勇敢无畏','诚实守信'],a:0,d:'easy'},
+ {q:'《静夜思》的作者是?',o:['李白','杜甫','白居易','王维'],a:0,d:'easy'},
+ {q:'"三人行,必有我师焉"出自?',o:['《论语》','《孟子》','《庄子》','《大学》'],a:0,d:'easy'},
+ {q:'「画蛇添足」比喻?',o:['多此一举','精益求精','画技高超','未雨绸缪'],a:0,d:'easy'},
+ {q:'"床前明月光"的下一句是?',o:['疑是地上霜','低头思故乡','举头望明月','月是故乡明'],a:0,d:'easy'},
+ {q:'《西游记》中三打白骨精的是?',o:['孙悟空','猪八戒','沙僧','唐僧'],a:0,d:'easy'},
+ {q:'"欲穷千里目"的下一句是?',o:['更上一层楼','白日依山尽','黄河入海流','不畏浮云遮望眼'],a:0,d:'easy'},
+ {q:'「亡羊补牢」告诉我们?',o:['出了问题及时补救还不晚','要提前做好防范','羊圈要修结实','损失无法挽回'],a:0,d:'easy'},
+ {q:'「四面楚歌」与哪位人物有关?',o:['项羽','刘邦','韩信','张良'],a:0,d:'medium'},
+ {q:'《红楼梦》的作者是?',o:['曹雪芹','吴承恩','施耐庵','罗贯中'],a:0,d:'medium'},
+ {q:'"千里共婵娟"中"婵娟"指?',o:['月亮','美人','嫦娥','团圆'],a:0,d:'medium'},
+ {q:'「洛阳纸贵」形容?',o:['著作广为流传','物价飞涨','纸张稀缺','洛阳繁华'],a:0,d:'medium'},
+ {q:'"醉翁之意不在酒"的作者是?',o:['欧阳修','苏轼','王安石','范仲淹'],a:0,d:'medium'},
+ {q:'下列哪部不属于四大名著?',o:['《聊斋志异》','《西游记》','《水浒传》','《三国演义》'],a:0,d:'medium'},
+ {q:'《背影》的作者是?',o:['朱自清','鲁迅','老舍','巴金'],a:0,d:'medium'},
+ {q:'「不入虎穴,焉得虎子」强调?',o:['不冒险难获成功','要远离危险','虎穴不可入','谋定而后动'],a:0,d:'medium'},
+ {q:'"问君能有几多愁"的下一句是?',o:['恰似一江春水向东流','别是一般滋味在心头','月如钩','往事知多少'],a:0,d:'hard'},
+ {q:'《离骚》的作者是?',o:['屈原','宋玉','贾谊','司马相如'],a:0,d:'hard'},
+ {q:'"会当凌绝顶,一览众山小"出自?',o:['《望岳》','《登高》','《春望》','《蜀相》'],a:0,d:'hard'},
+ {q:'「筚路蓝缕」形容?',o:['创业的艰苦','衣衫破旧','道路泥泞','生活贫困'],a:0,d:'hard'},
+ {q:'"山重水复疑无路"的下一句是?',o:['柳暗花明又一村','轻舟已过万重山','一览众山小','病树前头万木春'],a:0,d:'hard'},
+ {q:'《儒林外史》主要讽刺?',o:['科举制度下的士人','官场腐败','市井骗局','豪门奢靡'],a:0,d:'hard'},
+ {q:'「白驹过隙」形容?',o:['时光飞逝','骏马奔腾','缝隙狭窄','机会难得'],a:0,d:'hard'},
+ {q:'"人生自古谁无死,留取丹心照汗青"的作者是?',o:['文天祥','岳飞','辛弃疾','陆游'],a:0,d:'hard'},
+],
+english:[
+ {q:'"Monday" 是星期几?',o:['星期一','星期二','星期日','星期五'],a:0,d:'easy'},
+ {q:'happy 的反义词是?',o:['sad','glad','angry','tired'],a:0,d:'easy'},
+ {q:'"Thank you" 的常用回应是?',o:["You're welcome",'Goodbye','Me too','Never mind'],a:0,d:'easy'},
+ {q:'big 的比较级是?',o:['bigger','biggest','more big','biger'],a:0,d:'easy'},
+ {q:'下列哪个是动物?',o:['tiger','desk','blue','run'],a:0,d:'easy'},
+ {q:'"水"的英文是?',o:['water','fire','wind','earth'],a:0,d:'easy'},
+ {q:'I ___ a student.',o:['am','is','are','be'],a:0,d:'easy'},
+ {q:'"apple" 是?',o:['苹果','香蕉','橙子','梨'],a:0,d:'easy'},
+ {q:'"library" 是?',o:['图书馆','实验室','礼堂','餐厅'],a:0,d:'medium'},
+ {q:'「借入」用哪个词?',o:['borrow','lend','loan out','rent out'],a:0,d:'medium'},
+ {q:'下列复数形式错误的是?',o:['sheeps','children','feet','mice'],a:0,d:'medium'},
+ {q:'as busy as a ___',o:['bee','bird','cat','fish'],a:0,d:'medium'},
+ {q:'He has lived here ___ 2010.',o:['since','for','at','on'],a:0,d:'medium'},
+ {q:'"interesting" 的意思是?',o:['有趣的','重要的','困难的','昂贵的'],a:0,d:'medium'},
+ {q:'下列哪个月份只有 30 天?',o:['September','January','March','December'],a:0,d:'medium'},
+ {q:'"How are you?" 的自然回应是?',o:["I'm fine, thanks",'How do you do','See you','That is all right'],a:0,d:'medium'},
+ {q:'"ambiguous" 意为?',o:['含糊不清的','雄心勃勃的','大气的','和蔼的'],a:0,d:'hard'},
+ {q:'"It rains cats and dogs" 意为?',o:['下倾盆大雨','猫狗打架','天上掉宠物','宠物淋雨'],a:0,d:'hard'},
+ {q:'"procrastinate" 意为?',o:['拖延','庆祝','预测','抗议'],a:0,d:'hard'},
+ {q:'「精确的」是哪个词?',o:['precise','precious','previous','present'],a:0,d:'hard'},
+ {q:'"break the ice" 意为?',o:['打破僵局','砸碎冰块','雪上加霜','冷若冰霜'],a:0,d:'hard'},
+ {q:'"inevitable" 意为?',o:['不可避免的','看不见的','无价的','数不清的'],a:0,d:'hard'},
+ {q:'The bridge ___ in 1937.',o:['was built','built','is build','builds'],a:0,d:'hard'},
+ {q:'"vocabulary" 意为?',o:['词汇量','嗓音','假期','职业'],a:0,d:'hard'},
+],
+history:[
+ {q:'秦始皇统一六国是在?',o:['公元前221年','公元前202年','公元前356年','公元221年'],a:0,d:'easy'},
+ {q:'改进造纸术的是?',o:['蔡伦','张衡','毕昇','鲁班'],a:0,d:'easy'},
+ {q:'《史记》的作者是?',o:['司马迁','司马光','班固','左丘明'],a:0,d:'easy'},
+ {q:'中国最后一个封建王朝是?',o:['清朝','明朝','元朝','宋朝'],a:0,d:'easy'},
+ {q:'郑和下西洋发生在哪个朝代?',o:['明朝','宋朝','元朝','清朝'],a:0,d:'easy'},
+ {q:'「卧薪尝胆」的主角是?',o:['勾践','夫差','伍子胥','范蠡'],a:0,d:'easy'},
+ {q:'唐朝的开国皇帝是?',o:['李渊','李世民','李隆基','李治'],a:0,d:'easy'},
+ {q:'下令连接修筑万里长城的是?',o:['秦始皇','汉武帝','周武王','齐桓公'],a:0,d:'easy'},
+ {q:'玄奘西行取经的目的地是?',o:['天竺(今印度)','波斯','大食','日本'],a:0,d:'medium'},
+ {q:'科举制度创立于哪个朝代?',o:['隋朝','唐朝','汉朝','宋朝'],a:0,d:'medium'},
+ {q:'「贞观之治」是哪位皇帝在位时期?',o:['唐太宗','唐高祖','唐玄宗','武则天'],a:0,d:'medium'},
+ {q:'活字印刷术的发明者是?',o:['毕昇','蔡伦','沈括','宋应星'],a:0,d:'medium'},
+ {q:'第一次世界大战爆发于?',o:['1914年','1918年','1939年','1905年'],a:0,d:'medium'},
+ {q:'美国《独立宣言》发表于?',o:['1776年','1789年','1783年','1765年'],a:0,d:'medium'},
+ {q:'出使西域、开辟丝绸之路的是?',o:['张骞','班超','霍去病','卫青'],a:0,d:'medium'},
+ {q:'拿破仑最终战败于哪场战役?',o:['滑铁卢战役','特拉法加海战','奥斯特里茨战役','莱比锡战役'],a:0,d:'medium'},
+ {q:'王安石变法发生在哪个朝代?',o:['北宋','南宋','唐朝','明朝'],a:0,d:'hard'},
+ {q:'《资治通鉴》的作者是?',o:['司马光','司马迁','欧阳修','宋祁'],a:0,d:'hard'},
+ {q:'文艺复兴的发源地是?',o:['意大利','法国','英国','德国'],a:0,d:'hard'},
+ {q:'靖康之变导致哪个朝代灭亡?',o:['北宋','南宋','辽','金'],a:0,d:'hard'},
+ {q:'工业革命最早发生在?',o:['英国','法国','美国','德国'],a:0,d:'hard'},
+ {q:'澶渊之盟签订的双方是?',o:['北宋与辽','北宋与金','南宋与金','唐与吐蕃'],a:0,d:'hard'},
+ {q:'罗马帝国分裂为东西两部是在?',o:['公元395年','公元476年','公元330年','公元1054年'],a:0,d:'hard'},
+ {q:'郡县制在全国范围推行始于?',o:['秦朝','周朝','汉朝','商朝'],a:0,d:'hard'},
+],
+geo:[
+ {q:'中国最长的河流是?',o:['长江','黄河','珠江','黑龙江'],a:0,d:'easy'},
+ {q:'世界最高峰是?',o:['珠穆朗玛峰','乔戈里峰','贡嘎山','富士山'],a:0,d:'easy'},
+ {q:'世界上最大的洋是?',o:['太平洋','大西洋','印度洋','北冰洋'],a:0,d:'easy'},
+ {q:'中国共有多少个省级行政区?',o:['34个','31个','23个','56个'],a:0,d:'easy'},
+ {q:'中国最大的岛屿是?',o:['台湾岛','海南岛','崇明岛','舟山岛'],a:0,d:'easy'},
+ {q:'太阳从哪个方向升起?',o:['东方','西方','南方','北方'],a:0,d:'easy'},
+ {q:'地球的天然卫星是?',o:['月球','火星','金星','太阳'],a:0,d:'easy'},
+ {q:'世界上面积最大的国家是?',o:['俄罗斯','加拿大','中国','美国'],a:0,d:'easy'},
+ {q:'世界最长的河流是?',o:['尼罗河','亚马孙河','长江','密西西比河'],a:0,d:'medium'},
+ {q:'黄河最终注入?',o:['渤海','黄海','东海','南海'],a:0,d:'medium'},
+ {q:'世界最大的沙漠是?',o:['撒哈拉沙漠','塔克拉玛干沙漠','戈壁','阿拉伯沙漠'],a:0,d:'medium'},
+ {q:'日本的首都是?',o:['东京','大阪','京都','名古屋'],a:0,d:'medium'},
+ {q:'中国的地势特点是?',o:['西高东低','东高西低','南高北低','中间高四周低'],a:0,d:'medium'},
+ {q:'五岳中的「东岳」是?',o:['泰山','华山','嵩山','恒山'],a:0,d:'medium'},
+ {q:'赤道不穿过下列哪个大洲?',o:['欧洲','非洲','南美洲','亚洲'],a:0,d:'medium'},
+ {q:'世界上人口最多的大洲是?',o:['亚洲','非洲','欧洲','北美洲'],a:0,d:'medium'},
+ {q:'世界最深的海沟是?',o:['马里亚纳海沟','波多黎各海沟','爪哇海沟','日本海沟'],a:0,d:'hard'},
+ {q:'中国唯一注入北冰洋的河流是?',o:['额尔齐斯河','塔里木河','伊犁河','黑龙江'],a:0,d:'hard'},
+ {q:'巴拿马运河连接哪两个大洋?',o:['太平洋与大西洋','大西洋与印度洋','太平洋与印度洋','大西洋与北冰洋'],a:0,d:'hard'},
+ {q:'世界面积最大的高原是?',o:['巴西高原','青藏高原','蒙古高原','东非高原'],a:0,d:'hard'},
+ {q:'被称为「日光城」的中国城市是?',o:['拉萨','昆明','三亚','吐鲁番'],a:0,d:'hard'},
+ {q:'澳大利亚的首都是?',o:['堪培拉','悉尼','墨尔本','布里斯班'],a:0,d:'hard'},
+ {q:'死海的显著特点是?',o:['盐度极高,人可漂浮','世界最深湖泊','海水温度最高','完全无生物且淡水'],a:0,d:'hard'},
+ {q:'温带海洋性气候的典型分布区是?',o:['西欧','东亚','北非','中亚'],a:0,d:'hard'},
+],
+science:[
+ {q:'水的化学式是?',o:['H₂O','CO₂','O₂','H₂O₂'],a:0,d:'easy'},
+ {q:'人体最大的器官是?',o:['皮肤','肝脏','大脑','肺'],a:0,d:'easy'},
+ {q:'植物进行光合作用的主要器官是?',o:['叶','根','茎','花'],a:0,d:'easy'},
+ {q:'声音不能在下列哪种环境中传播?',o:['真空','水中','空气中','钢铁中'],a:0,d:'easy'},
+ {q:'两块磁铁同极相遇会?',o:['相互排斥','相互吸引','失去磁性','磁性增强'],a:0,d:'easy'},
+ {q:'人的正常体温约为?',o:['37℃','35℃','39℃','40℃'],a:0,d:'easy'},
+ {q:'平年一年有多少天?',o:['365天','366天','360天','364天'],a:0,d:'easy'},
+ {q:'光在真空中的速度约为?',o:['每秒30万公里','每秒3万公里','每秒300万公里','每秒340米'],a:0,d:'easy'},
+ {q:'空气中含量最多的气体是?',o:['氮气','氧气','二氧化碳','稀有气体'],a:0,d:'medium'},
+ {q:'血液中负责运输氧气的细胞是?',o:['红细胞','白细胞','血小板','淋巴细胞'],a:0,d:'medium'},
+ {q:'电流的单位是?',o:['安培','伏特','欧姆','瓦特'],a:0,d:'medium'},
+ {q:'标准大气压下水的沸点是?',o:['100℃','90℃','80℃','120℃'],a:0,d:'medium'},
+ {q:'铁生锈的主要条件是?',o:['同时接触氧气和水','只接触水','只接触空气','温度过高'],a:0,d:'medium'},
+ {q:'昆虫有几条腿?',o:['6条','8条','4条','10条'],a:0,d:'medium'},
+ {q:'力的单位是?',o:['牛顿','焦耳','帕斯卡','千克'],a:0,d:'medium'},
+ {q:'彩虹形成的主要原理是?',o:['光的折射与反射','光的直线传播','光的衍射','大气发光'],a:0,d:'medium'},
+ {q:'DNA 的中文全称是?',o:['脱氧核糖核酸','核糖核酸','脱氧核酸','蛋白质核酸'],a:0,d:'hard'},
+ {q:'牛顿第一定律又称?',o:['惯性定律','作用力定律','万有引力定律','加速度定律'],a:0,d:'hard'},
+ {q:'元素周期表中第一号元素是?',o:['氢','氦','氧','碳'],a:0,d:'hard'},
+ {q:'成年人全身共有多少块骨头?',o:['206块','208块','365块','108块'],a:0,d:'hard'},
+ {q:'欧姆定律的公式是?',o:['I=U/R','U=I/R','R=U×I','I=U×R'],a:0,d:'hard'},
+ {q:'酸碱中和反应生成?',o:['盐和水','只有水','气体和水','酸式盐'],a:0,d:'hard'},
+ {q:'声音在空气中的传播速度约为?',o:['340米/秒','340公里/秒','30万公里/秒','3400米/秒'],a:0,d:'hard'},
+ {q:'摩擦起电的实质是?',o:['电子的转移','产生了新电荷','质子的转移','原子的消失'],a:0,d:'hard'},
+],
+};
+
 const SCHOOL_CLASS = {'脑':'nao','手':'shou','心':'xin'};
 const SCHOOL_LABEL = {'脑':'🧠 脑 · 策略','手':'✊ 手 · 伤害','心':'💗 心 · 控制辅助'};
 const FOES = [
@@ -729,7 +883,7 @@ let BATTLE_TIMER = null;
 
 function freshRun(){
   P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, streak:0, destinyIds:[], _dying:false, _betweenQ:false, _skillSig:'' };
-  R = { section:0, qInSection:0, results:[], blindBet:false, destinyDrawn:[] };
+  R = { section:0, qInSection:0, results:[], blindBet:false, destinyDrawn:[], usedQ:new Set() };
   E = null;
   telem = {
     eventQGaps:[], lastEventQ:0, globalQ:0,
@@ -793,6 +947,31 @@ function genQuestion(section){
   const mix = DIFF_MIX[Math.min(section,DIFF_MIX.length-1)];
   const r = Math.random();
   const diff = r<mix[0] ? 'easy' : r<mix[0]+mix[1] ? 'medium' : 'hard';
+  const subj = pick(activeSubjects());
+  if(subj !== 'math'){
+    const mc = genBankQuestion(subj, diff);
+    if(mc) return mc;   // 该科题量耗尽则回落数学
+  }
+  return genMath(diff);
+}
+function genBankQuestion(subj, diff){
+  const bank = BANK[subj];
+  let cand = bank.map((x,i)=>({x,i})).filter(o=>o.x.d===diff && !R.usedQ.has(subj+o.i));
+  if(!cand.length) cand = bank.map((x,i)=>({x,i})).filter(o=>!R.usedQ.has(subj+o.i));
+  if(!cand.length) return null;
+  const c = pick(cand);
+  R.usedQ.add(subj+c.i);
+  const order = [0,1,2,3];   // Fisher-Yates 洗牌,防背位置(sort(random) 有偏)
+  for(let i=3;i>0;i--){ const j=rnd(0,i); [order[i],order[j]]=[order[j],order[i]]; }
+  return {
+    prompt: c.x.q,
+    opts: order.map(k=>c.x.o[k]),
+    answer: order.indexOf(c.x.a)+1,
+    mc: true, difficulty: c.x.d, type: subj,
+    benchmark: benchmark('mc', c.x.d),
+  };
+}
+function genMath(diff){
   const type = pick(TYPES);
   let prompt, answer;
 
@@ -1111,7 +1290,8 @@ function nextQuestion(){
   document.getElementById('qType').textContent = TYPE_LABEL[q.type];
   const qd=document.getElementById('qDiff'); qd.textContent={easy:'★',medium:'★★',hard:'★★★'}[q.difficulty]; qd.className='qdiff '+q.difficulty;
   const pe=document.getElementById('qPrompt'); pe.textContent=q.prompt;
-  pe.className = 'qprompt ' + (q.prompt.length<=11?'qp-l':q.prompt.length<=18?'qp-m':'qp-s');
+  pe.className = q.mc ? 'qprompt qp-mc' : 'qprompt ' + (q.prompt.length<=11?'qp-l':q.prompt.length<=18?'qp-m':'qp-s');
+  renderOpts();
   void pe.offsetWidth; pe.classList.add('qin');   // 新题落地拍
   document.getElementById('qbox').classList.remove('good','bad');
   document.getElementById('qBonus').classList.remove('drained');
@@ -1130,6 +1310,23 @@ function nextQuestion(){
   updateHUD();
 }
 function actualTime(){ return (Date.now()-qStart)/1000; }
+function renderOpts(){
+  const qo=document.getElementById('qOpts');
+  if(!q || !q.mc){ qo.classList.add('hidden'); return; }
+  qo.classList.remove('hidden');
+  qo.innerHTML='';
+  q.opts.forEach((t,i)=>{
+    const b=document.createElement('div'); b.className='qopt';
+    const n=document.createElement('span'); n.className='qn'; n.textContent=i+1;
+    b.appendChild(n); b.appendChild(document.createTextNode(t));
+    b.onclick=()=>{
+      const inp=document.getElementById('qInput');
+      if(inp.disabled || P.hp<=0 || CUR_SCREEN!=='battle') return;
+      inp.value=String(i+1); onTyped();
+    };
+    qo.appendChild(b);
+  });
+}
 
 function submitAnswer(){
   if(!q || P.hp<=0 || document.getElementById('qInput').disabled) return;
@@ -1145,7 +1342,7 @@ function submitAnswer(){
 function showQFeedback(type, text, cls){
   const pe=document.getElementById('qPrompt');
   pe.textContent=text;
-  pe.className='qprompt qp-l '+type+(cls?' '+cls:'');
+  pe.className='qprompt '+(cls==='qfb-mc'?'qp-m':'qp-l')+' '+type+(cls&&cls!=='qfb-mc'?' '+cls:'');
   const qb=document.getElementById('qbox');
   qb.classList.remove('good','bad'); void qb.offsetWidth; qb.classList.add(type);
   document.getElementById('qInput').value='';
@@ -1287,7 +1484,7 @@ function onBreak(reason){
   telem.lastEvents.push({q:telem.globalQ, txt:`第${telem.globalQ}题${reason}`});
   if(telem.lastEvents.length>3) telem.lastEvents.shift();
   P._betweenQ = true;
-  showQFeedback('bad', `✗ 答案 ${q.answer}`);
+  showQFeedback('bad', q.mc ? `✗ 答案:${q.opts[q.answer-1]}` : `✗ 答案 ${q.answer}`, q.mc?'qfb-mc':'');
   SFX.wrong();
   const t = thresholds();
   if(has('h02')){ P.combo = P.combo>=t[2]?t[2] : P.combo>=t[1]?t[1] : P.combo>=t[0]?t[0] : 0; hexFire('h02','档位保留'); }
@@ -1353,7 +1550,8 @@ function swapQuestion(){
   document.getElementById('qType').textContent = TYPE_LABEL[q.type];
   const qd=document.getElementById('qDiff'); qd.textContent={easy:'★',medium:'★★',hard:'★★★'}[q.difficulty]; qd.className='qdiff '+q.difficulty;
   const pe=document.getElementById('qPrompt'); pe.textContent=q.prompt;
-  pe.className = 'qprompt ' + (q.prompt.length<=11?'qp-l':q.prompt.length<=18?'qp-m':'qp-s');
+  pe.className = q.mc ? 'qprompt qp-mc' : 'qprompt ' + (q.prompt.length<=11?'qp-l':q.prompt.length<=18?'qp-m':'qp-s');
+  renderOpts();
   void pe.offsetWidth; pe.classList.add('qin');
   const inp=document.getElementById('qInput'); inp.value=''; inp.disabled=false;
   qStart = Date.now();
@@ -1857,6 +2055,22 @@ document.getElementById('vsplash').addEventListener('click', ()=>{
 // 音频需要用户手势解锁(iOS/Chrome autoplay 策略)
 document.addEventListener('pointerdown', ()=>{ const c=au(); if(c && c.state==='suspended') c.resume(); }, {once:true});
 (()=>{ const b=document.getElementById('sndBtn'); if(b) b.textContent = AU.muted?'🔇':'🔊'; })();
+function buildSubjRow(){
+  const row=document.getElementById('subjRow'); row.innerHTML='';
+  Object.keys(SUBJECTS).forEach(k=>{
+    const c=document.createElement('span');
+    c.className='sj'+(SUBJ_ON[k]?' on':'');
+    c.textContent=SUBJECTS[k];
+    c.onclick=()=>{
+      SUBJ_ON[k]=!SUBJ_ON[k];
+      if(!Object.keys(SUBJECTS).some(x=>SUBJ_ON[x])) SUBJ_ON[k]=true;   // 至少留一科
+      try{ localStorage.setItem('ba_subjects', JSON.stringify(SUBJ_ON)); }catch(e){}
+      buildSubjRow();
+    };
+    row.appendChild(c);
+  });
+}
+buildSubjRow();
 buildTuner();
 </script>
 </body>
