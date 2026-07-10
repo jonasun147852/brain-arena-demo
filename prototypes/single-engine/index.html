@@ -267,6 +267,10 @@
   .banner.show{animation:bannerpop 1.15s ease forwards;}
   @keyframes bannerpop{0%{opacity:0; transform:translate(-50%,-50%) scale(.55);}16%{opacity:1; transform:translate(-50%,-50%) scale(1.18);}30%{transform:translate(-50%,-50%) scale(1);}78%{opacity:1;}100%{opacity:0; transform:translate(-50%,-50%) scale(1.02);}}
 
+  .trialbar{width:100%; text-align:center; font-size:11.5px; font-weight:800; color:var(--gold);
+    border:1px dashed rgba(255,207,77,.55); border-radius:16px; padding:3px 10px;
+    background:rgba(255,207,77,.07); animation:pulse 1.4s infinite; letter-spacing:.5px;}
+
   /* 斩杀提示 + 暴走 */
   .rbtn.kill{border-color:var(--red) !important; color:var(--red) !important; box-shadow:0 0 22px rgba(255,84,112,.45) !important; animation:pulse .7s infinite;}
   .rbtn.kill .od{color:var(--red) !important; font-weight:900;}
@@ -428,6 +432,7 @@
       <span class="tc" id="tcDouble">双响</span>
       <span class="tc dbl hidden" id="tcDbl">下一题翻倍!</span>
     </div>
+    <div class="trialbar hidden" id="trialBar"></div>
 
     <div class="qbox" id="qbox">
       <div class="qmeta"><span class="qtype" id="qType">速算</span><span class="qdiff" id="qDiff">★</span><span class="qbonus" id="qBonus">⚡+0</span></div>
@@ -551,9 +556,9 @@ const GRADE_FLAVOR = {S:'宗师', A:'高手', B:'熟练', C:'学徒', D:'梦游'
 const HEXES = [
   {id:'h01',name:'早雪',ico:'❄️',school:'心',rar:'silver',cat:'改写规则',ba:true,   fl:'雪,比所有人先落。',       desc:'连击解锁 3/6/9 → <b>2/4/6</b>'},
   {id:'h02',name:'不化的雪',ico:'🛡️',school:'心',rar:'gold',cat:'改写规则',ba:false,fl:'雪线之下,寸雪不失。',     desc:'断连:连击只回落到<b>本档起点</b>'},
-  {id:'h03',name:'山鸣',ico:'⚡',school:'心',rar:'prism',cat:'改写规则',ba:false,   fl:'山,替你喊出第二声。',     desc:'双响解锁 9 → <b>7</b> 连击'},
+  {id:'h03',name:'山鸣',ico:'⚡',school:'心',rar:'prism',cat:'试炼',ba:false,   fl:'山,替你喊出第二声。',     desc:'技能后试炼:连答 <b>3</b> 题不错 → <b>山鸣回应</b>(全额普攻+震慑2s)'},
   {id:'h04',name:'追风',ico:'🚀',school:'脑',rar:'silver',cat:'成长',ba:false,     fl:'风未停,你已至。',         desc:'快答叠<b>风层</b>:每层 +6%⚡(至 5 层);慢答·断连清零'},
-  {id:'h05',name:'破壁人',ico:'🧠',school:'脑',rar:'gold',cat:'改写规则',ba:false,  fl:'墙,是门的原料。',         desc:'★★★:时限 +50%,答对 <b>+15⚡</b>'},
+  {id:'h05',name:'破壁人',ico:'🧠',school:'脑',rar:'gold',cat:'试炼',ba:false,  fl:'墙,是门的原料。',         desc:'重技后试炼:<b>15s</b> 内答对 <b>3</b> 题 → <b>破壁</b>:下 3 题攻击 +50%'},
   {id:'h06',name:'出鞘',ico:'🎯',school:'手',rar:'prism',cat:'成长',ba:true,       fl:'刀比题快。',               desc:'连快 3 题 → 下一击 <b>×2</b>'},
   {id:'h07',name:'钝刀',ico:'🪨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'钝,但从不缺席。',         desc:'攻击 10 → <b>16</b>,⚡收入 −40%'},
   {id:'h08',name:'刀花',ico:'💥',school:'手',rar:'gold',cat:'改写规则',ba:false,    fl:'一朵刀,开成一片。',       desc:'溅射 <b>60%</b>;敌人<b>受控</b>时,溅射翻倍'},
@@ -647,7 +652,7 @@ let CUR_SCREEN = 'start';
 let BATTLE_TIMER = null;
 
 function freshRun(){
-  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, _betweenQ:false, _skillSig:'' };
+  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, trial:null, breachBuff:0, _betweenQ:false, _skillSig:'' };
   R = { section:0, qInSection:0, results:[] };
   E = null;
   telem = {
@@ -666,7 +671,6 @@ function has(id){ return P.hexes.some(h=>h.id===id); }
 function thresholds(){
   let t = K.COMBO_TIER_THRESHOLDS.slice();
   if(has('h01')) t = [2,4,6];
-  if(has('h03')) t = [t[0], t[1], 7];
   return t;
 }
 function comboTier(combo){
@@ -688,6 +692,7 @@ function immediateDamageRaw(){
   let dmg = has('h07') ? [16,19,22,26][tier] : K.TIER_DAMAGE[tier];
   dmg += (P.bloodBonus||0);                          // 饮血:局内养出来的攻击
   if(has('h11')) dmg += 2*(P.overloadStacks||0);     // 渊眼:囤过载=全技能变强
+  if(P.breachBuff>0) dmg = Math.round(dmg*1.5);      // 破壁:试炼奖励窗口
   return dmg;
 }
 function speedCap(){ return K.SPEED_CAP; }
@@ -698,7 +703,7 @@ function smallCost(){ return has('h12') ? 40 : K.SMALL_RELEASE_COST; }
 function bigCost(){ return has('h12') ? 80 : K.BIG_RELEASE_COST; }
 function bigMult(){ return has('h10') ? 9 : K.BIG_MULT; }
 function smallEnabled(){ return !has('h10'); }
-function benchmark(type,diff){ let b=BENCH[type][diff]; if(diff==='hard' && has('h05')) b*=1.5; return b; }
+function benchmark(type,diff){ return BENCH[type][diff]; }
 
 /* ============================== 题目系统 (§4) ============================== */
 function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
@@ -785,6 +790,9 @@ function combatTick(){
     const b=document.getElementById('qBonus');
     b.textContent = '⚡+'+v;
     b.classList.toggle('drained', v<=0);
+  }
+  if(P.trial && P.trial.kind==='timed'){
+    if(now > P.trial.until) failTrial(); else renderTrial();
   }
   if(now < E.stunnedUntil || now < E.frozenUntil){ updateSceneUI(); return; }
   let rate = 1;
@@ -1047,9 +1055,9 @@ function onCorrect(){
   let base = K.ENERGY_BASE + K.ENERGY_PER_COMBO*P.combo;
   if(has('h07')) base *= 0.6;
   let perQ = base * (1+s);
-  if(q.difficulty==='hard' && has('h05')){ perQ += 15; hexFire('h05','+15能量'); }
   P.energy = Math.min(K.ENERGY_MAX, P.energy + perQ);
 
+  const breachActive = P.breachBuff>0;
   const uPrev = tierUnlocks(P.combo);
   P.combo++;
   telem.correct++;
@@ -1130,6 +1138,13 @@ function onCorrect(){
   if(consumedDouble) markEvent();
   if(P._wasBroken){ telem.recoveredAfterBreak++; P._wasBroken=false; }
 
+  // 试炼推进
+  if(P.trial){
+    if(P.trial.kind==='timed' && Date.now()>P.trial.until){ failTrial(); }
+    else { P.trial.got++; if(P.trial.got>=P.trial.need) completeTrial(); else renderTrial(); }
+  }
+  if(breachActive && P.breachBuff>0) P.breachBuff--;   // 破壁增益按题消耗
+
   bumpStats();
   afterAction();
 }
@@ -1162,6 +1177,7 @@ function onBreak(reason){
   }
   P._wasBroken = true;
   P.windStacks = 0;   // 追风:断连风散
+  if(P.trial && P.trial.kind==='streak') failTrial();   // 连答试炼:一错即碎
   if(E && !E.dead) E.charge += E.chargeNeed*1000*0.25;   // 乘虚而入:攻击充能突进
   shakeScene();
   toast(`💢 断连(${reason})!敌人乘虚而入 · 能量保留`);
@@ -1242,6 +1258,7 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
     floatText('连击 +2!', '#3fe7ff', true, false, 'you');
   }
   else { SFX.small(); dealDamage(Math.round(sk.dmg*m),'小放','#3fe7ff'); }
+  if(has('h03') && E && !E.dead && !E.phaseClear) startTrial({kind:'streak', hexId:'h03', need:3, got:0, desc:'连答 3 题不错'});
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 function releaseBig(){   // 重技能槽
@@ -1273,6 +1290,10 @@ function releaseBig(){   // 重技能槽
   if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`精算 +${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); }
   if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio*(jam?0.5:1))});
   dealDamage(Math.round(sk.dmg*(jam?0.5:1)), od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
+  if(E && !E.dead && !E.phaseClear){
+    if(has('h05')) startTrial({kind:'timed', hexId:'h05', need:3, got:0, until:Date.now()+15000, desc:'15秒内答对 3 题'});
+    else if(has('h03')) startTrial({kind:'streak', hexId:'h03', need:3, got:0, desc:'连答 3 题不错'});
+  }
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 
@@ -1321,6 +1342,7 @@ function markEvent(){ telem.eventQGaps.push(telem.globalQ - telem.lastEventQ); t
 /* ============================== 节末/局末 ============================== */
 function sectionWin(){
   stopLoop();
+  P.trial=null; renderTrial();
   P.overloadStacks = 0;   // 节末白攒(SPEC §9 风险端)
   const heal = R.section < K.SECTIONS ? K.HEAL_PER_SECTION : 0;
   const hpBefore = P.hp;
@@ -1340,6 +1362,7 @@ function sectionWin(){
 }
 function runLose(){
   stopLoop();
+  P.trial=null; renderTrial();
   clearTimeout(qTimer);
   R.results.push({ section:R.section, q:R.qInSection, hpLeft:0, passed:false, dmgDone:E?E.total-E.hp:0, foeMax:E?E.total:1 });
   finishRun(true);
@@ -1518,6 +1541,33 @@ function hexFire(id, label){
   if(el){ el.classList.remove('fire'); void el.offsetWidth; el.classList.add('fire'); }
   // 触发喊名(Balatro 式复读机):名字被念得越多,记得越牢
   if(label){ const h=HEXES.find(x=>x.id===id); floatText(`${h.ico}${h.name}·${label}`, '#ffcf4d', true, false, 'you'); }
+}
+/* ============================== 试炼:技能释放 → 冲刺挑战 → 增益结算 ============================== */
+function startTrial(t){ P.trial=t; renderTrial(); toast(`⚔ 试炼开启:${t.desc}`); }
+function failTrial(){ if(!P.trial) return; P.trial=null; renderTrial(); toast('…试炼中断'); }
+function completeTrial(){
+  const t=P.trial; P.trial=null; renderTrial();
+  SFX.res(); markEvent();
+  if(t.hexId==='h03'){
+    banner('⛰ 山鸣回应!');
+    dealDamage(immediateDamageRaw(), '山鸣回应', '#b561ff');
+    if(E && !E.dead) E.stunnedUntil = Math.max(E.stunnedUntil, Date.now()+2000);
+    hexFire('h03','回应');
+  }
+  if(t.hexId==='h05'){
+    banner('🧱 破壁!下 3 题攻击 +50%');
+    P.breachBuff = 3;
+    hexFire('h05','+50%×3');
+  }
+}
+function renderTrial(){
+  const el=document.getElementById('trialBar');
+  if(!P.trial){ el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  const t=P.trial;
+  el.textContent = t.kind==='streak'
+    ? `⛰ ${t.desc} · ${t.got}/${t.need}`
+    : `🧱 ${t.desc} · ${t.got}/${t.need} · 剩 ${Math.max(0,(t.until-Date.now())/1000).toFixed(1)}s`;
 }
 function banner(msg){
   const b=document.getElementById('banner'); b.textContent=msg;
