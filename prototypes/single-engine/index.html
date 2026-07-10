@@ -574,9 +574,9 @@ const GRADE_FLAVOR = {S:'宗师', A:'高手', B:'熟练', C:'学徒', D:'梦游'
 const HEXES = [
   {id:'h01',name:'早雪',ico:'❄️',school:'心',rar:'silver',cat:'改写规则',ba:true,   fl:'雪,比所有人先落。',       desc:'连击解锁 3/6/9 → <b>2/4/6</b>'},
   {id:'h02',name:'不化的雪',ico:'🛡️',school:'心',rar:'gold',cat:'改写规则',ba:false,fl:'雪线之下,寸雪不失。',     desc:'断连:连击只回落到<b>本档起点</b>'},
-  {id:'h03',name:'山鸣',ico:'⚡',school:'心',rar:'prism',cat:'试炼',ba:false,   fl:'山,替你喊出第二声。',     desc:'技能后试炼:连答 <b>3</b> 题不错 → <b>山鸣回应</b>(全额普攻+震慑2s)'},
+  {id:'h03',name:'山鸣',ico:'⚡',school:'心',rar:'prism',cat:'改写规则',ba:false,   fl:'山,替你喊出第二声。',     desc:'双响解锁 9 → <b>7</b> 连击'},
   {id:'h04',name:'追风',ico:'🚀',school:'脑',rar:'silver',cat:'成长',ba:false,     fl:'风未停,你已至。',         desc:'快答叠<b>风层</b>:每层 +6%⚡(至 5 层);慢答·断连清零'},
-  {id:'h05',name:'破壁人',ico:'🧠',school:'脑',rar:'gold',cat:'试炼',ba:false,  fl:'墙,是门的原料。',         desc:'重技后试炼:<b>15s</b> 内答对 <b>3</b> 题 → <b>破壁</b>:下 3 题攻击 +50%'},
+  {id:'h05',name:'破壁人',ico:'🧠',school:'脑',rar:'gold',cat:'改写规则',ba:false,  fl:'墙,是门的原料。',         desc:'★★★:时限 +50%,答对 <b>+15⚡</b>'},
   {id:'h06',name:'出鞘',ico:'🎯',school:'手',rar:'prism',cat:'成长',ba:true,       fl:'刀比题快。',               desc:'连快 3 题 → 下一击 <b>×2</b>'},
   {id:'h07',name:'钝刀',ico:'🪨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'钝,但从不缺席。',         desc:'攻击 10 → <b>16</b>,⚡收入 −40%'},
   {id:'h08',name:'刀花',ico:'💥',school:'手',rar:'gold',cat:'改写规则',ba:false,    fl:'一朵刀,开成一片。',       desc:'溅射 <b>60%</b>;敌人<b>受控</b>时,溅射翻倍'},
@@ -593,9 +593,9 @@ const RAR_BY_SECTION = ['silver','gold','prism'];
 
 /* ============================== 共鸣(同流派×2 质变联动;团队层标签计数接口的单人预演) ============================== */
 const RESONANCE = {
-  '脑':{name:'运筹', ico:'🧠', desc:'重技后保留一半过载层(向上取整)'},
-  '手':{name:'连杀', ico:'✊', desc:'每第 3 次答对,再打一轮普攻+溅射'},
-  '心':{name:'凝神', ico:'💗', desc:'快于基准答对时,冻结敌人充能 2 秒'},
+  '脑':{name:'留一手', ico:'🧠', desc:'重技后保留一半过载层(向上取整)'},
+  '手':{name:'趁热打铁', ico:'✊', desc:'每第 3 次答对,再打一轮普攻+溅射'},
+  '心':{name:'先发制人', ico:'💗', desc:'快于基准答对时,冻结敌人充能 2 秒'},
 };
 function schoolCount(s){ return P.hexes.filter(h=>h.school===s).length; }
 function hasRes(s){ return schoolCount(s)>=2; }
@@ -603,11 +603,11 @@ function activeResonances(){ return Object.keys(RESONANCE).filter(hasRes); }
 
 /* ============================== 羁绊(跨流派特定组合;与共鸣抢卡位 = 赌感与遗憾感的引擎) ============================== */
 const BONDS = [
-  {id:'b1', name:'风暴眼', ico:'🌀', pieces:['h06','h03'], desc:'出鞘只需连快 2 题'},
-  {id:'b2', name:'熔炉',   ico:'🔥', pieces:['h09','h11'], desc:'每层过载,灼痕伤害 +20%'},
-  {id:'b3', name:'永动机', ico:'♾️', pieces:['h13','h04'], desc:'饮血回能 40 → 70'},
-  {id:'b4', name:'斩首令', ico:'🗡️', pieces:['h10','h05'], desc:'★★★ 答对,直接 +1 过载层'},
-  {id:'b5', name:'裂变',   ico:'💥', pieces:['h01','h08'], desc:'双响也触发溅射'},
+  {id:'b1', name:'山鸣谷应', ico:'⛰', pieces:['h06','h03'], need:3, desc:'每连答 3 题不错:回响一击(全额普攻+震慑2s)'},
+  {id:'b2', name:'死灰复燃', ico:'🔥', pieces:['h09','h11'], need:4, desc:'每连答 4 题不错:150% 攻击并挂灼痕'},
+  {id:'b3', name:'细水长流', ico:'💧', pieces:['h13','h04'], need:4, desc:'每连答 4 题不错:回复 40⚡'},
+  {id:'b4', name:'势如破竹', ico:'🎋', pieces:['h10','h05'], need:3, desc:'每连答 3 题不错:+1 过载层'},
+  {id:'b5', name:'漫天飞雪', ico:'❄', pieces:['h01','h08'], need:5, desc:'每连答 5 题不错:三连溅射(3×60% 攻击)'},
 ];
 function bondOn(id){ const b=BONDS.find(x=>x.id===id); return b.pieces.every(p=>has(p)); }
 function activeBonds(){ return BONDS.filter(b=>b.pieces.every(p=>has(p))); }
@@ -695,7 +695,7 @@ let CUR_SCREEN = 'start';
 let BATTLE_TIMER = null;
 
 function freshRun(){
-  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, trial:null, breachBuff:0, _betweenQ:false, _skillSig:'' };
+  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, streak:0, _betweenQ:false, _skillSig:'' };
   R = { section:0, qInSection:0, results:[] };
   E = null;
   telem = {
@@ -714,6 +714,7 @@ function has(id){ return P.hexes.some(h=>h.id===id); }
 function thresholds(){
   let t = K.COMBO_TIER_THRESHOLDS.slice();
   if(has('h01')) t = [2,4,6];
+  if(has('h03')) t = [t[0], t[1], 7];
   return t;
 }
 function comboTier(combo){
@@ -735,7 +736,6 @@ function immediateDamageRaw(){
   let dmg = has('h07') ? [16,19,22,26][tier] : K.TIER_DAMAGE[tier];
   dmg += (P.bloodBonus||0);                          // 饮血:局内养出来的攻击
   if(has('h11')) dmg += 2*(P.overloadStacks||0);     // 渊眼:囤过载=全技能变强
-  if(P.breachBuff>0) dmg = Math.round(dmg*1.5);      // 破壁:试炼奖励窗口
   return dmg;
 }
 function speedCap(){ return K.SPEED_CAP; }
@@ -746,7 +746,7 @@ function smallCost(){ return has('h12') ? 40 : K.SMALL_RELEASE_COST; }
 function bigCost(){ return has('h12') ? 80 : K.BIG_RELEASE_COST; }
 function bigMult(){ return has('h10') ? 9 : K.BIG_MULT; }
 function smallEnabled(){ return !has('h10'); }
-function benchmark(type,diff){ return BENCH[type][diff]; }
+function benchmark(type,diff){ let b=BENCH[type][diff]; if(diff==='hard' && has('h05')) b*=1.5; return b; }
 
 /* ============================== 题目系统 (§4) ============================== */
 function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
@@ -833,9 +833,6 @@ function combatTick(){
     const b=document.getElementById('qBonus');
     b.textContent = '⚡+'+v;
     b.classList.toggle('drained', v<=0);
-  }
-  if(P.trial && P.trial.kind==='timed'){
-    if(now > P.trial.until) failTrial(); else renderTrial();
   }
   // 低血心跳
   if(P.hp>0 && P.hp<=K.PLAYER_HP*0.3 && (!AU.lastBeat || now-AU.lastBeat>1100)){
@@ -985,7 +982,7 @@ function pickHex(h){
 let toastQueue = null;
 
 function beginSection(){
-  R.qInSection=0; P.dotQueue=[]; P.chainCount=0; P.shieldUsed=false; P.windStacks=0;
+  R.qInSection=0; P.dotQueue=[]; P.chainCount=0; P.shieldUsed=false; P.windStacks=0; P.streak=0;
   spawnFoe();
   if(P._resSound){ SFX.res(); P._resSound=false; }
   document.getElementById('bSec').textContent = `第 ${SEC_CN[R.section-1]||R.section} 关`;
@@ -1016,7 +1013,7 @@ function beginSection(){
     E.lastTick = Date.now();
     BATTLE_TIMER = setInterval(combatTick, 100);
     startAmbient();
-    updateHUD(); updateSceneUI();
+    updateHUD(); updateSceneUI(); renderStreak();
     nextQuestion();
   };
   vsTimer = setTimeout(()=>{ if(vsStarter){ const f=vsStarter; vsStarter=null; f(); } }, 1900);
@@ -1108,9 +1105,9 @@ function onCorrect(){
   let base = K.ENERGY_BASE + K.ENERGY_PER_COMBO*P.combo;
   if(has('h07')) base *= 0.6;
   let perQ = base * (1+s);
+  if(q.difficulty==='hard' && has('h05')){ perQ += 15; hexFire('h05','+15⚡'); }
   P.energy = Math.min(K.ENERGY_MAX, P.energy + perQ);
 
-  const breachActive = P.breachBuff>0;
   const uPrev = tierUnlocks(P.combo);
   P.combo++;
   telem.correct++;
@@ -1140,11 +1137,7 @@ function onCorrect(){
     hexFire('h08', controlled&&has('h08')?'受控翻倍':undefined);
   }
   if(u.slow) applySlow();
-  if(u.double){
-    const d2 = immediateDamageRaw();
-    dealDamage(d2, '双响', '#b561ff');
-    if(bondOn('b5')) dealDamage(Math.round(d2*splashRatio()), '裂变', '#ffb1e6', true);   // 羁绊·裂变
-  }
+  if(u.double) dealDamage(immediateDamageRaw(), '双响', '#b561ff');
 
   // 共鸣·三连锁:每第 3 次答对,即时层整套再触发一次
   if(hasRes('手')){
@@ -1163,7 +1156,7 @@ function onCorrect(){
 
   // 抢答:伤害结算之后再上膛,保证翻倍作用于「下一刀」而非本刀
   if(has('h06')){
-    const need = bondOn('b1') ? 2 : 3;   // 羁绊·风暴眼
+    const need = 3;
     if(fast){ P.consecutiveFast++; if(P.consecutiveFast>=need){ P.nextImmDouble=true; P.consecutiveFast=0; banner('🎯 抢答!下一刀翻倍'); hexFire('h06'); } }
     else P.consecutiveFast=0;
   }
@@ -1173,12 +1166,6 @@ function onCorrect(){
     SFX.odUp(P.overloadStacks);
     floatText(`过载 +1(${P.overloadStacks})`, '#b561ff', true, false, 'you');
     if(P.overloadStacks > K.OVERLOAD_MAX) hexFire('h11', `过载${P.overloadStacks}!`);
-  }
-  // 羁绊·斩首令:★★★ 答对直接攒层,不需满能量
-  if(q.difficulty==='hard' && bondOn('b4') && P.overloadStacks < overloadMax()){
-    P.overloadStacks++; telem.overloadUses++;
-    SFX.odUp(P.overloadStacks);
-    floatText('🗡 斩首令 +1层', '#ff9d4d', true, false, 'you');
   }
 
   if(has('h14') && R.qInSection % 5 === 0 && !E.dead){
@@ -1191,12 +1178,10 @@ function onCorrect(){
   if(consumedDouble) markEvent();
   if(P._wasBroken){ telem.recoveredAfterBreak++; P._wasBroken=false; }
 
-  // 试炼推进
-  if(P.trial){
-    if(P.trial.kind==='timed' && Date.now()>P.trial.until){ failTrial(); }
-    else { P.trial.got++; if(P.trial.got>=P.trial.need) completeTrial(); else renderTrial(); }
-  }
-  if(breachActive && P.breachBuff>0) P.breachBuff--;   // 破壁增益按题消耗
+  // 羁绊连答引擎:每答对推一格,到点触发
+  P.streak++;
+  activeBonds().forEach(b=>{ if(P.streak % b.need === 0) fireBond(b); });
+  renderStreak();
 
   bumpStats();
   afterAction();
@@ -1207,7 +1192,6 @@ function resolveDot(){
   let total=0;
   P.dotQueue.forEach(d=>{ if(d.left>0){ total+=d.amount; d.left--; } });
   P.dotQueue = P.dotQueue.filter(d=>d.left>0);
-  if(total>0 && bondOn('b2')) total = Math.round(total*(1+0.2*P.overloadStacks));   // 羁绊·熔炉
   if(total>0){ dealDamage(total,'灼烧','#ff5470',true); hexFire('h09'); }
 }
 
@@ -1230,7 +1214,7 @@ function onBreak(reason){
   }
   P._wasBroken = true;
   P.windStacks = 0;   // 追风:断连风散
-  if(P.trial && P.trial.kind==='streak') failTrial();   // 连答试炼:一错即碎
+  P.streak = 0; renderStreak();   // 羁绊连答:一错清零
   if(E && !E.dead) E.charge += E.chargeNeed*1000*0.25;   // 乘虚而入:攻击充能突进
   shakeScene();
   toast(`💢 断连(${reason})!敌人乘虚而入 · 能量保留`);
@@ -1311,7 +1295,6 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
     floatText('连击 +2!', '#3fe7ff', true, false, 'you');
   }
   else { SFX.small(); dealDamage(Math.round(sk.dmg*m),'小放','#3fe7ff'); }
-  if(has('h03') && E && !E.dead && !E.phaseClear) startTrial({kind:'streak', hexId:'h03', need:3, got:0, desc:'连答 3 题不错'});
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 function releaseBig(){   // 重技能槽
@@ -1324,7 +1307,7 @@ function releaseBig(){   // 重技能槽
   P.overloadStacks = hasRes('脑') ? Math.ceil(od/2) : 0;
   if(hasRes('脑') && od>0) floatText(`🔗 稳压:保留${P.overloadStacks}层`, '#ffb1e6', true, false, 'you');
   if(has('h13')){
-    const sip = bondOn('b3')?70:40;
+    const sip = 40;
     P.energy = Math.min(K.ENERGY_MAX, P.energy+sip);
     if(P.bloodBonus < 20){ P.bloodBonus += 2; }        // 饮血:局内养刀,封顶+20
     hexFire('h13',`+${sip}⚡·攻击+2`);
@@ -1343,10 +1326,6 @@ function releaseBig(){   // 重技能槽
   if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`精算 +${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); }
   if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio*(jam?0.5:1))});
   dealDamage(Math.round(sk.dmg*(jam?0.5:1)), od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
-  if(E && !E.dead && !E.phaseClear){
-    if(has('h05')) startTrial({kind:'timed', hexId:'h05', need:3, got:0, until:Date.now()+15000, desc:'15秒内答对 3 题'});
-    else if(has('h03')) startTrial({kind:'streak', hexId:'h03', need:3, got:0, desc:'连答 3 题不错'});
-  }
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 
@@ -1395,7 +1374,6 @@ function markEvent(){ telem.eventQGaps.push(telem.globalQ - telem.lastEventQ); t
 /* ============================== 节末/局末 ============================== */
 function sectionWin(){
   stopLoop(); stopAmbient();
-  P.trial=null; renderTrial();
   P.overloadStacks = 0;   // 节末白攒(SPEC §9 风险端)
   const heal = R.section < K.SECTIONS ? K.HEAL_PER_SECTION : 0;
   const hpBefore = P.hp;
@@ -1415,7 +1393,6 @@ function sectionWin(){
 }
 function runLose(){
   stopLoop(); stopAmbient();
-  P.trial=null; renderTrial();
   clearTimeout(qTimer);
   R.results.push({ section:R.section, q:R.qInSection, hpLeft:0, passed:false, dmgDone:E?E.total-E.hp:0, foeMax:E?E.total:1 });
   finishRun(true);
@@ -1608,32 +1585,24 @@ function hexFire(id, label){
   // 触发喊名(Balatro 式复读机):名字被念得越多,记得越牢
   if(label){ const h=HEXES.find(x=>x.id===id); floatText(`${h.ico}${h.name}·${label}`, '#ffcf4d', true, false, 'you'); }
 }
-/* ============================== 试炼:技能释放 → 冲刺挑战 → 增益结算 ============================== */
-function startTrial(t){ P.trial=t; renderTrial(); toast(`⚔ 试炼开启:${t.desc}`); }
-function failTrial(){ if(!P.trial) return; P.trial=null; renderTrial(); toast('…试炼中断'); }
-function completeTrial(){
-  const t=P.trial; P.trial=null; renderTrial();
+/* ============================== 羁绊 = 连答引擎:凑齐一对,计数器就开始转 ============================== */
+function fireBond(b){
   SFX.res(); markEvent();
-  if(t.hexId==='h03'){
-    banner('⛰ 山鸣回应!');
-    dealDamage(immediateDamageRaw(), '山鸣回应', '#b561ff');
-    if(E && !E.dead) E.stunnedUntil = Math.max(E.stunnedUntil, Date.now()+2000);
-    hexFire('h03','回应');
-  }
-  if(t.hexId==='h05'){
-    banner('🧱 破壁!下 3 题攻击 +50%');
-    P.breachBuff = 3;
-    hexFire('h05','+50%×3');
-  }
+  banner(`${b.ico} ${b.name}!`);
+  hexFire(b.pieces[0]); hexFire(b.pieces[1]);
+  const raw = immediateDamageRaw();
+  if(b.id==='b1'){ dealDamage(raw, '山鸣谷应', '#b561ff'); if(E && !E.dead) E.stunnedUntil = Math.max(E.stunnedUntil, Date.now()+2000); }
+  if(b.id==='b2'){ dealDamage(Math.round(raw*1.5), '死灰复燃', '#ff9d4d'); P.dotQueue.push({left:2, amount:Math.round(raw*0.5)}); }
+  if(b.id==='b3'){ P.energy = Math.min(K.ENERGY_MAX, P.energy+40); floatText('💧 +40⚡', '#3fe7ff', true, false, 'you'); }
+  if(b.id==='b4'){ if(P.overloadStacks<overloadMax()){ P.overloadStacks++; telem.overloadUses++; SFX.odUp(P.overloadStacks); floatText('🎋 过载+1', '#b561ff', true, false, 'you'); } }
+  if(b.id==='b5'){ for(let i=0;i<3;i++) dealDamage(Math.round(raw*0.6), '漫天飞雪', '#3fe7ff', true); }
 }
-function renderTrial(){
+function renderStreak(){
   const el=document.getElementById('trialBar');
-  if(!P.trial){ el.classList.add('hidden'); return; }
+  const bs=activeBonds();
+  if(!bs.length || CUR_SCREEN!=='battle'){ el.classList.add('hidden'); return; }
   el.classList.remove('hidden');
-  const t=P.trial;
-  el.textContent = t.kind==='streak'
-    ? `⛰ ${t.desc} · ${t.got}/${t.need}`
-    : `🧱 ${t.desc} · ${t.got}/${t.need} · 剩 ${Math.max(0,(t.until-Date.now())/1000).toFixed(1)}s`;
+  el.textContent = bs.map(b=>`${b.ico}${b.name} ${P.streak % b.need}/${b.need}`).join('  ·  ');
 }
 function banner(msg){
   const b=document.getElementById('banner'); b.textContent=msg;
