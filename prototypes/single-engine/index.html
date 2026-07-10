@@ -470,6 +470,9 @@
 .castdots{ font-size:9px; letter-spacing:1px; color:#7e8db0; display:block; }
 .castdots.full{ color:#ffcf4d; }
 .secdraft .cards{ margin-top:6px; }
+.card.r-id{ border-color:#3d4d70; }
+.card.r-awaken{ border-color:#ffcf4d; box-shadow:0 0 18px rgba(255,207,77,.25); }
+.rarbadge.awaken{ color:#ffcf4d; border-color:rgba(255,207,77,.5); }
 </style>
 </head>
 <body>
@@ -485,7 +488,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.1</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.1.1</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1311,6 +1314,7 @@ function weightedDraw(pool, n, wfn){
 }
 function rollOffer(roundIdx){
   let picks=[];
+  R._offerRar = null;
   if(roundIdx===0){   // 开宗立派:2 技能(1轻1重)+ 2 成长,尽量异系
     const sk=skillCardPool();
     const lights=sk.filter(h=>h.skillSlot==='light'), heavies=sk.filter(h=>h.skillSlot==='heavy');
@@ -1323,40 +1327,37 @@ function rollOffer(roundIdx){
     if(!g2c.length) g2c=gp.filter(x=>!g1||x.id!==g1.id);
     const g2=g2c.length?pick(g2c):null;
     picks=[l,hv,g1,g2].filter(Boolean);
-  } else if(roundIdx===1){   // 排兵布阵(30s)·白银轮:1 成长保底(不受轮色约束)+ 3 白银
-    const gp=growPool();
-    if(gp.length) picks.push(pick(gp));
-    const wf=h=>{
-      let w=1;
-      if(h.cat==='技能') w *= ownedSkill(h.skillSlot) ? 0.5 : 1.5;
-      if(missedBonds().some(b=>b.pieces.includes(h.id))) w*=1.3;
-      return w;
-    };
-    picks.push(...weightedDraw(normalPool().filter(h=>h.rar==='silver' && !picks.includes(h)), 4-picks.length, wf));
-  } else if(roundIdx===2){   // 成长末班车(75s)·黄金轮:成长可出不保底
+  } else {   // 强化抽(R1-R4):先骰整手轮色(Arena式:色随机,一手同色),再按色抓牌
+    const TIER_W = [null,
+      {silver:.65, gold:.35, prism:0},     // 30s
+      {silver:.30, gold:.55, prism:.15},   // 75s
+      {silver:.10, gold:.55, prism:.35},   // 2min
+      {silver:0,   gold:.40, prism:.60},   // 3min
+    ][Math.min(roundIdx,4)];
+    let r=Math.random(), tier='gold';
+    for(const t of ['silver','gold','prism']){ if((r-=TIER_W[t])<0){ tier=t; break; } }
+    // 觉醒槽:独立 roll,不占轮色(它是你养出来的赌局)
+    if(roundIdx>=3){
+      const elig=eligibleUpgrades();
+      let p=0;
+      if(elig.length){
+        R._upRolled=true;
+        p = roundIdx===3 ? Math.min(1, 0.45+pityBonus())
+          : (R._upSeen ? 0.30 : Math.min(1, 0.65+pityBonus()));
+      }
+      if(Math.random()<p) picks.push(pick(elig));
+    }
+    let pool = normalPool();
+    if(roundIdx<=2) pool = pool.concat(growPool());   // 成长卡只活在前两抽(随轮色入池)
     const wf=h=>{
       let w = h.grow ? 0.8 : 1;
-      if(h.cat==='技能') w *= ownedSkill(h.skillSlot) ? 0.5 : 1.5;
-      if(missedBonds().some(b=>b.pieces.includes(h.id))) w*=1.3;
+      if(h.cat==='技能') w *= ownedSkill(h.skillSlot) ? 0.5 : (roundIdx<=2?1.5:1);
+      if(roundIdx<=2 && missedBonds().some(b=>b.pieces.includes(h.id))) w*=1.3;
       return w;
     };
-    picks.push(...weightedDraw(normalPool().concat(growPool()).filter(h=>h.rar==='gold'), 4, wf));
-  } else {   // 亮刃(黄金轮)/收网(棱彩轮):3 选 1,成长永久出池,升级卡独立 roll(赌感所在)
-    const elig=eligibleUpgrades();
-    let p=0;
-    if(elig.length){
-      R._upRolled=true;
-      p = roundIdx===3 ? Math.min(1, 0.45+pityBonus())
-        : (R._upSeen ? 0.30 : Math.min(1, 0.65+pityBonus()));
-    }
-    if(Math.random()<p) picks.push(pick(elig));
-    const roundRar = roundIdx===3 ? 'gold' : 'prism';
-    const wf=h=>{
-      let w=1;
-      if(h.cat==='技能') w *= ownedSkill(h.skillSlot) ? 0.5 : 1;
-      return w;
-    };
-    picks.push(...weightedDraw(normalPool().filter(h=>h.rar===roundRar && !picks.includes(h)), 3-picks.length, wf));
+    const n = roundIdx<=2 ? 4 : 3;
+    picks.push(...weightedDraw(pool.filter(h=>h.rar===tier && !picks.includes(h)), n-picks.length, wf));
+    R._offerRar = tier;
   }
   while(picks.length < (roundIdx<3?4:3)){   // 池干涸兜底
     const fb=HEXES.filter(h=>!has(h.id) && !picks.includes(h) && !gambleLocked(h) && h.cat!=='升级');
@@ -1371,14 +1372,14 @@ function rollOffer(roundIdx){
 /* ============================== 发牌渲染(战斗覆盖层 + 过关补给共用) ============================== */
 const DRAFT_NAMES=['开宗立派','排兵布阵','成长末班车','亮刃','收网'];
 const DRAFT_WHEN=['开局','第 30 秒','1 分 15 秒','第 2 分钟','第 3 分钟'];
-const DRAFT_RAR=['','白银','黄金','黄金','棱彩'];
-function draftRoundTag(idx){ const r=DRAFT_RAR[Math.min(idx,4)]; return `⛽ 补给 ${idx+1}/5 · ${DRAFT_NAMES[Math.min(idx,4)]}${r?' · '+r:''}`; }
+function draftRoundTag(idx){ const r = idx>0 && R._offerRar ? RAR_LABEL[R._offerRar] : ''; return `⛽ 补给 ${idx+1}/5 · ${DRAFT_NAMES[Math.min(idx,4)]}${r?' · '+r:''}`; }
 function renderDraftCards(offer, wrap, roundIdx){
   wrap.innerHTML='';
   const baseAtk = immediateDamage(), baseHv = heavySkill(), baseLt = lightSkill();
   offer.forEach(h=>{
     const el=document.createElement('div');
-    el.className=`card r-${h.rar} sc-${SCHOOL_CLASS[h.school]||'ty'}`;
+    const frame = roundIdx===0 ? 'r-id' : (h.cat==='升级' ? 'r-awaken' : `r-${h.rar}`);
+    el.className=`card ${frame} sc-${SCHOOL_CLASS[h.school]||'ty'}`;
     el.title=h.cat;
     let delta='';
     P.hexes.push(h);
@@ -1418,7 +1419,8 @@ function renderDraftCards(offer, wrap, roundIdx){
     const idl = (roundIdx<=2 && h.idline) ? `<div class="idline">${h.idline}</div>` : '';
     const upBadge = h.cat==='升级' ? '<span class="upmark">↗</span>' : '';
     const pityTag = (roundIdx===0 && h.cat==='技能' && PITY>0) ? `<div class="pitytag">${PITY>=3?'觉醒·就在下一手':'觉醒·近了'}</div>` : '';
-    el.innerHTML=`<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>
+    const badge = roundIdx===0 ? '' : (h.cat==='升级' ? '<div class="rarbadge awaken">↗ 觉醒</div>' : `<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`);
+    el.innerHTML=`${badge}
       ${grptag}
       <div class="ico">${h.ico}</div>
       <div class="name">${h.name}${upBadge}${h.ba?' <span class="bastar">★</span>':''}</div>
@@ -1434,16 +1436,18 @@ function renderDraftCards(offer, wrap, roundIdx){
   });
 }
 function renderBattleDraft(idx){
+  const offer = rollOffer(idx);
   document.getElementById('bdTag').textContent = draftRoundTag(idx);
   document.getElementById('bdSub').textContent = idx===0 ? '从这里开始,你在立流派' : (idx===2 ? '成长卡最后一轮' : '');
-  renderDraftCards(rollOffer(idx), document.getElementById('bdCards'), idx);
+  renderDraftCards(offer, document.getElementById('bdCards'), idx);
   const rb=document.getElementById('bdReroll');
   rb.disabled = rerollLeft<=0; rb.textContent = rerollLeft>0 ? '🎲 重抽(全局仅 1 次)' : '已用完重抽';
 }
 function renderSecDraft(idx){
   document.getElementById('secDraft').classList.remove('hidden');
+  const offer = rollOffer(idx);
   document.getElementById('sdTag').textContent = draftRoundTag(idx)+' · 过关补给';
-  renderDraftCards(rollOffer(idx), document.getElementById('sdCards'), idx);
+  renderDraftCards(offer, document.getElementById('sdCards'), idx);
   document.getElementById('secresBtn').style.display='none';
   const rb=document.getElementById('sdReroll');
   rb.disabled = rerollLeft<=0; rb.textContent = rerollLeft>0 ? '🎲 重抽(全局仅 1 次)' : '已用完重抽';
