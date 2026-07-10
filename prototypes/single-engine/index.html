@@ -81,11 +81,9 @@
   .rarbadge.silver{color:#c3ccde; border:1px solid #6c7790;} .rarbadge.gold{color:var(--gold); border:1px solid var(--gold);} .rarbadge.prism{color:var(--purple); border:1px solid var(--purple); background:rgba(181,97,255,.1);}
   /* 流派家族:左边框 + 底色水洗,一眼认门 */
   .card{border-left-width:4px;}
-  .card.sc-lj{border-left-color:var(--cyan);   background:linear-gradient(180deg, rgba(63,231,255,.07), #080e1c 55%);}
-  .card.sc-ss{border-left-color:var(--blue);   background:linear-gradient(180deg, rgba(77,124,255,.09), #080e1c 55%);}
-  .card.sc-js{border-left-color:var(--green);  background:linear-gradient(180deg, rgba(67,224,138,.07), #080e1c 55%);}
-  .card.sc-xl{border-left-color:var(--purple); background:linear-gradient(180deg, rgba(181,97,255,.08), #080e1c 55%);}
-  .card.sc-ty{border-left-color:var(--silver); background:linear-gradient(180deg, rgba(195,204,222,.06), #080e1c 55%);}
+  .card.sc-nao{border-left-color:var(--blue);  background:linear-gradient(180deg, rgba(77,124,255,.09), #080e1c 55%);}
+  .card.sc-shou{border-left-color:var(--red);  background:linear-gradient(180deg, rgba(255,84,112,.08), #080e1c 55%);}
+  .card.sc-xin{border-left-color:var(--green); background:linear-gradient(180deg, rgba(67,224,138,.07), #080e1c 55%);}
   .card .bastar{color:var(--gold); text-shadow:0 0 10px rgba(255,207,77,.7);}
   .card .schooltag{font-size:10px; color:var(--dim); letter-spacing:1px;}
   .card:active{transform:scale(.97); transition:transform .08s;}
@@ -533,7 +531,8 @@ const BENCH = {
 };
 const TYPE_LABEL = {calc:'速算', seq:'数列', eq:'方程', pct:'百分比'};
 const TYPES = ['calc','seq','eq','pct'];
-const SCHOOL_CLASS = {'连击系':'lj','神速系':'ss','即时系':'js','蓄力系':'xl','通用':'ty'};
+const SCHOOL_CLASS = {'脑':'nao','手':'shou','心':'xin'};
+const SCHOOL_LABEL = {'脑':'🧠 脑 · 策略','手':'✊ 手 · 伤害','心':'💗 心 · 控制辅助'};
 const FOES = [
   {name:'守门者 · 磐石Σ', glyph:'Σ', color:'var(--cyan)',
    intro:'一万名挑战者,都碎在我面前。', taunts:['太慢。','就这?','石头都比你快。'],
@@ -550,31 +549,30 @@ const GRADE_FLAVOR = {S:'宗师', A:'高手', B:'熟练', C:'学徒', D:'梦游'
 
 /* ============================== 海克斯种子卡 (§10.2) ============================== */
 const HEXES = [
-  {id:'h01',name:'早雪',ico:'❄️',school:'连击系',rar:'silver',cat:'改写规则',ba:true,   fl:'雪,比所有人先落。',       desc:'连击解锁 3/6/9 → <b>2/4/6</b>'},
-  {id:'h02',name:'不化的雪',ico:'🛡️',school:'连击系',rar:'gold',cat:'改写规则',ba:false,fl:'雪线之下,寸雪不失。',     desc:'断连:连击只回落到<b>本档起点</b>'},
-  {id:'h03',name:'山鸣',ico:'⚡',school:'连击系',rar:'prism',cat:'改写规则',ba:false,   fl:'山,替你喊出第二声。',     desc:'双响解锁 9 → <b>7</b> 连击'},
-  {id:'h04',name:'追风',ico:'🚀',school:'神速系',rar:'silver',cat:'成长',ba:false,     fl:'风未停,你已至。',         desc:'快答叠<b>风层</b>:每层 +6%⚡(至 5 层);慢答·断连清零'},
-  {id:'h05',name:'破壁人',ico:'🧠',school:'神速系',rar:'gold',cat:'改写规则',ba:false,  fl:'墙,是门的原料。',         desc:'★★★:时限 +50%,答对 <b>+15⚡</b>'},
-  {id:'h06',name:'出鞘',ico:'🎯',school:'神速系',rar:'prism',cat:'成长',ba:true,       fl:'刀比题快。',               desc:'连快 3 题 → 下一击 <b>×2</b>'},
-  {id:'h07',name:'钝刀',ico:'🪨',school:'即时系',rar:'silver',cat:'改写规则',ba:true,   fl:'钝,但从不缺席。',         desc:'攻击 10 → <b>16</b>,⚡收入 −40%'},
-  {id:'h08',name:'刀花',ico:'💥',school:'即时系',rar:'gold',cat:'改写规则',ba:false,    fl:'一朵刀,开成一片。',       desc:'溅射 <b>60%</b>;敌人<b>受控</b>时,溅射翻倍'},
-  {id:'h09',name:'余烬',ico:'🔥',school:'即时系',rar:'prism',cat:'转化',ba:false,       fl:'火走了,烫还在。',         desc:'命中挂<b>灼痕</b>:2 题内,每题再受 50% 攻击'},
-  {id:'h10',name:'一锤',ico:'🔨',school:'蓄力系',rar:'silver',cat:'改写规则',ba:true,   fl:'此生,只练这一锤。',       desc:'重技 <b>×1.5</b>,轻技封印'},
-  {id:'h11',name:'渊眼',ico:'☢️',school:'蓄力系',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限 <b>8</b>;每层过载 <b>+2 攻击</b>'},
-  {id:'h12',name:'赌徒之门',ico:'🎲',school:'蓄力系',rar:'prism',cat:'转化',ba:false,   fl:'门后是什么,开了才知道。', desc:'技能门槛 <b>−20</b>;释放 20% <b>卡壳</b>(费照扣,效果减半)'},
-  {id:'h13',name:'饮血',ico:'🌀',school:'蓄力系',rar:'gold',cat:'成长',ba:false,        fl:'它的痛,是你的粮。',       desc:'重技命中 <b>+40⚡</b>,并本局<b>永久 +2 攻击</b>(至 +20)'},
-  {id:'h14',name:'第五答',ico:'🗝️',school:'通用',rar:'prism',cat:'成长',ba:false,      fl:'塔,在第五答开门。',       desc:'每答 5 题 → 免费<b>控场小招</b>'},
-  {id:'h15',name:'冻土',ico:'🧊',school:'即时系',rar:'gold',cat:'干扰',ba:false,        fl:'这片土地,听我的。',       desc:'减速时长 <b>×2</b>,震慑 <b>+2s</b>'},
+  {id:'h01',name:'早雪',ico:'❄️',school:'心',rar:'silver',cat:'改写规则',ba:true,   fl:'雪,比所有人先落。',       desc:'连击解锁 3/6/9 → <b>2/4/6</b>'},
+  {id:'h02',name:'不化的雪',ico:'🛡️',school:'心',rar:'gold',cat:'改写规则',ba:false,fl:'雪线之下,寸雪不失。',     desc:'断连:连击只回落到<b>本档起点</b>'},
+  {id:'h03',name:'山鸣',ico:'⚡',school:'心',rar:'prism',cat:'改写规则',ba:false,   fl:'山,替你喊出第二声。',     desc:'双响解锁 9 → <b>7</b> 连击'},
+  {id:'h04',name:'追风',ico:'🚀',school:'脑',rar:'silver',cat:'成长',ba:false,     fl:'风未停,你已至。',         desc:'快答叠<b>风层</b>:每层 +6%⚡(至 5 层);慢答·断连清零'},
+  {id:'h05',name:'破壁人',ico:'🧠',school:'脑',rar:'gold',cat:'改写规则',ba:false,  fl:'墙,是门的原料。',         desc:'★★★:时限 +50%,答对 <b>+15⚡</b>'},
+  {id:'h06',name:'出鞘',ico:'🎯',school:'手',rar:'prism',cat:'成长',ba:true,       fl:'刀比题快。',               desc:'连快 3 题 → 下一击 <b>×2</b>'},
+  {id:'h07',name:'钝刀',ico:'🪨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'钝,但从不缺席。',         desc:'攻击 10 → <b>16</b>,⚡收入 −40%'},
+  {id:'h08',name:'刀花',ico:'💥',school:'手',rar:'gold',cat:'改写规则',ba:false,    fl:'一朵刀,开成一片。',       desc:'溅射 <b>60%</b>;敌人<b>受控</b>时,溅射翻倍'},
+  {id:'h09',name:'余烬',ico:'🔥',school:'手',rar:'prism',cat:'转化',ba:false,       fl:'火走了,烫还在。',         desc:'命中挂<b>灼痕</b>:2 题内,每题再受 50% 攻击'},
+  {id:'h10',name:'一锤',ico:'🔨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'此生,只练这一锤。',       desc:'重技 <b>×1.5</b>,轻技封印'},
+  {id:'h11',name:'渊眼',ico:'☢️',school:'脑',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限 <b>8</b>;每层过载 <b>+2 攻击</b>'},
+  {id:'h12',name:'赌徒之门',ico:'🎲',school:'脑',rar:'prism',cat:'转化',ba:false,   fl:'门后是什么,开了才知道。', desc:'技能门槛 <b>−20</b>;释放 20% <b>卡壳</b>(费照扣,效果减半)'},
+  {id:'h13',name:'饮血',ico:'🌀',school:'脑',rar:'gold',cat:'成长',ba:false,        fl:'它的痛,是你的粮。',       desc:'重技命中 <b>+40⚡</b>,并本局<b>永久 +2 攻击</b>(至 +20)'},
+  {id:'h14',name:'第五答',ico:'🗝️',school:'心',rar:'prism',cat:'成长',ba:false,      fl:'塔,在第五答开门。',       desc:'每答 5 题 → 免费<b>控场小招</b>'},
+  {id:'h15',name:'冻土',ico:'🧊',school:'心',rar:'gold',cat:'干扰',ba:false,        fl:'这片土地,听我的。',       desc:'减速时长 <b>×2</b>,震慑 <b>+2s</b>'},
 ];
 const RAR_LABEL = {silver:'白银',gold:'黄金',prism:'棱彩'};
 const RAR_BY_SECTION = ['silver','gold','prism'];
 
 /* ============================== 共鸣(同流派×2 质变联动;团队层标签计数接口的单人预演) ============================== */
 const RESONANCE = {
-  '连击系':{name:'不灭雪球', ico:'🛡❄', desc:'每关首次断连,连击不回落'},
-  '神速系':{name:'时间凝滞', ico:'⏸', desc:'快于基准答对时,冻结敌人充能 2 秒'},
-  '即时系':{name:'三连锁', ico:'⛓', desc:'每第 3 次答对,再打一轮普攻+溅射'},
-  '蓄力系':{name:'稳压核心', ico:'🔗', desc:'重技后保留一半过载层(向上取整)'},
+  '脑':{name:'运筹', ico:'🧠', desc:'重技后保留一半过载层(向上取整)'},
+  '手':{name:'连杀', ico:'✊', desc:'每第 3 次答对,再打一轮普攻+溅射'},
+  '心':{name:'凝神', ico:'💗', desc:'快于基准答对时,冻结敌人充能 2 秒'},
 };
 function schoolCount(s){ return P.hexes.filter(h=>h.school===s).length; }
 function hasRes(s){ return schoolCount(s)>=2; }
@@ -896,7 +894,7 @@ function renderDraft(rar){
       <div class="flavor">「${h.fl}」</div>
       <div class="desc">${h.desc}${resTag?`<br><span style="color:#ffb1e6">共鸣:${RESONANCE[h.school].desc}</span>`:''}</div>
       <div class="row1">${statusTags}</div>
-      <div class="schooltag">${h.school}${sc?` · 已持 ${sc} 张`:''}</div>`;
+      <div class="schooltag">${SCHOOL_LABEL[h.school]||h.school}${sc?` · 已持 ${sc} 张`:''}</div>`;
     el.onclick=()=>pickHex(h);
     wrap.appendChild(el);
   });
@@ -1061,7 +1059,7 @@ function onCorrect(){
   showQFeedback('good', co.t, co.cls);
   SFX.correct(P.combo);
   // 共鸣·时间凝滞:快答冻结敌人充能
-  if(fast && hasRes('神速系') && E && !E.dead){ E.frozenUntil = Date.now()+2000; }
+  if(fast && hasRes('心') && E && !E.dead){ E.frozenUntil = Date.now()+2000; }
   const beforeTier = comboTier(P.combo-1);
   const dmg = immediateDamage();
   const consumedDouble = P.nextImmDouble;
@@ -1088,7 +1086,7 @@ function onCorrect(){
   }
 
   // 共鸣·三连锁:每第 3 次答对,即时层整套再触发一次
-  if(hasRes('即时系')){
+  if(hasRes('手')){
     P.chainCount++;
     if(P.chainCount>=3 && E && !E.dead){
       P.chainCount=0;
@@ -1152,15 +1150,9 @@ function onBreak(reason){
   P._betweenQ = true;
   showQFeedback('bad', `✗ 答案 ${q.answer}`);
   SFX.wrong();
-  // 共鸣·不灭雪球:每节首次断连,连击不回落
-  if(hasRes('连击系') && !P.shieldUsed){
-    P.shieldUsed = true;
-    banner('🛡 不灭雪球!连击保住了');
-  } else {
-    const t = thresholds();
-    if(has('h02')){ P.combo = P.combo>=t[2]?t[2] : P.combo>=t[1]?t[1] : P.combo>=t[0]?t[0] : 0; hexFire('h02','档位保留'); }
-    else { P.combo = Math.floor(P.combo/2); }
-  }
+  const t = thresholds();
+  if(has('h02')){ P.combo = P.combo>=t[2]?t[2] : P.combo>=t[1]?t[1] : P.combo>=t[0]?t[0] : 0; hexFire('h02','档位保留'); }
+  else { P.combo = Math.floor(P.combo/2); }
   // 赌局的风险端(SPEC §9:没放出去就断连 = 白攒):过载层崩塌
   if(P.overloadStacks>0){
     telem.odCrash++;
@@ -1192,10 +1184,9 @@ function dominantSchool(){ return dominantOf(P.hexes); }
 function lightSkill(){
   const s = dominantSchool();
   const disc = has('h12') ? 20 : 0;   // 赌徒之门:门槛-20,代价是 20% 卡壳
-  if(s==='神速系') return {key:'swap',  name:'换题',   cost:40-disc, od:'弃换本题·不断连', dmg:0};
-  if(s==='蓄力系') return {key:'shield',name:'能量护盾',cost:50-disc, od:'挡下 2 次攻击', dmg:0};
-  if(s==='连击系') return {key:'flurry',name:'疾风连打',cost:50-disc, od:'×2 + 连击+2', dmg:immediateDamage()*2};
-  if(s==='即时系') return {key:'sear',  name:'灼热打击',cost:50-disc, od:'×2.5 + 灼烧', dmg:immediateDamage()*2.5};
+  if(s==='脑') return {key:'swap',  name:'换题',   cost:40-disc, od:'弃换本题·不断连', dmg:0};
+  if(s==='心') return {key:'shield',name:'能量护盾',cost:50-disc, od:'挡下 2 次攻击', dmg:0};
+  if(s==='手') return {key:'flurry',name:'疾风连打',cost:50-disc, od:'×2 + 连击+2', dmg:immediateDamage()*2};
   return {key:'small', name:'小放', cost:50-disc, od:`攻击 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
 }
 function heavySkill(){
@@ -1204,10 +1195,10 @@ function heavySkill(){
   const odMult = 1 + K.OVERLOAD_PER_STACK*P.overloadStacks;
   const hammer = has('h10') ? 1.5 : 1;   // h10 重锤:重技能 ×1.5(默认大放 6→9)
   let v;
-  if(s==='连击系')      v={key:'avalanche', name:'雪崩',   base:4*(1+0.02*P.combo), od:'×4·连击每点+2% + 震慑', stun:true};
-  else if(s==='神速系') v={key:'timestop',  name:'时停',   base:4, od:'×4 + 冻结 5 秒', freeze:5000};
-  else if(s==='即时系') v={key:'firestorm', name:'烈焰风暴',base:5, od:'×5 + 重灼烧', dot:{left:3, ratio:0.8}};
-  else                  v={key:'big',       name:'大放',   base:K.BIG_MULT, od:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
+  if(s==='手')      v={key:'avalanche', name:'雪崩', base:4*(1+0.02*P.combo), od:'×4·连击每点+2% + 震慑', stun:true};
+  else if(s==='心') v={key:'timestop',  name:'时停', base:4, od:'×4 + 冻结 5 秒', freeze:5000};
+  else if(s==='脑') v={key:'calc',      name:'精算', base:4, od:'×4 + 回复 30⚡', regen:30};
+  else              v={key:'big',       name:'大放', base:K.BIG_MULT, od:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
   v.cost = 100-disc;
   v.dmg = Math.round(immediateDamage()*v.base*hammer*odMult);
   return v;
@@ -1250,11 +1241,6 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
     dealDamage(Math.round(immediateDamage()*2*m),'疾风连打','#3fe7ff');
     floatText('连击 +2!', '#3fe7ff', true, false, 'you');
   }
-  else if(sk.key==='sear'){
-    SFX.small();
-    dealDamage(Math.round(immediateDamage()*2.5*m),'灼热打击','#3fe7ff');
-    P.dotQueue.push({left:2, amount:Math.round(immediateDamage()*0.5*m)});
-  }
   else { SFX.small(); dealDamage(Math.round(sk.dmg*m),'小放','#3fe7ff'); }
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
@@ -1265,8 +1251,8 @@ function releaseBig(){   // 重技能槽
   P.energy -= sk.cost;
   const od = P.overloadStacks;
   // 共鸣·稳压核心:重技能保留一半过载层
-  P.overloadStacks = hasRes('蓄力系') ? Math.ceil(od/2) : 0;
-  if(hasRes('蓄力系') && od>0) floatText(`🔗 稳压:保留${P.overloadStacks}层`, '#ffb1e6', true, false, 'you');
+  P.overloadStacks = hasRes('脑') ? Math.ceil(od/2) : 0;
+  if(hasRes('脑') && od>0) floatText(`🔗 稳压:保留${P.overloadStacks}层`, '#ffb1e6', true, false, 'you');
   if(has('h13')){
     const sip = bondOn('b3')?70:40;
     P.energy = Math.min(K.ENERGY_MAX, P.energy+sip);
@@ -1284,6 +1270,7 @@ function releaseBig(){   // 重技能槽
   flashFx();
   if(sk.stun) applyStun();
   if(sk.freeze && E) E.frozenUntil = Date.now()+sk.freeze;
+  if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`精算 +${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); }
   if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio*(jam?0.5:1))});
   dealDamage(Math.round(sk.dmg*(jam?0.5:1)), od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
