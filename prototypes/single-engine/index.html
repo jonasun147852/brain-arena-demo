@@ -288,6 +288,19 @@
     border:1px dashed rgba(255,207,77,.55); border-radius:16px; padding:3px 10px;
     background:rgba(255,207,77,.07); animation:pulse 1.4s infinite; letter-spacing:.5px;}
 
+  /* 天命翻牌(德州公共牌) */
+  .destiny{display:flex; flex-direction:column; align-items:center; gap:7px;}
+  .dcard{width:118px; height:150px; position:relative; transform-style:preserve-3d; transition:transform .75s cubic-bezier(.3,1.2,.4,1); perspective:800px;}
+  .dcard.flip{transform:rotateY(180deg);}
+  .dback,.dface{position:absolute; inset:0; backface-visibility:hidden; border-radius:13px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; border:1px solid var(--line2);}
+  .dback{font-size:44px; background:repeating-linear-gradient(45deg,#101a30,#101a30 7px,#0b1120 7px,#0b1120 14px); color:var(--gold); box-shadow:0 0 22px rgba(255,207,77,.15);}
+  .dface{transform:rotateY(180deg); background:linear-gradient(180deg,var(--panel2),#080e1c); border-color:var(--gold); box-shadow:0 0 26px rgba(255,207,77,.3); padding:8px;}
+  .dface .dico{font-size:32px;} .dface .dname{font-size:15px; font-weight:800;}
+  .dface .ddesc{font-size:10px; color:var(--silver); text-align:center; line-height:1.4;}
+  .dnote{font-size:12.5px; font-weight:800; color:var(--gold); letter-spacing:1px;}
+  .destinyinfo{font-size:11.5px; color:var(--dim); text-align:center; line-height:1.6; max-width:90%;}
+  .destinyinfo b{color:var(--gold);}
+
   /* 斩杀提示 + 暴走 */
   .rbtn.kill{border-color:var(--red) !important; color:var(--red) !important; box-shadow:0 0 22px rgba(255,84,112,.45) !important; animation:pulse .7s infinite;}
   .rbtn.kill .od{color:var(--red) !important; font-weight:900;}
@@ -402,6 +415,7 @@
     <h1 style="font-size:24px; letter-spacing:3px;">选 择 海 克 斯</h1>
     <div class="sub">3 选 1 · 每节开始抽一次。敌人在你选牌时不会攻击——喘口气,想清楚。</div>
     <div class="curbuild" id="curBuild"></div>
+    <div class="destinyinfo" id="destinyInfo"></div>
     <div class="cards" id="draftCards"></div>
     <button class="btn ghost" id="rerollBtn" onclick="reroll()">🎲 重抽(剩 1 次)</button>
   </div>
@@ -488,6 +502,10 @@
     <span class="tag" id="secresTag">第 1 节结算</span>
     <h1 style="font-size:26px; letter-spacing:3px;">✦ 击 破 ✦</h1>
     <div class="resrow" id="secresRow"></div>
+    <div class="destiny hidden" id="destinyBox">
+      <div class="dcard" id="dCard"><div class="dback">🂠</div><div class="dface" id="dFace"></div></div>
+      <div class="dnote" id="dNote"></div>
+    </div>
     <div class="sub" id="secresMsg"></div>
     <button class="btn" id="secresBtn" onclick="nextSection()">下 一 节</button>
   </div>
@@ -536,8 +554,8 @@ const DEFAULTS = {
   // v2 对战参数
   PLAYER_HP: 100,
   HEAL_PER_SECTION: 40,
-  ENEMY_HP: [160, 340, 560],   // 各阶段血量预算,总和=塔脉血池(贯穿全局一条血)
-  ENEMY_ATK: [7, 10, 13],
+  ENEMY_HP: [180, 380, 640],   // 各阶段血量预算,总和=塔脉血池(构筑 3+2天命 后上调)
+  ENEMY_ATK: [8, 11, 14],
   ENEMY_CHARGE: [8, 6.5, 6],   // 秒/次攻击
   STUN_SECONDS: 3,
   SLOW_SECONDS: 3,
@@ -695,7 +713,7 @@ let CUR_SCREEN = 'start';
 let BATTLE_TIMER = null;
 
 function freshRun(){
-  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, streak:0, _betweenQ:false, _skillSig:'' };
+  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, streak:0, destinyIds:[], _betweenQ:false, _skillSig:'' };
   R = { section:0, qInSection:0, results:[] };
   E = null;
   telem = {
@@ -902,24 +920,29 @@ function beginDraft(){
 function rollOffer(rar){
   const pool = HEXES.filter(h=>h.rar===rar && !P.hexes.some(x=>x.id===h.id));
   const src = pool.length>=3 ? pool : HEXES.filter(h=>!P.hexes.some(x=>x.id===h.id));
-  // 抽卡倾斜:已持流派 + 差一张的羁绊搭子,60% 概率优先入选 → 追牌是选择,不是纯运气
-  const ownedSchools = new Set(P.hexes.map(h=>h.school));
-  const wantIds = new Set();
-  BONDS.forEach(b=>{ const n=b.pieces.filter(p=>has(p)).length; if(n>0 && n<b.pieces.length) b.pieces.forEach(p=>{ if(!has(p)) wantIds.add(p); }); });
+  // 德州式诚实随机:不再向已持流派/羁绊搭子倾斜——想凑的牌,自己抓,或赌天命
   const picks=[]; const copy=src.slice();
   for(let i=0;i<3 && copy.length;i++){
-    let cand = copy;
-    if((ownedSchools.size||wantIds.size) && Math.random()<0.6){
-      const syn = copy.filter(h=>ownedSchools.has(h.school) || wantIds.has(h.id));
-      if(syn.length) cand = syn;
-    }
-    const chosen = cand[rnd(0,cand.length-1)];
-    copy.splice(copy.indexOf(chosen),1);
-    picks.push(chosen);
+    picks.push(copy.splice(rnd(0,copy.length-1),1)[0]);
   }
   return picks;
 }
 function renderDraft(rar){
+  // 听牌信息(德州 outs):天命剩几翻,你缺什么,粗算命中率
+  const di=document.getElementById('destinyInfo');
+  const revealsLeft = Math.max(0, K.SECTIONS - R.section);
+  if(revealsLeft>0){
+    const n = HEXES.filter(h=>!has(h.id)).length;
+    const miss = missedBonds();
+    const outsTxt = miss.length
+      ? ' ｜ 听牌:' + miss.map(b=>{
+          const lackN=b.pieces.filter(p=>!has(p)).length;
+          const pct = lackN===1 ? Math.round(100*revealsLeft/Math.max(1,n)) : null;
+          return `⛓${b.name} 缺${lackN}${pct?` <b>≈${pct}%</b>`:''}`;
+        }).join(' · ')
+      : '';
+    di.innerHTML = `🂠 天命牌还剩 <b>${revealsLeft}</b> 翻(过关翻一张,纯随机)${outsTxt}`;
+  } else di.innerHTML='';
   const cb=document.getElementById('curBuild');
   cb.innerHTML = '当前 Build:' + (P.hexes.length
     ? P.hexes.map(h=>`<span class="bslot r-${h.rar}">${h.ico}</span>`).join('')
@@ -1375,6 +1398,23 @@ function markEvent(){ telem.eventQGaps.push(telem.globalQ - telem.lastEventQ); t
 function sectionWin(){
   stopLoop(); stopAmbient();
   P.overloadStacks = 0;   // 节末白攒(SPEC §9 风险端)
+  // 天命翻牌(德州公共牌):过关翻一张,纯随机入队
+  R.destinyDrawn = null;
+  if(R.section < K.SECTIONS){
+    const pool = HEXES.filter(h=>!has(h.id));
+    if(pool.length){
+      const bondsBefore = activeBonds().map(b=>b.id);
+      const resBefore = activeResonances().length;
+      const dh = pool[rnd(0,pool.length-1)];
+      P.destinyIds.push(dh.id);
+      P.hexes.push(dh);
+      R.destinyDrawn = {
+        hex: dh,
+        newBond: activeBonds().find(b=>!bondsBefore.includes(b.id)) || null,
+        newRes: activeResonances().length > resBefore ? RESONANCE[dh.school] : null,
+      };
+    }
+  }
   const heal = R.section < K.SECTIONS ? K.HEAL_PER_SECTION : 0;
   const hpBefore = P.hp;
   P.hp = Math.min(K.PLAYER_HP, P.hp + heal);
@@ -1389,6 +1429,23 @@ function sectionWin(){
     ? '下一名守门者更凶:攻击更疼、充能更快。选好你的海克斯。'
     : '塔顶到了——去看战报。');
   document.getElementById('secresBtn').textContent = R.section >= K.SECTIONS ? '查看战报' : '下 一 节 抽 取';
+  // 天命翻牌演出
+  const dbox=document.getElementById('destinyBox');
+  const dcard=document.getElementById('dCard');
+  if(R.destinyDrawn){
+    dbox.classList.remove('hidden');
+    dcard.classList.remove('flip');
+    const d=R.destinyDrawn;
+    document.getElementById('dFace').innerHTML = `<div class="dico">${d.hex.ico}</div><div class="dname">${d.hex.name}</div><div class="ddesc">${d.hex.desc}</div>`;
+    document.getElementById('dNote').textContent = `🂠 天命 · 第 ${P.destinyIds.length} 翻`;
+    setTimeout(()=>{
+      if(CUR_SCREEN!=='secres') return;
+      dcard.classList.add('flip');
+      if(d.newBond){ SFX.res(); document.getElementById('dNote').textContent = `⛓ 羁绊结成 · ${d.newBond.ico}${d.newBond.name}!`; }
+      else if(d.newRes){ SFX.res(); document.getElementById('dNote').textContent = `🔗 共鸣觉醒 · ${d.newRes.name}!`; }
+      else SFX.tierUp();
+    }, 750);
+  } else dbox.classList.add('hidden');
   show('secres');
 }
 function runLose(){
@@ -1444,7 +1501,7 @@ function finishRun(defeat){
   st.appendChild(seg(Math.round((Date.now()-telem.startTime)/1000)+'s', '用时', ''));
 
   const hx=document.getElementById('finalHexes'); hx.innerHTML='';
-  P.hexes.forEach(h=>{ const s=document.createElement('span'); s.className='hexpill'; s.textContent=`${h.ico} ${h.name}`; hx.appendChild(s); });
+  P.hexes.forEach(h=>{ const s=document.createElement('span'); s.className='hexpill'; s.textContent=`${(P.destinyIds||[]).includes(h.id)?'🂠 ':''}${h.ico} ${h.name}`; hx.appendChild(s); });
   activeBonds().forEach(b=>{ const s=document.createElement('span'); s.className='hexpill bondgot'; s.textContent=`⛓ ${b.ico}${b.name}`; hx.appendChild(s); });
   // 遗憾感:差一张没凑齐的羁绊,拍在脸上
   const mb=document.getElementById('missedBonds');
