@@ -898,12 +898,12 @@ function enemyAttack(){
 function applySlow(){
   const ms = K.SLOW_SECONDS * 1000 * (has('h15')?2:1);
   if(E) E.slowedUntil = Math.max(E.slowedUntil, Date.now()+ms);
-  hexFire('h15');
+  hexFire('h15','减速×2');
 }
 function applyStun(){
   const ms = (K.STUN_SECONDS + (has('h15')?2:0)) * 1000;
   if(E){ E.stunnedUntil = Date.now()+ms; E.charge = 0; }
-  hexFire('h15');
+  hexFire('h15','震慑+2s');
 }
 
 /* ============================== 局流程 ============================== */
@@ -912,19 +912,23 @@ function startRun(){ readTuner(); freshRun(); rerollLeft=1; beginDraft(); }
 function beginDraft(){
   R.section++;
   rerollLeft = 1;
+  lastOfferIds = [];
   const rar = RAR_BY_SECTION[Math.min(R.section-1, RAR_BY_SECTION.length-1)];
   document.getElementById('draftTag').textContent = `第 ${SEC_CN[R.section-1]||R.section} 关 · 海克斯抽取 · ${RAR_LABEL[rar]}`;
   renderDraft(rar);
   show('draft');
 }
+let lastOfferIds = [];
 function rollOffer(rar){
   const pool = HEXES.filter(h=>h.rar===rar && !P.hexes.some(x=>x.id===h.id));
   const src = pool.length>=3 ? pool : HEXES.filter(h=>!P.hexes.some(x=>x.id===h.id));
-  // 德州式诚实随机:不再向已持流派/羁绊搭子倾斜——想凑的牌,自己抓,或赌天命
-  const picks=[]; const copy=src.slice();
-  for(let i=0;i<3 && copy.length;i++){
-    picks.push(copy.splice(rnd(0,copy.length-1),1)[0]);
-  }
+  // 德州式诚实随机;重抽时优先给没见过的牌,不足再从上一手回填
+  const picks=[];
+  const fresh = src.filter(h=>!lastOfferIds.includes(h.id));
+  while(picks.length<3 && fresh.length) picks.push(fresh.splice(rnd(0,fresh.length-1),1)[0]);
+  const backfill = src.filter(h=>!picks.includes(h));
+  while(picks.length<3 && backfill.length) picks.push(backfill.splice(rnd(0,backfill.length-1),1)[0]);
+  lastOfferIds = picks.map(p=>p.id);
   return picks;
 }
 function renderDraft(rar){
@@ -937,11 +941,11 @@ function renderDraft(rar){
     const outsTxt = miss.length
       ? ' ｜ 听牌:' + miss.map(b=>{
           const lackN=b.pieces.filter(p=>!has(p)).length;
-          const pct = lackN===1 ? Math.round(100*revealsLeft/Math.max(1,n)) : null;
-          return `⛓${b.name} 缺${lackN}${pct?` <b>≈${pct}%</b>`:''}`;
+          return `⛓${b.name} 缺<b>${lackN}</b>张`;
         }).join(' · ')
       : '';
-    di.innerHTML = `🂠 天命牌还剩 <b>${revealsLeft}</b> 翻(过关翻一张,纯随机)${outsTxt}`;
+    const legend = R.section===1 ? '<br>📖 ⚡能量=攒满放技能 · 连击=连续答对越高攻击越强 · 过载=满⚡后继续答题攒的大招燃料' : '';
+    di.innerHTML = `🂠 天命牌还剩 <b>${revealsLeft}</b> 翻(过关随机送一张)+ 后续抽取也可补件${outsTxt}${legend}`;
   } else di.innerHTML='';
   const cb=document.getElementById('curBuild');
   cb.innerHTML = '当前 Build:' + (P.hexes.length
@@ -977,8 +981,10 @@ function renderDraft(rar){
     wrap.appendChild(el);
   });
   const rb=document.getElementById('rerollBtn');
-  rb.disabled = rerollLeft<=0;
-  rb.textContent = rerollLeft>0 ? '🎲 重抽(剩 1 次)' : '已用完重抽';
+  const poolN = HEXES.filter(h=>h.rar===rar && !has(h.id)).length;
+  const effN = poolN>=3 ? poolN : HEXES.filter(h=>!has(h.id)).length;
+  if(effN<=3){ rb.disabled=true; rb.textContent='🎲 池已见底'; }
+  else { rb.disabled = rerollLeft<=0; rb.textContent = rerollLeft>0 ? '🎲 重抽(剩 1 次)' : '已用完重抽'; }
 }
 function reroll(){
   if(rerollLeft<=0) return;
@@ -1145,12 +1151,13 @@ function onCorrect(){
   const dmg = immediateDamage();
   const consumedDouble = P.nextImmDouble;
   P.nextImmDouble=false;
-  dealDamage(dmg, '普攻', '#43e08a');
+  dealDamage(dmg, consumedDouble?'出鞘':'普攻', consumedDouble?'#ffcf4d':'#43e08a');
 
+  if(has('h07')) hexFire('h07','攻击 16 起步');
   const u = tierUnlocks(P.combo);
-  if(u.splash && !uPrev.splash){ banner('🔓 溅射 解锁!'); SFX.tierUp(); hexFire('h01'); }
-  if(u.slow && !uPrev.slow){ banner('🔓 减速 解锁!'); SFX.tierUp(); hexFire('h01'); }
-  if(u.double && !uPrev.double){ banner('🔓 双响 解锁!'); SFX.tierUp(); hexFire('h03'); hexFire('h01'); }
+  if(u.splash && !uPrev.splash){ banner(has('h01')?'🔓 溅射解锁!❄️早雪提前':'🔓 溅射 解锁!'); SFX.tierUp(); hexFire('h01'); }
+  if(u.slow && !uPrev.slow){ banner(has('h01')?'🔓 减速解锁!❄️早雪提前':'🔓 减速 解锁!'); SFX.tierUp(); hexFire('h01'); }
+  if(u.double && !uPrev.double){ banner(has('h03')?'🔓 双响解锁!⚡山鸣提前':(has('h01')?'🔓 双响解锁!❄️早雪提前':'🔓 双响 解锁!')); SFX.tierUp(); hexFire('h03'); hexFire('h01'); }
   if(u.splash){
     let ratio = splashRatio();
     const nowT = Date.now();
@@ -1180,7 +1187,7 @@ function onCorrect(){
   // 抢答:伤害结算之后再上膛,保证翻倍作用于「下一刀」而非本刀
   if(has('h06')){
     const need = 3;
-    if(fast){ P.consecutiveFast++; if(P.consecutiveFast>=need){ P.nextImmDouble=true; P.consecutiveFast=0; banner('🎯 抢答!下一刀翻倍'); hexFire('h06'); } }
+    if(fast){ P.consecutiveFast++; if(P.consecutiveFast>=need){ P.nextImmDouble=true; P.consecutiveFast=0; banner('🎯 出鞘!下一刀翻倍'); hexFire('h06'); } }
     else P.consecutiveFast=0;
   }
 
@@ -1188,7 +1195,7 @@ function onCorrect(){
     P.overloadStacks++; telem.overloadUses++;
     SFX.odUp(P.overloadStacks);
     floatText(`过载 +1(${P.overloadStacks})`, '#b561ff', true, false, 'you');
-    if(P.overloadStacks > K.OVERLOAD_MAX) hexFire('h11', `过载${P.overloadStacks}!`);
+    if(has('h11')) hexFire('h11', `+${2*P.overloadStacks}攻`);
   }
 
   if(has('h14') && R.qInSection % 5 === 0 && !E.dead){
@@ -1307,7 +1314,7 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
   // 赌徒之门:20% 卡壳,费照扣,效果减半
   const jam = has('h12') && sk.key!=='swap' && Math.random()<0.2;
   if(jam){ telem.jams++; floatText('🎲 卡壳!', '#ff5470', false, false, 'you'); SFX.odCrash(); hexFire('h12','卡壳'); }
-  else hexFire('h12');
+  else hexFire('h12','省20⚡');
   const m = jam ? 0.5 : 1;
   if(sk.key==='swap'){ SFX.small(); swapQuestion(); floatText('🔄 翻篇!', '#3fe7ff', true, false, 'you'); }
   else if(sk.key==='shield'){ SFX.res(); P.shieldCharges = jam?1:2; floatText(`🛡 护盾 ×${P.shieldCharges}`, '#3fe7ff', true, false, 'you'); }
@@ -1338,11 +1345,11 @@ function releaseBig(){   // 重技能槽
   telem.releases.big++;
   telem.skillUse[sk.name]=(telem.skillUse[sk.name]||0)+1;
   SFX.big();
-  hexFire('h10');
+  hexFire('h10','×1.5');
   // 赌徒之门:大招也可能卡壳——高潮前的心跳
   const jam = has('h12') && Math.random()<0.2;
   if(jam){ telem.jams++; floatText('🎲 卡壳!', '#ff5470', false, false, 'you'); SFX.odCrash(); hexFire('h12','卡壳'); }
-  else hexFire('h12');
+  else hexFire('h12','省20⚡');
   flashFx();
   if(sk.stun) applyStun();
   if(sk.freeze && E) E.frozenUntil = Date.now()+sk.freeze;
@@ -1357,7 +1364,8 @@ function dealDamage(amount, kind, color, secondary){
   amount = Math.round(amount);
   E.hp = Math.max(0, E.hp - amount);   // 溢出穿透:超过阶段刻度的伤害照吃进血池
   const crit = !secondary && amount>=70;
-  floatText(`${secondary?'':'−'}${amount}`, color, secondary, crit, 'foe');
+  const tag = (kind && kind!=='普攻') ? kind+' ' : '';
+  floatText(`${tag}${secondary?'':'−'}${amount}`, color, secondary, crit, 'foe');
   if(!secondary && amount>telem.maxHit){
     telem.maxHit=amount; telem.maxHitCombo=P.combo; telem.maxHitOver=P.overloadStacks; telem.maxHitKind=kind;
   }
@@ -1635,12 +1643,19 @@ function renderBuild(){
   activeResonances().forEach(sc=>{ const r=RESONANCE[sc]; const c=document.createElement('span'); c.className='reschip'; c.textContent=`${r.ico}${r.name}`; c.title=r.desc; row.appendChild(c); });
   activeBonds().forEach(b=>{ const c=document.createElement('span'); c.className='reschip bondchip'; c.textContent=`${b.ico}${b.name}`; c.title=b.desc; row.appendChild(c); });
 }
+const HEXFIRE_LAST = {};
 function hexFire(id, label){
   if(!has(id)) return;
   const el=document.getElementById('bs_'+id);
   if(el){ el.classList.remove('fire'); void el.offsetWidth; el.classList.add('fire'); }
-  // 触发喊名(Balatro 式复读机):名字被念得越多,记得越牢
-  if(label){ const h=HEXES.find(x=>x.id===id); floatText(`${h.ico}${h.name}·${label}`, '#ffcf4d', true, false, 'you'); }
+  // 触发喊名(Balatro 式复读机):名字被念得越多,记得越牢;同卡 2.5s 节流防刷屏
+  if(label){
+    const t=Date.now();
+    if(HEXFIRE_LAST[id] && t-HEXFIRE_LAST[id]<2500) return;
+    HEXFIRE_LAST[id]=t;
+    const h=HEXES.find(x=>x.id===id);
+    floatText(`${h.ico}${h.name}·${label}`, '#ffcf4d', true, false, 'you');
+  }
 }
 /* ============================== 羁绊 = 连答引擎:凑齐一对,计数器就开始转 ============================== */
 function fireBond(b){
