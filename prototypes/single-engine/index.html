@@ -1228,7 +1228,10 @@ function renderDraft(rar){
       const h2=heavySkill(); if(h2.name===baseHv.name && h2.dmg!==baseHv.dmg) parts.push(`${h2.name} ${baseHv.dmg}→<b>${h2.dmg}</b>`);
       const l2=lightSkill(); if(l2.cost!==baseLt.cost) parts.push(`轻技 ${baseLt.cost}⚡→<b>${l2.cost}⚡</b>`);
       if(parts.length) delta=`<div class="delta">${parts.slice(0,2).join(' · ')}</div>`;
-    } else delta=`<div class="delta">⚔ 技能将变形</div>`;
+    } else {
+      const l2=lightSkill(), h2=heavySkill();
+      delta=`<div class="delta">⚔ 选它,技能换成:<b>${l2.name}</b> / <b>${h2.name}</b></div>`;
+    }
     P.hexes.pop();
     const sc = schoolCount(h.school);
     // 状态标签按优先级取前 2:羁绊就绪 > 共鸣就绪 > 技能变形 > 羁绊缺件(降噪)
@@ -1240,7 +1243,7 @@ function renderDraft(rar){
     });
     if(RESONANCE[h.school] && sc===1) tags.push({pri:1, html:`<span class="chiptag res">🔗 触发共鸣「${RESONANCE[h.school].name}」</span>`});
     if(h.school!=='通用' && dominantOf(P.hexes.concat([h])) !== dominantSchool())
-      tags.push({pri:2, html:`<span class="chiptag ba">⚔ 技能变形</span>`});
+      tags.push({pri:2, html:`<span class="chiptag ba">⚔ 换技能</span>`});
     const statusTags = tags.sort((a,b)=>a.pri-b.pri).slice(0,2).map(t=>t.html).join('');
     const resTag = (RESONANCE[h.school] && sc===1) ? '1' : '';   // 供 desc 共鸣预览判断
     el.innerHTML=`<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>
