@@ -820,6 +820,12 @@ const HEXES = [
   {id:'h16',name:'成王败寇',ico:'👑',school:'手',rar:'prism',cat:'转化',ba:false,    fl:'赢的人,书写规则。',       desc:'重技先押住不结算:再答一道<b>难题</b>,对了<b>翻倍</b>,错了归零'},
   {id:'h17',name:'趁火打劫',ico:'🪓',school:'心',rar:'gold',cat:'转化',ba:false,     fl:'它抬手时,你出手。',       desc:'拨挡加强:打断它还<b>偷 15 能量</b>、这刀 ×1.5;但窗内答错,下次挨打<b>翻倍</b>'},
   {id:'h18',name:'寅吃卯粮',ico:'💳',school:'通用',rar:'gold',cat:'转化',ba:false,   fl:'先借明天,打赢今天。',     desc:'能量能欠到 <b>−50</b> 也放技能;欠债时攻击变弱,收入先还债'},
+  {id:'s01',name:'翻篇',ico:'📄',school:'脑',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'swap',      fl:'这页不看了。',         desc:'<b>轻技能换成</b>:这题不要了,换一题(仅 40⚡)'},
+  {id:'s02',name:'一举两得',ico:'🪙',school:'脑',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'calc',    fl:'一枚钱,两面赢。',       desc:'<b>重技能换成</b>:攻击 ×4,还回 30 能量'},
+  {id:'s03',name:'推波助澜',ico:'💨',school:'手',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'flurry',fl:'风从不收手。',         desc:'<b>轻技能换成</b>:攻击 ×2,连击再+2'},
+  {id:'s04',name:'厚积薄发',ico:'🎇',school:'手',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'avalanche',fl:'攒了多久,炸多大。',   desc:'<b>重技能换成</b>:连击越高打得越疼,还定住它'},
+  {id:'s05',name:'未雨绸缪',ico:'☂️',school:'心',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'shield',fl:'雨没来,伞先开。',      desc:'<b>轻技能换成</b>:护盾,挡住 2 次攻击'},
+  {id:'s06',name:'争分夺秒',ico:'⏱',school:'心',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'timestop',fl:'它的时间,归你了。',    desc:'<b>重技能换成</b>:攻击 ×4,定住敌人 5 秒'},
 ];
 const GAMBLE_IDS = ['h16','h17','h18'];   // 赌卡:第 2 局起入池(渐进披露)
 const RAR_LABEL = {silver:'白银',gold:'黄金',prism:'棱彩'};
@@ -1218,25 +1224,27 @@ function renderDraft(rar){
     : '<span style="opacity:.6">(空)</span>');
   const offer = rollOffer(rar);
   const wrap = document.getElementById('draftCards'); wrap.innerHTML='';
-  const baseAtk = immediateDamage(), baseHv = heavySkill(), baseLt = lightSkill(), baseDom = dominantSchool();
+  const baseAtk = immediateDamage(), baseHv = heavySkill(), baseLt = lightSkill();
   offer.forEach(h=>{
     const el=document.createElement('div');
     el.className=`card r-${h.rar} sc-${SCHOOL_CLASS[h.school]||'ty'}`;
     el.title=h.cat;
-    // 力量跃迁预览:选之前就看见数字怎么变(主修翻转时不比,免误导)
+    // 力量跃迁预览:选之前就看见数字怎么变
     let delta='';
     P.hexes.push(h);
-    if(dominantSchool()===baseDom){
+    {
       const parts=[];
       const a2=immediateDamage(); if(a2!==baseAtk) parts.push(`普攻 ${baseAtk}→<b>${a2}</b>`);
       const h2=heavySkill(); if(h2.name===baseHv.name && h2.dmg!==baseHv.dmg) parts.push(`${h2.name} ${baseHv.dmg}→<b>${h2.dmg}</b>`);
       const l2=lightSkill(); if(l2.cost!==baseLt.cost) parts.push(`轻技 ${baseLt.cost}⚡→<b>${l2.cost}⚡</b>`);
       if(parts.length) delta=`<div class="delta">${parts.slice(0,2).join(' · ')}</div>`;
-    } else {
-      const l2=lightSkill(), h2=heavySkill();
-      delta=`<div class="delta">⚔ 选它,技能换成:<b>${l2.name}</b> / <b>${h2.name}</b></div>`;
     }
     P.hexes.pop();
+    if(h.skillSlot){
+      const cur = ownedSkill(h.skillSlot);
+      const slotName = h.skillSlot==='light'?'轻技能':'重技能';
+      delta = `<div class="delta">⚔ 你的${slotName}会变成「<b>${h.name}</b>」${cur?`(顶掉 ${cur.ico}${cur.name})`:''}</div>` + delta;
+    }
     const sc = schoolCount(h.school);
     // 联动信息=整行说明文(名词只是装饰,效果必须写明白;手机无悬停)
     const syn = [];
@@ -1629,37 +1637,31 @@ function onBreak(reason){
   afterAction(true);
 }
 
-/* ============================== 技能变形系统:主修流派决定技能槽形态 ============================== */
-function dominantOf(list){
-  const counts={};
-  list.forEach(h=>{ if(h.school!=='通用') counts[h.school]=(counts[h.school]||0)+1; });
-  let best=null, bestN=0;
-  // 平手时取最近获得的流派
-  for(let i=list.length-1;i>=0;i--){
-    const s=list[i].school; if(s==='通用') continue;
-    if((counts[s]||0)>bestN){ best=s; bestN=counts[s]; }
-  }
-  return best;
+/* 技能槽形态由技能卡决定(ownedSkill),旧主修变形系统已移除 v4.5 */
+function ownedSkill(slot){
+  for(let i=P.hexes.length-1;i>=0;i--){ if(P.hexes[i].skillSlot===slot) return P.hexes[i]; }
+  return null;
 }
-function dominantSchool(){ return dominantOf(P.hexes); }
 function lightSkill(){
-  const s = dominantSchool();
   const disc = has('h12') ? 20 : 0;   // 赌徒之门:门槛-20,代价是 20% 卡壳
-  if(s==='脑') return {key:'swap',  name:'翻篇',   cost:40-disc, od:'这题不要了,换一题', dmg:0};
-  if(s==='心') return {key:'shield',name:'未雨绸缪',cost:50-disc, od:'挡住 2 次攻击', dmg:0};
-  if(s==='手') return {key:'flurry',name:'推波助澜',cost:50-disc, od:'打一下,连击+2', dmg:immediateDamage()*2};
+  const sc = ownedSkill('light');
+  const key = sc ? sc.skillKey : 'small';
+  if(key==='swap')   return {key:'swap',  name:'翻篇',   cost:40-disc, od:'这题不要了,换一题', dmg:0};
+  if(key==='shield') return {key:'shield',name:'未雨绸缪',cost:50-disc, od:'挡住 2 次攻击', dmg:0};
+  if(key==='flurry') return {key:'flurry',name:'推波助澜',cost:50-disc, od:'打一下,连击+2', dmg:immediateDamage()*2};
   return {key:'small', name:'轻斩', cost:50-disc, od:`攻击 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
 }
 function heavySkill(){
-  const s = dominantSchool();
   const disc = has('h12') ? 20 : 0;
   const odMult = 1 + K.OVERLOAD_PER_STACK*P.overloadStacks;
   const hammer = has('h10') ? 1.5 : 1;   // h10 一锤:重技 ×1.5(默认重斩 6→9)
+  const sc = ownedSkill('heavy');
+  const key = sc ? sc.skillKey : 'big';
   let v;
-  if(s==='手')      v={key:'avalanche', name:'厚积薄发', base:4*(1+0.02*P.combo), od:'连击越高越疼,还定住它', stun:true};
-  else if(s==='心') v={key:'timestop',  name:'争分夺秒', base:4, od:'×4,定住敌人 5 秒', freeze:5000};
-  else if(s==='脑') v={key:'calc',      name:'一举两得', base:4, od:'×4,回 30 能量', regen:30};
-  else              v={key:'big',       name:'重斩', base:K.BIG_MULT, od:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
+  if(key==='avalanche')     v={key:'avalanche', name:'厚积薄发', base:4*(1+0.02*P.combo), od:'连击越高越疼,还定住它', stun:true};
+  else if(key==='timestop') v={key:'timestop',  name:'争分夺秒', base:4, od:'×4,定住敌人 5 秒', freeze:5000};
+  else if(key==='calc')     v={key:'calc',      name:'一举两得', base:4, od:'×4,回 30 能量', regen:30};
+  else                      v={key:'big',       name:'重斩',     base:K.BIG_MULT, od:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
   v.cost = 100-disc;
   v.dmg = Math.round(immediateDamage()*v.base*hammer*odMult);
   return v;
