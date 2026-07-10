@@ -91,6 +91,10 @@
   .card .bastar{color:var(--gold); text-shadow:0 0 10px rgba(255,207,77,.7);}
   .card .schooltag{font-size:10px; color:var(--dim); letter-spacing:1px;}
   .card:active{transform:scale(.97); transition:transform .08s;}
+  .card.blindbet{border-color:var(--gold); border-left-color:var(--gold);
+    background:repeating-linear-gradient(45deg,#131c33,#131c33 8px,#0d1426 8px,#0d1426 16px);
+    box-shadow:0 0 24px rgba(255,207,77,.18);}
+  .card.blindbet .name{color:var(--gold);}
 
   /* battle */
   #battle{justify-content:flex-start; padding:14px 18px; gap:8px;}
@@ -190,6 +194,8 @@
   .qtimer{width:72%; height:7px; background:#0a1020; border-radius:5px; overflow:hidden; position:relative; border:1px solid var(--line);}
   .qtimerfill{height:100%; background:linear-gradient(90deg,var(--cyan),var(--blue)); width:100%; transition:width .1s linear;}
   .qtimer .bench{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--green); box-shadow:0 0 8px var(--green);}
+  .qzone{position:absolute; left:0; top:0; bottom:0; width:25%; background:linear-gradient(90deg, rgba(255,84,112,.4), rgba(255,84,112,.12)); z-index:0;}
+  .qtimerfill{position:relative; z-index:1;}
   .qinput{font-size:26px; font-weight:800; text-align:center; width:210px; background:#05080f; border:2px solid var(--line2); color:var(--text); border-radius:11px; padding:8px; font-family:inherit; letter-spacing:1px;}
   .qinput:focus{outline:none; border-color:var(--cyan); box-shadow:0 0 0 4px rgba(63,231,255,.12);}
   .qinput{caret-color:var(--cyan); transition:transform .08s;}
@@ -476,7 +482,7 @@
     <div class="qbox" id="qbox">
       <div class="qmeta"><span class="qtype" id="qType">速算</span><span class="qdiff" id="qDiff">★</span><span class="qbonus" id="qBonus">⚡+0</span></div>
       <div class="qprompt qp-l" id="qPrompt">3 × 4 + 2</div>
-      <div class="qtimer"><div class="qtimerfill" id="qTimerFill"></div><div class="bench" id="qBench"></div></div>
+      <div class="qtimer"><div class="qzone hidden" id="qZone"></div><div class="qtimerfill" id="qTimerFill"></div><div class="bench" id="qBench"></div></div>
       <input class="qinput" id="qInput" inputmode="numeric" autocomplete="off" placeholder="答案">
     </div>
 
@@ -510,7 +516,7 @@
     <h1 style="font-size:26px; letter-spacing:3px;">✦ 击 破 ✦</h1>
     <div class="resrow" id="secresRow"></div>
     <div class="destiny hidden" id="destinyBox">
-      <div class="dcard" id="dCard"><div class="dback">🂠</div><div class="dface" id="dFace"></div></div>
+      <div class="drow" id="dRow" style="display:flex; gap:12px;"></div>
       <div class="dnote" id="dNote"></div>
     </div>
     <div class="sub" id="secresMsg"></div>
@@ -723,7 +729,7 @@ let BATTLE_TIMER = null;
 
 function freshRun(){
   P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, streak:0, destinyIds:[], _dying:false, _betweenQ:false, _skillSig:'' };
-  R = { section:0, qInSection:0, results:[] };
+  R = { section:0, qInSection:0, results:[], blindBet:false, destinyDrawn:[] };
   E = null;
   telem = {
     eventQGaps:[], lastEventQ:0, globalQ:0,
@@ -910,14 +916,14 @@ function enemyAttack(){
 }
 
 function applySlow(){
-  const ms = K.SLOW_SECONDS * 1000 * (has('h15')?2:1);
-  if(E) E.slowedUntil = Math.max(E.slowedUntil, Date.now()+ms);
-  hexFire('h15','减速×2');
+  if(E) E.slowedUntil = Math.max(E.slowedUntil, Date.now() + K.SLOW_SECONDS*1000);
 }
 function applyStun(){
-  const ms = (K.STUN_SECONDS + (has('h15')?2:0)) * 1000;
-  if(E){ E.stunnedUntil = Date.now()+ms; E.charge = 0; }
-  hexFire('h15','震慑+2s');
+  if(E){ E.stunnedUntil = Date.now() + K.STUN_SECONDS*1000; E.charge = 0; }
+}
+/* 千钧一发:计时最后 1/4 为千钧区——等待第一次成为输入动词 */
+function inBladeZone(at){
+  return has('h15') && q && (at / (q.benchmark*K.TIMEOUT_FACTOR)) > 0.75;
 }
 
 /* ============================== 局流程 ============================== */
@@ -1007,6 +1013,17 @@ function renderDraft(rar){
     el.onclick=()=>pickHex(h);
     wrap.appendChild(el);
   });
+  // 盲注(德州):弃掉三选一,本关结束翻双天命,+15HP 垫底
+  if(R.section < K.SECTIONS){
+    const bb=document.createElement('div');
+    bb.className='card blindbet';
+    bb.innerHTML=`<div class="ico" style="font-size:40px;">🂠</div><div class="name">盲注</div>
+      <div class="flavor">「不看牌,加倍下注。」</div>
+      <div class="desc">放弃本次三选一 → 本关结束翻<b>双天命</b>(纯随机),另 <b>+15 HP</b></div>
+      <div class="schooltag">🎰 系统 · 德州</div>`;
+    bb.onclick=()=>pickBlind();
+    wrap.appendChild(bb);
+  }
   const rb=document.getElementById('rerollBtn');
   const poolN = HEXES.filter(h=>h.rar===rar && !has(h.id)).length;
   const effN = poolN>=3 ? poolN : HEXES.filter(h=>!has(h.id)).length;
@@ -1017,6 +1034,12 @@ function reroll(){
   if(rerollLeft<=0) return;
   rerollLeft--;
   renderDraft(RAR_BY_SECTION[Math.min(R.section-1, RAR_BY_SECTION.length-1)]);
+}
+function pickBlind(){
+  R.blindBet = true;
+  P.hp = Math.min(K.PLAYER_HP, P.hp + 15);
+  P._loadBanner = '🂠 盲注 · 双天命已押';
+  beginSection();
 }
 function pickHex(h){
   const resBefore = activeResonances().length;
@@ -1101,6 +1124,7 @@ function nextQuestion(){
   const fill=document.getElementById('qTimerFill'); fill.style.transition='none'; fill.style.width='100%';
   void fill.offsetWidth;
   fill.style.transition=`width ${timeout}s linear`; fill.style.width='0%';
+  document.getElementById('qZone').classList.toggle('hidden', !has('h15'));
   clearTimeout(qTimer);
   qTimer = setTimeout(()=>onTimeout(), timeout*1000);
   updateHUD();
@@ -1151,7 +1175,8 @@ function onTyped(){
 /* ============================== 结算 (§12) ============================== */
 function onCorrect(){
   const at = actualTime();
-  const fast = at < q.benchmark;
+  const blade = inBladeZone(at);
+  const fast = at < q.benchmark || blade;   // 千钧区答对:强制判快答(点燃出鞘/追风/先发制人)
   // 追风:快答叠风层(动量),慢答清零——易碎的成长
   if(has('h04')){
     if(fast){ P.windStacks = Math.min(5, (P.windStacks||0)+1); hexFire('h04', `风×${P.windStacks}`); }
@@ -1170,13 +1195,15 @@ function onCorrect(){
   telem.correct++;
   telem.maxCombo = Math.max(telem.maxCombo, P.combo);
   P._betweenQ = true;
+  if(blade){ hexFire('h15','千钧+50%'); }
   const co = comboCallout(P.combo);
   showQFeedback('good', co.t, co.cls);
   SFX.correct(P.combo);
   // 共鸣·时间凝滞:快答冻结敌人充能
   if(fast && hasRes('心') && E && !E.dead){ E.frozenUntil = Date.now()+2000; }
   const beforeTier = comboTier(P.combo-1);
-  const dmg = immediateDamage();
+  let dmg = immediateDamage();
+  if(blade) dmg = Math.round(dmg*1.5);   // 千钧区:普攻+50%
   const consumedDouble = P.nextImmDouble;
   P.nextImmDouble=false;
   dealDamage(dmg, consumedDouble?'出鞘':'普攻', consumedDouble?'#ffcf4d':'#43e08a');
@@ -1276,7 +1303,10 @@ function onBreak(reason){
   P._wasBroken = true;
   P.windStacks = 0;   // 追风:断连风散
   P.streak = 0; renderStreak();   // 羁绊连答:一错清零
-  if(E && !E.dead) E.charge += E.chargeNeed*1000*0.25;   // 乘虚而入:攻击充能突进
+  if(reason==='答错' && inBladeZone(actualTime()) && E && !E.dead){
+    E.charge = E.chargeNeed*1000;   // 千钧失手:敌人立刻出手
+    floatText('⏳ 千钧失手!', '#ff5470', false, true, 'you');
+  } else if(E && !E.dead) E.charge += E.chargeNeed*1000*0.25;   // 乘虚而入:攻击充能突进
   shakeScene();
   toast(`💢 断连(${reason})!敌人乘虚而入 · 能量保留`);
   afterAction(true);
@@ -1439,21 +1469,24 @@ function markEvent(){ telem.eventQGaps.push(telem.globalQ - telem.lastEventQ); t
 function sectionWin(){
   stopLoop(); stopAmbient();
   P.overloadStacks = 0;   // 节末白攒(SPEC §9 风险端)
-  // 天命翻牌(德州公共牌):过关翻一张,纯随机入队
-  R.destinyDrawn = null;
+  // 天命翻牌(德州公共牌):过关翻一张;盲注局翻两张
+  R.destinyDrawn = [];
   if(R.section < K.SECTIONS){
-    const pool = HEXES.filter(h=>!has(h.id));
-    if(pool.length){
+    const draws = R.blindBet ? 2 : 1;
+    R.blindBet = false;
+    for(let i=0;i<draws;i++){
+      const pool = HEXES.filter(h=>!has(h.id));
+      if(!pool.length) break;
       const bondsBefore = activeBonds().map(b=>b.id);
       const resBefore = activeResonances().length;
       const dh = pool[rnd(0,pool.length-1)];
       P.destinyIds.push(dh.id);
       P.hexes.push(dh);
-      R.destinyDrawn = {
+      R.destinyDrawn.push({
         hex: dh,
         newBond: activeBonds().find(b=>!bondsBefore.includes(b.id)) || null,
         newRes: activeResonances().length > resBefore ? RESONANCE[dh.school] : null,
-      };
+      });
     }
   }
   const heal = R.section < K.SECTIONS ? K.HEAL_PER_SECTION : 0;
@@ -1470,22 +1503,26 @@ function sectionWin(){
     ? '下一名守门者更凶:攻击更疼、充能更快。选好你的海克斯。'
     : '塔顶到了——去看战报。');
   document.getElementById('secresBtn').textContent = R.section >= K.SECTIONS ? '查看战报' : '下 一 节 抽 取';
-  // 天命翻牌演出
+  // 天命翻牌演出(单张或盲注双张,交错翻面)
   const dbox=document.getElementById('destinyBox');
-  const dcard=document.getElementById('dCard');
-  if(R.destinyDrawn){
+  const drow=document.getElementById('dRow');
+  if(R.destinyDrawn && R.destinyDrawn.length){
     dbox.classList.remove('hidden');
-    dcard.classList.remove('flip');
-    const d=R.destinyDrawn;
-    document.getElementById('dFace').innerHTML = `<div class="dico">${d.hex.ico}</div><div class="dname">${d.hex.name}</div><div class="ddesc">${d.hex.desc}</div>`;
-    document.getElementById('dNote').textContent = `🂠 天命 · 第 ${P.destinyIds.length} 翻`;
-    setTimeout(()=>{
-      if(CUR_SCREEN!=='secres') return;
-      dcard.classList.add('flip');
-      if(d.newBond){ SFX.res(); document.getElementById('dNote').textContent = `⛓ 羁绊结成 · ${d.newBond.ico}${d.newBond.name}!`; }
-      else if(d.newRes){ SFX.res(); document.getElementById('dNote').textContent = `🔗 共鸣觉醒 · ${d.newRes.name}!`; }
-      else SFX.tierUp();
-    }, 750);
+    drow.innerHTML='';
+    R.destinyDrawn.forEach((d,i)=>{
+      const c=document.createElement('div'); c.className='dcard';
+      c.innerHTML=`<div class="dback">🂠</div><div class="dface"><div class="dico">${d.hex.ico}</div><div class="dname">${d.hex.name}</div><div class="ddesc">${d.hex.desc}</div></div>`;
+      drow.appendChild(c);
+      setTimeout(()=>{
+        if(CUR_SCREEN!=='secres') return;
+        c.classList.add('flip');
+        const note=document.getElementById('dNote');
+        if(d.newBond){ SFX.res(); note.textContent = `⛓ 羁绊结成 · ${d.newBond.ico}${d.newBond.name}!`; }
+        else if(d.newRes){ SFX.res(); note.textContent = `🔗 共鸣觉醒 · ${d.newRes.name}!`; }
+        else { SFX.tierUp(); if(i===0) note.textContent = R.destinyDrawn.length>1 ? '🂠 盲注 · 双天命' : `🂠 天命 · 第 ${P.destinyIds.length} 翻`; }
+      }, 750 + i*700);
+    });
+    document.getElementById('dNote').textContent = R.destinyDrawn.length>1 ? '🂠 盲注开牌…' : '🂠 天命…';
   } else dbox.classList.add('hidden');
   show('secres');
 }
