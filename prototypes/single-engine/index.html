@@ -759,30 +759,30 @@ const GRADE_FLAVOR = {S:'宗师', A:'高手', B:'熟练', C:'学徒', D:'梦游'
 
 /* ============================== 海克斯种子卡 (§10.2) ============================== */
 const HEXES = [
-  {id:'h01',name:'早雪',ico:'❄️',school:'心',rar:'silver',cat:'改写规则',ba:true,   fl:'雪,比所有人先落。',       desc:'连击解锁 3/6/9 → <b>2/4/6</b>'},
-  {id:'h02',name:'不化的雪',ico:'🛡️',school:'心',rar:'gold',cat:'改写规则',ba:false,fl:'雪线之下,寸雪不失。',     desc:'断连:连击只回落到<b>本档起点</b>'},
-  {id:'h03',name:'山鸣',ico:'⚡',school:'心',rar:'prism',cat:'改写规则',ba:false,   fl:'山,替你喊出第二声。',     desc:'双响解锁 9 → <b>7</b> 连击'},
-  {id:'h04',name:'追风',ico:'🚀',school:'脑',rar:'silver',cat:'成长',ba:false,     fl:'风未停,你已至。',         desc:'快答叠<b>风层</b>:每层 +6%⚡(至 5 层);慢答·断连清零'},
-  {id:'h05',name:'破壁人',ico:'🧠',school:'脑',rar:'gold',cat:'改写规则',ba:false,  fl:'墙,是门的原料。',         desc:'★★★:时限 +50%,答对 <b>+15⚡</b>'},
-  {id:'h06',name:'出鞘',ico:'🎯',school:'手',rar:'prism',cat:'成长',ba:true,       fl:'刀比题快。',               desc:'连快 3 题 → 下一击 <b>×2</b>'},
-  {id:'h07',name:'钝刀',ico:'🪨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'钝,但从不缺席。',         desc:'攻击 10 → <b>16</b>,⚡收入 −40%'},
-  {id:'h08',name:'刀花',ico:'💥',school:'手',rar:'gold',cat:'改写规则',ba:false,    fl:'一朵刀,开成一片。',       desc:'溅射 <b>60%</b>;敌人<b>受控</b>时,溅射翻倍'},
-  {id:'h09',name:'余烬',ico:'🔥',school:'手',rar:'prism',cat:'转化',ba:false,       fl:'火走了,烫还在。',         desc:'命中挂<b>灼痕</b>:2 题内,每题再受 50% 攻击'},
-  {id:'h10',name:'一锤',ico:'🔨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'此生,只练这一锤。',       desc:'重技 <b>×1.5</b>,轻技封印'},
-  {id:'h11',name:'渊眼',ico:'☢️',school:'脑',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限 <b>8</b>;每层过载 <b>+2 攻击</b>'},
-  {id:'h12',name:'赌徒之门',ico:'🎲',school:'脑',rar:'prism',cat:'转化',ba:false,   fl:'门后是什么,开了才知道。', desc:'技能门槛 <b>−20</b>;释放 20% <b>卡壳</b>(费照扣,效果减半)'},
-  {id:'h13',name:'饮血',ico:'🌀',school:'脑',rar:'gold',cat:'成长',ba:false,        fl:'它的痛,是你的粮。',       desc:'重技命中 <b>+40⚡</b>,并本局<b>永久 +2 攻击</b>(至 +20)'},
-  {id:'h14',name:'第五答',ico:'🗝️',school:'心',rar:'prism',cat:'成长',ba:false,      fl:'塔,在第五答开门。',       desc:'每答 5 题 → 免费<b>控场小招</b>'},
-  {id:'h15',name:'冻土',ico:'🧊',school:'心',rar:'gold',cat:'干扰',ba:false,        fl:'这片土地,听我的。',       desc:'减速时长 <b>×2</b>,震慑 <b>+2s</b>'},
+  {id:'h01',name:'早雪',ico:'❄️',school:'心',rar:'silver',cat:'改写规则',ba:true,   fl:'雪,比所有人先落。',       desc:'连击奖励来得更早:<b>2·4·6</b> 连就解锁'},
+  {id:'h02',name:'不化的雪',ico:'🛡️',school:'心',rar:'gold',cat:'改写规则',ba:false,fl:'雪线之下,寸雪不失。',     desc:'答错了,连击只<b>掉一点点</b>'},
+  {id:'h03',name:'山鸣',ico:'⚡',school:'心',rar:'prism',cat:'改写规则',ba:false,   fl:'山,替你喊出第二声。',     desc:'<b>7</b> 连击就有双响,别人要 9'},
+  {id:'h04',name:'追风',ico:'🚀',school:'脑',rar:'silver',cat:'成长',ba:false,     fl:'风未停,你已至。',         desc:'快答一题,能量多 <b>6%</b>,能叠 5 层;一慢全散'},
+  {id:'h05',name:'破壁人',ico:'🧠',school:'脑',rar:'gold',cat:'改写规则',ba:false,  fl:'墙,是门的原料。',         desc:'难题时间<b>多一半</b>,答对多拿 <b>15</b> 能量'},
+  {id:'h06',name:'出鞘',ico:'🎯',school:'手',rar:'prism',cat:'成长',ba:true,       fl:'刀比题快。',               desc:'连快 <b>3</b> 题,下一刀<b>翻倍</b>'},
+  {id:'h07',name:'钝刀',ico:'🪨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'钝,但从不缺席。',         desc:'攻击变 <b>16</b>,但能量涨得慢'},
+  {id:'h08',name:'刀花',ico:'💥',school:'手',rar:'gold',cat:'改写规则',ba:false,    fl:'一朵刀,开成一片。',       desc:'溅射更疼;敌人被<b>定住</b>时,双倍疼'},
+  {id:'h09',name:'余烬',ico:'🔥',school:'手',rar:'prism',cat:'转化',ba:false,       fl:'火走了,烫还在。',         desc:'打中就<b>点火</b>,之后 2 题继续烧它'},
+  {id:'h10',name:'一锤',ico:'🔨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'此生,只练这一锤。',       desc:'重技伤害 <b>×1.5</b>,轻技没了'},
+  {id:'h11',name:'渊眼',ico:'☢️',school:'脑',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'过载能囤 <b>8</b> 层,每层攻击 <b>+2</b>'},
+  {id:'h12',name:'赌徒之门',ico:'🎲',school:'脑',rar:'prism',cat:'转化',ba:false,   fl:'门后是什么,开了才知道。', desc:'技能便宜 <b>20</b> 能量,但 <b>20%</b> 会哑火'},
+  {id:'h13',name:'饮血',ico:'🌀',school:'脑',rar:'gold',cat:'成长',ba:false,        fl:'它的痛,是你的粮。',       desc:'重技打中:回 <b>40</b> 能量,攻击永久 <b>+2</b>'},
+  {id:'h14',name:'第五答',ico:'🗝️',school:'心',rar:'prism',cat:'成长',ba:false,      fl:'塔,在第五答开门。',       desc:'每答 <b>5</b> 题,免费打一下还定住它'},
+  {id:'h15',name:'千钧一发',ico:'⏳',school:'心',rar:'gold',cat:'改写规则',ba:false, fl:'最后一刻,刀最快。',       desc:'最后一刻答对:伤害 <b>+50%</b>;答错:<b>马上挨打</b>'},
 ];
 const RAR_LABEL = {silver:'白银',gold:'黄金',prism:'棱彩'};
 const RAR_BY_SECTION = ['silver','gold','prism'];
 
 /* ============================== 共鸣(同流派×2 质变联动;团队层标签计数接口的单人预演) ============================== */
 const RESONANCE = {
-  '脑':{name:'留一手', ico:'🧠', desc:'重技后保留一半过载层(向上取整)'},
-  '手':{name:'一气呵成', ico:'✊', desc:'每第 3 次答对,再打一轮普攻+溅射'},
-  '心':{name:'先发制人', ico:'💗', desc:'快于基准答对时,冻结敌人充能 2 秒'},
+  '脑':{name:'留一手', ico:'🧠', desc:'放完重技,过载留一半'},
+  '手':{name:'一气呵成', ico:'✊', desc:'每第 3 次答对,免费多打一轮'},
+  '心':{name:'先发制人', ico:'💗', desc:'答得快,敌人定住 2 秒'},
 };
 function schoolCount(s){ return P.hexes.filter(h=>h.school===s).length; }
 function hasRes(s){ return schoolCount(s)>=2; }
@@ -790,11 +790,11 @@ function activeResonances(){ return Object.keys(RESONANCE).filter(hasRes); }
 
 /* ============================== 羁绊(跨流派特定组合;与共鸣抢卡位 = 赌感与遗憾感的引擎) ============================== */
 const BONDS = [
-  {id:'b1', name:'山鸣谷应', ico:'⛰', pieces:['h06','h03'], need:3, desc:'每连答 3 题不错:回响一击(全额普攻+震慑2s)'},
-  {id:'b2', name:'死灰复燃', ico:'🔥', pieces:['h09','h11'], need:4, desc:'每连答 4 题不错:150% 攻击并挂灼痕'},
-  {id:'b3', name:'风生水起', ico:'🌊', pieces:['h13','h04'], need:4, desc:'每连答 4 题不错:回复 40⚡'},
-  {id:'b4', name:'势如破竹', ico:'🎋', pieces:['h10','h05'], need:3, desc:'每连答 3 题不错:+1 过载层'},
-  {id:'b5', name:'如花似雪', ico:'🌸', pieces:['h01','h08'], need:5, desc:'每连答 5 题不错:三连溅射(3×60% 攻击)'},
+  {id:'b1', name:'山鸣谷应', ico:'⛰', pieces:['h06','h03'], need:3, desc:'连答 3 题:山替你打一刀,敌人定住'},
+  {id:'b2', name:'死灰复燃', ico:'🔥', pieces:['h09','h11'], need:4, desc:'连答 4 题:一把大火,还持续烧'},
+  {id:'b3', name:'风生水起', ico:'🌊', pieces:['h13','h04'], need:4, desc:'连答 4 题:回 40 能量'},
+  {id:'b4', name:'势如破竹', ico:'🎋', pieces:['h10','h05'], need:3, desc:'连答 3 题:过载多 1 层'},
+  {id:'b5', name:'如花似雪', ico:'🌸', pieces:['h01','h08'], need:5, desc:'连答 5 题:连砍三刀'},
 ];
 function bondOn(id){ const b=BONDS.find(x=>x.id===id); return b.pieces.every(p=>has(p)); }
 function activeBonds(){ return BONDS.filter(b=>b.pieces.every(p=>has(p))); }
@@ -1143,7 +1143,7 @@ function renderDraft(rar){
           return `⛓${b.name} 缺<b>${lackN}</b>张`;
         }).join(' · ')
       : '';
-    const legend = R.section===1 ? '<br>📖 ⚡能量=攒满放技能 · 连击=连续答对越高攻击越强 · 过载=满⚡后继续答题攒的大招燃料' : '';
+    const legend = R.section===1 ? '<br>📖 答对攒<b>能量</b>,攒够放技能 · <b>连击</b>越高打得越疼 · 能量满了继续答=攒<b>过载</b>,大招更猛' : '';
     di.innerHTML = `🂠 天命牌还剩 <b>${revealsLeft}</b> 翻(过关随机送一张)+ 后续抽取也可补件${outsTxt}${legend}`;
   } else di.innerHTML='';
   const cb=document.getElementById('curBuild');
@@ -1525,9 +1525,9 @@ function dominantSchool(){ return dominantOf(P.hexes); }
 function lightSkill(){
   const s = dominantSchool();
   const disc = has('h12') ? 20 : 0;   // 赌徒之门:门槛-20,代价是 20% 卡壳
-  if(s==='脑') return {key:'swap',  name:'翻篇',   cost:40-disc, od:'弃换本题·不断连', dmg:0};
-  if(s==='心') return {key:'shield',name:'未雨绸缪',cost:50-disc, od:'护盾:挡下 2 次攻击', dmg:0};
-  if(s==='手') return {key:'flurry',name:'推波助澜',cost:50-disc, od:'×2 + 连击+2', dmg:immediateDamage()*2};
+  if(s==='脑') return {key:'swap',  name:'翻篇',   cost:40-disc, od:'这题不要了,换一题', dmg:0};
+  if(s==='心') return {key:'shield',name:'未雨绸缪',cost:50-disc, od:'挡住 2 次攻击', dmg:0};
+  if(s==='手') return {key:'flurry',name:'推波助澜',cost:50-disc, od:'打一下,连击+2', dmg:immediateDamage()*2};
   return {key:'small', name:'轻斩', cost:50-disc, od:`攻击 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
 }
 function heavySkill(){
@@ -1536,9 +1536,9 @@ function heavySkill(){
   const odMult = 1 + K.OVERLOAD_PER_STACK*P.overloadStacks;
   const hammer = has('h10') ? 1.5 : 1;   // h10 一锤:重技 ×1.5(默认重斩 6→9)
   let v;
-  if(s==='手')      v={key:'avalanche', name:'厚积薄发', base:4*(1+0.02*P.combo), od:'×4·连击每点+2% + 震慑', stun:true};
-  else if(s==='心') v={key:'timestop',  name:'争分夺秒', base:4, od:'×4 + 夺走敌人 5 秒', freeze:5000};
-  else if(s==='脑') v={key:'calc',      name:'一举两得', base:4, od:'×4 + 回复 30⚡', regen:30};
+  if(s==='手')      v={key:'avalanche', name:'厚积薄发', base:4*(1+0.02*P.combo), od:'连击越高越疼,还定住它', stun:true};
+  else if(s==='心') v={key:'timestop',  name:'争分夺秒', base:4, od:'×4,定住敌人 5 秒', freeze:5000};
+  else if(s==='脑') v={key:'calc',      name:'一举两得', base:4, od:'×4,回 30 能量', regen:30};
   else              v={key:'big',       name:'重斩', base:K.BIG_MULT, od:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
   v.cost = 100-disc;
   v.dmg = Math.round(immediateDamage()*v.base*hammer*odMult);
