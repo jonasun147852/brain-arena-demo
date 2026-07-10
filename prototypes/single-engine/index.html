@@ -485,6 +485,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.0.2</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1266,6 +1267,11 @@ let PITY=0; try{ PITY = Number(localStorage.getItem('ba_pity')||0); }catch(e){} 
 function setPity(n){ PITY=Math.max(0,n); try{ localStorage.setItem('ba_pity', String(PITY)); }catch(e){} }
 function startRun(){
   RUNS++; try{ localStorage.setItem('ba_runs', String(RUNS)); }catch(e){}
+  // 重开硬复位:上一局的覆盖层/计时器/冻结态一律清干净(修重开卡屏)
+  DRAFT_OPEN=false; DRAFT_PAUSE=null; PANEL_OPEN=false; PAUSE=null;
+  document.getElementById('bDraft').classList.add('hidden');
+  document.getElementById('bPanel').classList.add('hidden');
+  clearTimeout(qTimer); stopLoop();
   readTuner(); freshRun(); rerollLeft=1;
   R.section = 1;
   beginSection();   // 直接开打:海克斯在战斗时钟里来(30s/75s/2min/3min)
@@ -1821,6 +1827,7 @@ function resolveDot(){
 
 function onTimeout(){ onBreak('超时'); }
 function onBreak(reason){
+  if(!q || CUR_SCREEN!=='battle') return;   // 旧局漏进来的超时:吞掉
   document.getElementById('qInput').disabled=true;
   telem.breaks++;
   telem.lastEvents.push({q:telem.globalQ, txt:`第${telem.globalQ}题${reason}`});
