@@ -658,7 +658,7 @@ const DEFAULTS = {
   SLOW_SECONDS: 3,
   SLOW_FACTOR: 0.5,
   ENRAGE_AFTER: 15,              // 本节题数超过此值敌人狂暴
-  DRAFT_AT: [30000, 75000, 120000, 180000],   // 战斗时钟发牌刻度(ms)
+  DRAFT_AT: [0, 30000, 75000, 120000, 180000],   // 发牌刻度:开局立派 + 战斗时钟四抽(ms)
   DRAFT_FLOOR: [40000, 130000],               // 过关时钟保底(快玩家欠牌补发)
 };
 let K = {...DEFAULTS};
@@ -982,7 +982,7 @@ let BATTLE_TIMER = null;
 function freshRun(){
   P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, streak:0, judge:null, destinyIds:[], _dying:false, _betweenQ:false, _skillSig:'', castCounts:{}, furCoat:0, skillDisc:0, leafSpread:0, drumAtk:0, _drumFaded:false, boatPush:false, echoLeft:0, hotIronUntil:0, freeSmall:false };
   R = { section:0, qInSection:0, results:[], destinyDrawn:[], usedQ:new Set(),
-        fightMs:0, draftAt:(K.DRAFT_AT||[30000,75000,120000,180000]).slice(), draftIdx:0,
+        fightMs:0, draftAt:(K.DRAFT_AT||[0,30000,75000,120000,180000]).slice(), draftIdx:0,
         draftPending:null, _draftPendingSince:0, draftTimer:null, _draftLock:false, _pendingHeal:0,
         _secDraft:null, _upRolled:false, _upSeen:false, _offer:[] };
   E = null;
@@ -1318,7 +1318,7 @@ function rollOffer(roundIdx){
     if(!g2c.length) g2c=gp.filter(x=>!g1||x.id!==g1.id);
     const g2=g2c.length?pick(g2c):null;
     picks=[l,hv,g1,g2].filter(Boolean);
-  } else if(roundIdx===1){   // 续力:1 成长保底 + 3 普通(听牌/异槽技能加权)
+  } else if(roundIdx===1){   // 排兵布阵(30s):1 成长保底 + 3 普通(听牌/异槽技能加权)
     const gp=growPool();
     if(gp.length) picks.push(pick(gp));
     const wf=h=>{
@@ -1328,26 +1328,34 @@ function rollOffer(roundIdx){
       return w;
     };
     picks.push(...weightedDraw(normalPool().filter(h=>!picks.includes(h)), 4-picks.length, wf));
+  } else if(roundIdx===2){   // 成长末班车(75s):4 选 1,成长可出不保底
+    const wf=h=>{
+      let w = h.grow ? 0.8 : rarW(h,{silver:.4,gold:.5,prism:.1});
+      if(h.cat==='技能') w *= ownedSkill(h.skillSlot) ? 0.5 : 1.5;
+      if(missedBonds().some(b=>b.pieces.includes(h.id))) w*=1.3;
+      return w;
+    };
+    picks.push(...weightedDraw(normalPool().concat(growPool()), 4, wf));
   } else {   // 亮刃/收网:3 选 1,成长永久出池,升级卡独立 roll(赌感所在)
     const elig=eligibleUpgrades();
     let p=0;
     if(elig.length){
       R._upRolled=true;
-      p = roundIdx===2 ? Math.min(1, 0.45+pityBonus())
+      p = roundIdx===3 ? Math.min(1, 0.45+pityBonus())
         : (R._upSeen ? 0.30 : Math.min(1, 0.65+pityBonus()));
     }
     if(Math.random()<p) picks.push(pick(elig));
-    const table = roundIdx===2 ? {silver:.05,gold:.70,prism:.30} : {silver:.05,gold:.40,prism:.60};
+    const table = roundIdx===3 ? {silver:.05,gold:.70,prism:.30} : {silver:.05,gold:.40,prism:.60};
     const SUSTAIN=['s05','h13','h17','h05','h02'];   // 收网轮偏续航
     const wf=h=>{
       let w=rarW(h,table);
-      if(roundIdx===3 && SUSTAIN.includes(h.id)) w*=1.5;
+      if(roundIdx===4 && SUSTAIN.includes(h.id)) w*=1.5;
       if(h.cat==='技能') w *= ownedSkill(h.skillSlot) ? 0.5 : 1;
       return w;
     };
     picks.push(...weightedDraw(normalPool().filter(h=>!picks.includes(h)), 3-picks.length, wf));
   }
-  while(picks.length < (roundIdx<2?4:3)){   // 池干涸兜底
+  while(picks.length < (roundIdx<3?4:3)){   // 池干涸兜底
     const fb=HEXES.filter(h=>!has(h.id) && !picks.includes(h) && !gambleLocked(h) && h.cat!=='升级');
     if(!fb.length) break;
     picks.push(pick(fb));
@@ -1358,9 +1366,9 @@ function rollOffer(roundIdx){
   return picks;
 }
 /* ============================== 发牌渲染(战斗覆盖层 + 过关补给共用) ============================== */
-const DRAFT_NAMES=['开宗立派','续力 · 成长末班车','亮刃','收网'];
-const DRAFT_WHEN=['第 30 秒','1 分 15 秒','第 2 分钟','第 3 分钟'];
-function draftRoundTag(idx){ return `⛽ 补给 ${idx+1}/4 · ${DRAFT_NAMES[Math.min(idx,3)]}`; }
+const DRAFT_NAMES=['开宗立派','排兵布阵','成长末班车','亮刃','收网'];
+const DRAFT_WHEN=['开局','第 30 秒','1 分 15 秒','第 2 分钟','第 3 分钟'];
+function draftRoundTag(idx){ return `⛽ 补给 ${idx+1}/5 · ${DRAFT_NAMES[Math.min(idx,4)]}`; }
 function renderDraftCards(offer, wrap, roundIdx){
   wrap.innerHTML='';
   const baseAtk = immediateDamage(), baseHv = heavySkill(), baseLt = lightSkill();
@@ -1403,7 +1411,7 @@ function renderDraftCards(offer, wrap, roundIdx){
       syn.push({pri:1, html:`<div class="syn res">🔗 选它=第 2 张${h.school}卡,触发「${RESONANCE[h.school].name}」→ ${RESONANCE[h.school].desc}</div>`});
     const statusTags = syn.sort((a,b)=>a.pri-b.pri).slice(0,2).map(t=>t.html).join('');
     const grptag = roundIdx===0 ? `<div class="grouptag">${h.cat==='技能'?'⚔ 换一手技':'🌱 养一条路'}</div>` : '';
-    const idl = (roundIdx<=1 && h.idline) ? `<div class="idline">${h.idline}</div>` : '';
+    const idl = (roundIdx<=2 && h.idline) ? `<div class="idline">${h.idline}</div>` : '';
     const upBadge = h.cat==='升级' ? '<span class="upmark">↗</span>' : '';
     const pityTag = (roundIdx===0 && h.cat==='技能' && PITY>0) ? `<div class="pitytag">${PITY>=3?'觉醒·就在下一手':'觉醒·近了'}</div>` : '';
     el.innerHTML=`<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>
@@ -1417,13 +1425,13 @@ function renderDraftCards(offer, wrap, roundIdx){
       ${statusTags}
       ${pityTag}
       <div class="schooltag">${SCHOOL_LABEL[h.school]||h.school}${sc?` · 已持 ${sc} 张`:''}</div>`;
-    el.onclick=()=>pickHex(h);
+    el.onclick=()=>pickHexFromDraft(h);
     wrap.appendChild(el);
   });
 }
 function renderBattleDraft(idx){
   document.getElementById('bdTag').textContent = draftRoundTag(idx);
-  document.getElementById('bdSub').textContent = idx===0 ? '从这里开始,你在立流派' : (idx===1 ? '成长卡最后一轮' : '');
+  document.getElementById('bdSub').textContent = idx===0 ? '从这里开始,你在立流派' : (idx===2 ? '成长卡最后一轮' : '');
   renderDraftCards(rollOffer(idx), document.getElementById('bdCards'), idx);
   const rb=document.getElementById('bdReroll');
   rb.disabled = rerollLeft<=0; rb.textContent = rerollLeft>0 ? '🎲 重抽(全局仅 1 次)' : '已用完重抽';
@@ -1443,6 +1451,10 @@ function reroll(){
   else if(R._secDraft!=null) renderSecDraft(R._secDraft);
 }
 /* ============================== 选牌 ============================== */
+function pickHexFromDraft(h){   // UI 唯一入口:双击/迟到点击直接吞掉(修重开本关 bug)
+  if(!DRAFT_OPEN && R._secDraft==null) return;
+  pickHex(h);
+}
 function applyHexPick(h){
   const resBefore = activeResonances().length;
   const bondsBefore = activeBonds().map(b=>b.id);
@@ -1541,7 +1553,10 @@ function beginSection(){
     BATTLE_TIMER = setInterval(combatTick, 100);
     startAmbient();
     updateHUD(); updateSceneUI(); renderStreak();
-    nextQuestion();
+    if(R.section===1 && R.draftIdx===0 && R.draftPending==null && !DRAFT_OPEN && R.fightMs>=R.draftAt[0]){
+      R.draftPending=0; R._draftPendingSince=0;   // 开宗立派:第一题之前先立流派
+      openBattleDraft();
+    } else nextQuestion();
   };
   vsTimer = setTimeout(()=>{ if(vsStarter){ const f=vsStarter; vsStarter=null; f(); } }, 1900);
   updateHUD(); updateSceneUI();
@@ -2071,9 +2086,9 @@ function afterAction(isBreak){
 }
 function checkDraftClock(){   // 到点只挂 pending(arm),开屏永远在结算拍
   if(!R || R.draftIdx>=R.draftAt.length || R.draftPending!=null || DRAFT_OPEN) return;
-  if(RUNS===1 && R.draftIdx===0 && !R._bubbled && R.draftAt[0]-R.fightMs<3000){ R._bubbled=true; toast('⛽ 补给要到了'); }
+  if(RUNS===1 && R.draftIdx===1 && !R._bubbled && R.draftAt[1]-R.fightMs<3000){ R._bubbled=true; toast('⛽ 补给要到了'); }
   const timeUp = R.fightMs >= R.draftAt[R.draftIdx];
-  const earlyD1 = R.draftIdx===0 && RUNS>=2 && telem.correct>=6;   // 首抽双条件:30s 或第 6 次答对(首局只认 30s,纯教学窗)
+  const earlyD1 = R.draftIdx===1 && RUNS>=2 && telem.correct>=6;   // 30s 抽双条件:30s 或第 6 次答对(首局只认 30s,纯教学窗)
   if(timeUp || earlyD1){
     R.draftPending = R.draftIdx;
     R._draftPendingSince = R.fightMs;
@@ -2195,7 +2210,7 @@ function seg(v,k,cls){ const d=document.createElement('div'); d.className='resse
 function calcScore(){
   const won = R.results.filter(r=>r.passed).length;
   let s = won*1000 + P.hp*10 + telem.maxCombo*30 + telem.maxHit*2;
-  if(won===K.SECTIONS && R.draftIdx<=3) s += 300;   // 轻装通关:抽得少赢得下,给分
+  if(won===K.SECTIONS && R.draftIdx<=4) s += 300;   // 轻装通关:抽得少赢得下,给分
   const last = R.results[R.results.length-1];
   if(last && !last.passed && last.foeMax) s += Math.round(last.dmgDone/last.foeMax*600); // 阵亡节的进度分
   return s;
@@ -2227,7 +2242,7 @@ function finishRun(defeat){
   {
     const fn=document.getElementById('finalNotes');
     const notes=[];
-    if(!defeat && won===K.SECTIONS && R.draftIdx<=3) notes.push('🪶 轻装通关 · 少拿一手也赢了(+300 分)');
+    if(!defeat && won===K.SECTIONS && R.draftIdx<=4) notes.push('🪶 轻装通关 · 少拿一手也赢了(+300 分)');
     if(R._upRolled && !R._upSeen){
       const el=eligibleUpgrades()[0];
       const bn = el ? (HEXES.find(x=>x.id===el.upgradeFor)||{name:el.upgradeFor==='small'?'轻斩':'重斩'}).name : '技能';
