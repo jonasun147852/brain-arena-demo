@@ -460,8 +460,8 @@
     </div>
 
     <div class="releases">
-      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span id="rSmallName">小放</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">攻击 × 3</span></button>
-      <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span id="rBigName">大放</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">攻击 × 6 + 震慑</span><span class="odpips" id="odPips"></span></button>
+      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span id="rSmallName">轻斩</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">攻击 × 3</span></button>
+      <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span id="rBigName">重斩</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">攻击 × 6 + 震慑</span><span class="odpips" id="odPips"></span></button>
     </div>
 
     <div class="keypad" id="keypad">
@@ -594,7 +594,7 @@ const RAR_BY_SECTION = ['silver','gold','prism'];
 /* ============================== 共鸣(同流派×2 质变联动;团队层标签计数接口的单人预演) ============================== */
 const RESONANCE = {
   '脑':{name:'留一手', ico:'🧠', desc:'重技后保留一半过载层(向上取整)'},
-  '手':{name:'趁热打铁', ico:'✊', desc:'每第 3 次答对,再打一轮普攻+溅射'},
+  '手':{name:'一气呵成', ico:'✊', desc:'每第 3 次答对,再打一轮普攻+溅射'},
   '心':{name:'先发制人', ico:'💗', desc:'快于基准答对时,冻结敌人充能 2 秒'},
 };
 function schoolCount(s){ return P.hexes.filter(h=>h.school===s).length; }
@@ -605,9 +605,9 @@ function activeResonances(){ return Object.keys(RESONANCE).filter(hasRes); }
 const BONDS = [
   {id:'b1', name:'山鸣谷应', ico:'⛰', pieces:['h06','h03'], need:3, desc:'每连答 3 题不错:回响一击(全额普攻+震慑2s)'},
   {id:'b2', name:'死灰复燃', ico:'🔥', pieces:['h09','h11'], need:4, desc:'每连答 4 题不错:150% 攻击并挂灼痕'},
-  {id:'b3', name:'细水长流', ico:'💧', pieces:['h13','h04'], need:4, desc:'每连答 4 题不错:回复 40⚡'},
+  {id:'b3', name:'风生水起', ico:'🌊', pieces:['h13','h04'], need:4, desc:'每连答 4 题不错:回复 40⚡'},
   {id:'b4', name:'势如破竹', ico:'🎋', pieces:['h10','h05'], need:3, desc:'每连答 3 题不错:+1 过载层'},
-  {id:'b5', name:'漫天飞雪', ico:'❄', pieces:['h01','h08'], need:5, desc:'每连答 5 题不错:三连溅射(3×60% 攻击)'},
+  {id:'b5', name:'如花似雪', ico:'🌸', pieces:['h01','h08'], need:5, desc:'每连答 5 题不错:三连溅射(3×60% 攻击)'},
 ];
 function bondOn(id){ const b=BONDS.find(x=>x.id===id); return b.pieces.every(p=>has(p)); }
 function activeBonds(){ return BONDS.filter(b=>b.pieces.every(p=>has(p))); }
@@ -1237,21 +1237,21 @@ function dominantSchool(){ return dominantOf(P.hexes); }
 function lightSkill(){
   const s = dominantSchool();
   const disc = has('h12') ? 20 : 0;   // 赌徒之门:门槛-20,代价是 20% 卡壳
-  if(s==='脑') return {key:'swap',  name:'换题',   cost:40-disc, od:'弃换本题·不断连', dmg:0};
-  if(s==='心') return {key:'shield',name:'能量护盾',cost:50-disc, od:'挡下 2 次攻击', dmg:0};
-  if(s==='手') return {key:'flurry',name:'疾风连打',cost:50-disc, od:'×2 + 连击+2', dmg:immediateDamage()*2};
-  return {key:'small', name:'小放', cost:50-disc, od:`攻击 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
+  if(s==='脑') return {key:'swap',  name:'翻篇',   cost:40-disc, od:'弃换本题·不断连', dmg:0};
+  if(s==='心') return {key:'shield',name:'未雨绸缪',cost:50-disc, od:'护盾:挡下 2 次攻击', dmg:0};
+  if(s==='手') return {key:'flurry',name:'推波助澜',cost:50-disc, od:'×2 + 连击+2', dmg:immediateDamage()*2};
+  return {key:'small', name:'轻斩', cost:50-disc, od:`攻击 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
 }
 function heavySkill(){
   const s = dominantSchool();
   const disc = has('h12') ? 20 : 0;
   const odMult = 1 + K.OVERLOAD_PER_STACK*P.overloadStacks;
-  const hammer = has('h10') ? 1.5 : 1;   // h10 重锤:重技能 ×1.5(默认大放 6→9)
+  const hammer = has('h10') ? 1.5 : 1;   // h10 一锤:重技 ×1.5(默认重斩 6→9)
   let v;
-  if(s==='手')      v={key:'avalanche', name:'雪崩', base:4*(1+0.02*P.combo), od:'×4·连击每点+2% + 震慑', stun:true};
-  else if(s==='心') v={key:'timestop',  name:'时停', base:4, od:'×4 + 冻结 5 秒', freeze:5000};
-  else if(s==='脑') v={key:'calc',      name:'精算', base:4, od:'×4 + 回复 30⚡', regen:30};
-  else              v={key:'big',       name:'大放', base:K.BIG_MULT, od:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
+  if(s==='手')      v={key:'avalanche', name:'厚积薄发', base:4*(1+0.02*P.combo), od:'×4·连击每点+2% + 震慑', stun:true};
+  else if(s==='心') v={key:'timestop',  name:'争分夺秒', base:4, od:'×4 + 夺走敌人 5 秒', freeze:5000};
+  else if(s==='脑') v={key:'calc',      name:'一举两得', base:4, od:'×4 + 回复 30⚡', regen:30};
+  else              v={key:'big',       name:'重斩', base:K.BIG_MULT, od:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
   v.cost = 100-disc;
   v.dmg = Math.round(immediateDamage()*v.base*hammer*odMult);
   return v;
@@ -1286,15 +1286,15 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
   if(jam){ telem.jams++; floatText('🎲 卡壳!', '#ff5470', false, false, 'you'); SFX.odCrash(); hexFire('h12','卡壳'); }
   else hexFire('h12');
   const m = jam ? 0.5 : 1;
-  if(sk.key==='swap'){ SFX.small(); swapQuestion(); floatText('🔄 换题!', '#3fe7ff', true, false, 'you'); }
+  if(sk.key==='swap'){ SFX.small(); swapQuestion(); floatText('🔄 翻篇!', '#3fe7ff', true, false, 'you'); }
   else if(sk.key==='shield'){ SFX.res(); P.shieldCharges = jam?1:2; floatText(`🛡 护盾 ×${P.shieldCharges}`, '#3fe7ff', true, false, 'you'); }
   else if(sk.key==='flurry'){
     SFX.small(); P.combo += 2;
     telem.maxCombo = Math.max(telem.maxCombo, P.combo);
-    dealDamage(Math.round(immediateDamage()*2*m),'疾风连打','#3fe7ff');
+    dealDamage(Math.round(immediateDamage()*2*m),'推波助澜','#3fe7ff');
     floatText('连击 +2!', '#3fe7ff', true, false, 'you');
   }
-  else { SFX.small(); dealDamage(Math.round(sk.dmg*m),'小放','#3fe7ff'); }
+  else { SFX.small(); dealDamage(Math.round(sk.dmg*m),'轻斩','#3fe7ff'); }
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 function releaseBig(){   // 重技能槽
@@ -1323,7 +1323,7 @@ function releaseBig(){   // 重技能槽
   flashFx();
   if(sk.stun) applyStun();
   if(sk.freeze && E) E.frozenUntil = Date.now()+sk.freeze;
-  if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`精算 +${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); }
+  if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`一举两得 +${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); }
   if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio*(jam?0.5:1))});
   dealDamage(Math.round(sk.dmg*(jam?0.5:1)), od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
@@ -1593,9 +1593,9 @@ function fireBond(b){
   const raw = immediateDamageRaw();
   if(b.id==='b1'){ dealDamage(raw, '山鸣谷应', '#b561ff'); if(E && !E.dead) E.stunnedUntil = Math.max(E.stunnedUntil, Date.now()+2000); }
   if(b.id==='b2'){ dealDamage(Math.round(raw*1.5), '死灰复燃', '#ff9d4d'); P.dotQueue.push({left:2, amount:Math.round(raw*0.5)}); }
-  if(b.id==='b3'){ P.energy = Math.min(K.ENERGY_MAX, P.energy+40); floatText('💧 +40⚡', '#3fe7ff', true, false, 'you'); }
+  if(b.id==='b3'){ P.energy = Math.min(K.ENERGY_MAX, P.energy+40); floatText('🌊 +40⚡', '#3fe7ff', true, false, 'you'); }
   if(b.id==='b4'){ if(P.overloadStacks<overloadMax()){ P.overloadStacks++; telem.overloadUses++; SFX.odUp(P.overloadStacks); floatText('🎋 过载+1', '#b561ff', true, false, 'you'); } }
-  if(b.id==='b5'){ for(let i=0;i<3;i++) dealDamage(Math.round(raw*0.6), '漫天飞雪', '#3fe7ff', true); }
+  if(b.id==='b5'){ for(let i=0;i<3;i++) dealDamage(Math.round(raw*0.6), '如花似雪', '#3fe7ff', true); }
 }
 function renderStreak(){
   const el=document.getElementById('trialBar');
