@@ -451,6 +451,25 @@
     .vsg{font-size:54px;} .vsn{font-size:18px;} .vsq{font-size:12px;}
     .tagline{font-size:12px; letter-spacing:4px;}
   }
+/* ===== v5 定时发牌 ===== */
+.bdraft{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; background:rgba(2,4,10,.84); backdrop-filter:blur(3px); }
+.bdraft.hidden{ display:none; }
+.bdwrap{ width:min(96vw,920px); max-height:92vh; overflow-y:auto; text-align:center; padding:14px; }
+.bdhead{ display:flex; flex-direction:column; gap:4px; margin-bottom:10px; align-items:center; }
+.bdsub{ color:#7e8db0; font-size:12px; letter-spacing:1px; }
+.grouptag{ font-size:11px; letter-spacing:2px; color:#ffcf4d; margin-bottom:2px; }
+.idline{ font-size:15px; font-weight:800; color:#fff; margin:2px 0; }
+.upmark{ color:#ffcf4d; font-weight:900; margin-left:2px; }
+.pitytag{ font-size:11px; color:#ffcf4d; border:1px solid rgba(255,207,77,.4); border-radius:8px; padding:1px 6px; display:inline-block; margin-top:4px; }
+.delta.up{ color:#ffcf4d; }
+.draftpips{ display:inline-flex; gap:3px; margin-left:8px; align-items:center; vertical-align:middle; }
+.dpip{ font-size:10px; color:#5a6a8a; }
+.dpip.done{ color:#ffcf4d; }
+.dpip.soon{ color:#ffcf4d; animation:pipbreathe 1.1s ease-in-out infinite; }
+@keyframes pipbreathe{ 0%,100%{opacity:.35; transform:scale(1);} 50%{opacity:1; transform:scale(1.4);} }
+.castdots{ font-size:9px; letter-spacing:1px; color:#7e8db0; display:block; }
+.castdots.full{ color:#ffcf4d; }
+.secdraft .cards{ margin-top:6px; }
 </style>
 </head>
 <body>
@@ -469,16 +488,6 @@
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
-  <!-- DRAFT -->
-  <div id="draft" class="screen hidden">
-    <span class="tag" id="draftTag">第 1 节抽取 · 白银</span>
-    <h1 style="font-size:24px; letter-spacing:3px;">选 择 海 克 斯</h1>
-    <div class="sub">3 选 1 · 每节开始抽一次。敌人在你选牌时不会攻击——喘口气,想清楚。</div>
-    <div class="curbuild" id="curBuild"></div>
-    <div class="destinyinfo" id="destinyInfo"></div>
-    <div class="cards" id="draftCards"></div>
-    <button class="btn ghost" id="rerollBtn" onclick="reroll()">🎲 重抽(剩 1 次)</button>
-  </div>
 
   <!-- BATTLE -->
   <div id="battle" class="screen hidden">
@@ -494,6 +503,7 @@
     <div class="towerwrap">
       <div class="towerbar"><div class="towerghost" id="towerGhost"></div><div class="towerfill" id="towerFill"></div><div class="tnotch" id="tn1"></div><div class="tnotch" id="tn2"></div></div>
       <div class="towernum" id="towerNum">1060</div>
+      <div class="draftpips" id="draftPips"></div>
     </div>
 
     <div class="scene" id="scene">
@@ -535,8 +545,8 @@
     </div>
 
     <div class="releases">
-      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span id="rSmallName">轻斩</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">攻击 × 3</span></button>
-      <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span id="rBigName">重斩</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">攻击 × 6 + 震慑</span><span class="odpips" id="odPips"></span></button>
+      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span id="rSmallName">轻斩</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">攻击 × 3</span><span class="castdots" id="cdSmall"></span></button>
+      <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span id="rBigName">重斩</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">攻击 × 6 + 震慑</span><span class="odpips" id="odPips"></span><span class="castdots" id="cdBig"></span></button>
     </div>
 
     <div class="keypad" id="keypad">
@@ -559,6 +569,15 @@
   </div>
 
   <!-- 构筑详情面板(点击构筑栏打开;战斗中打开=时间冻结) -->
+  <!-- 定时发牌覆盖层(战斗冻结) -->
+  <div class="bdraft hidden" id="bDraft">
+    <div class="bdwrap">
+      <div class="bdhead"><span class="tag" id="bdTag">⛽ 补给 1/4</span><span class="bdsub" id="bdSub"></span></div>
+      <div class="cards" id="bdCards"></div>
+      <button class="btn ghost" id="bdReroll" onclick="reroll()">🎲 重抽</button>
+    </div>
+  </div>
+
   <div class="bpanel hidden" id="bPanel">
     <div class="bscrim" onclick="closeBuildPanel()"></div>
     <div class="bsheet">
@@ -577,6 +596,11 @@
       <div class="dnote" id="dNote"></div>
     </div>
     <div class="sub" id="secresMsg"></div>
+    <div class="secdraft hidden" id="secDraft">
+      <span class="tag" id="sdTag">⛽ 过关补给</span>
+      <div class="cards" id="sdCards"></div>
+      <button class="btn ghost" id="sdReroll" onclick="reroll()">🎲 重抽</button>
+    </div>
     <button class="btn" id="secresBtn" onclick="nextSection()">下 一 节</button>
   </div>
 
@@ -584,6 +608,7 @@
   <div id="final" class="screen hidden">
     <h1 id="finalTitle" style="font-size:26px; letter-spacing:3px;">战 报</h1>
     <div class="deathline hidden" id="deathLine"></div>
+    <div class="sub hidden" id="finalNotes"></div>
     <div class="gradewrap">
       <div class="grade" id="gradeBox">S</div>
       <div class="scorecol">
@@ -633,6 +658,8 @@ const DEFAULTS = {
   SLOW_SECONDS: 3,
   SLOW_FACTOR: 0.5,
   ENRAGE_AFTER: 15,              // 本节题数超过此值敌人狂暴
+  DRAFT_AT: [30000, 75000, 120000, 180000],   // 战斗时钟发牌刻度(ms)
+  DRAFT_FLOOR: [40000, 130000],               // 过关时钟保底(快玩家欠牌补发)
 };
 let K = {...DEFAULTS};
 const DIFF_MIX = [ [0.7,0.3,0.0], [0.3,0.5,0.2], [0.1,0.4,0.5] ];
@@ -805,29 +832,47 @@ const HEXES = [
   {id:'h01',name:'早雪',ico:'❄️',school:'心',rar:'silver',cat:'改写规则',ba:true,   fl:'雪,比所有人先落。',       desc:'连击奖励来得更早:<b>2·4·6</b> 连就解锁'},
   {id:'h02',name:'不化的雪',ico:'🛡️',school:'心',rar:'gold',cat:'改写规则',ba:false,fl:'雪线之下,寸雪不失。',     desc:'答错了,连击只<b>掉一点点</b>'},
   {id:'h03',name:'山鸣',ico:'⚡',school:'心',rar:'prism',cat:'改写规则',ba:false,   fl:'山,替你喊出第二声。',     desc:'<b>7</b> 连击就有双响,别人要 9'},
-  {id:'h04',name:'追风',ico:'🚀',school:'脑',rar:'silver',cat:'成长',ba:false,     fl:'风未停,你已至。',         desc:'快答一题,能量多 <b>6%</b>,能叠 5 层;一慢全散'},
+  {id:'h04',name:'追风',ico:'🚀',school:'脑',rar:'silver',cat:'引擎',ba:false,     fl:'风未停,你已至。',         desc:'快答一题,能量多 <b>6%</b>,能叠 5 层;一慢全散'},
   {id:'h05',name:'破壁人',ico:'🧠',school:'脑',rar:'gold',cat:'改写规则',ba:false,  fl:'墙,是门的原料。',         desc:'难题时间<b>多一半</b>,答对多拿 <b>15</b> 能量'},
-  {id:'h06',name:'出鞘',ico:'🎯',school:'手',rar:'prism',cat:'成长',ba:true,       fl:'刀比题快。',               desc:'连快 <b>3</b> 题,下一刀<b>翻倍</b>'},
+  {id:'h06',name:'出鞘',ico:'🎯',school:'手',rar:'prism',cat:'引擎',ba:true,       fl:'刀比题快。',               desc:'连快 <b>3</b> 题,下一刀<b>翻倍</b>'},
   {id:'h07',name:'钝刀',ico:'🪨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'钝,但从不缺席。',         desc:'攻击变 <b>16</b>,但能量涨得慢'},
   {id:'h08',name:'刀花',ico:'💥',school:'手',rar:'gold',cat:'改写规则',ba:false,    fl:'一朵刀,开成一片。',       desc:'溅射更疼;敌人被<b>定住</b>时,双倍疼'},
   {id:'h09',name:'余烬',ico:'🔥',school:'手',rar:'prism',cat:'转化',ba:false,       fl:'火走了,烫还在。',         desc:'打中就<b>点火</b>,之后 2 题继续烧它'},
   {id:'h10',name:'一锤',ico:'🔨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'此生,只练这一锤。',       desc:'重技伤害 <b>×1.5</b>,轻技没了'},
   {id:'h11',name:'渊眼',ico:'☢️',school:'脑',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'过载能囤 <b>8</b> 层,每层攻击 <b>+2</b>'},
   {id:'h12',name:'赌徒之门',ico:'🎲',school:'脑',rar:'prism',cat:'转化',ba:false,   fl:'门后是什么,开了才知道。', desc:'技能便宜 <b>20</b> 能量,但 <b>20%</b> 会哑火'},
-  {id:'h13',name:'饮血',ico:'🌀',school:'脑',rar:'gold',cat:'成长',ba:false,        fl:'它的痛,是你的粮。',       desc:'重技打中:回 <b>40</b> 能量,攻击永久 <b>+2</b>'},
-  {id:'h14',name:'第五答',ico:'🗝️',school:'心',rar:'prism',cat:'成长',ba:false,      fl:'塔,在第五答开门。',       desc:'每答 <b>5</b> 题,免费打一下还定住它'},
+  {id:'h13',name:'饮血',ico:'🌀',school:'脑',rar:'gold',cat:'成长',ba:false, grow:true, idline:'放大招回能,刀永久变利',        fl:'它的痛,是你的粮。',       desc:'重技打中:回 <b>40</b> 能量,攻击永久 <b>+2</b>'},
+  {id:'h14',name:'第五答',ico:'🗝️',school:'心',rar:'prism',cat:'引擎',ba:false,      fl:'塔,在第五答开门。',       desc:'每答 <b>5</b> 题,免费打一下还定住它'},
   {id:'h15',name:'千钧一发',ico:'⏳',school:'心',rar:'gold',cat:'改写规则',ba:false, fl:'最后一刻,刀最快。',       desc:'千钧区加强:答对 <b>+50%</b> 还回 10 能量;但答错<b>马上挨打</b>'},
   {id:'h16',name:'成王败寇',ico:'👑',school:'手',rar:'prism',cat:'转化',ba:false,    fl:'赢的人,书写规则。',       desc:'重技先押住不结算:再答一道<b>难题</b>,对了<b>翻倍</b>,错了归零'},
   {id:'h17',name:'趁火打劫',ico:'🪓',school:'心',rar:'gold',cat:'转化',ba:false,     fl:'它抬手时,你出手。',       desc:'拨挡加强:打断它还<b>偷 15 能量</b>、这刀 ×1.5;但窗内答错,下次挨打<b>翻倍</b>'},
   {id:'h18',name:'寅吃卯粮',ico:'💳',school:'通用',rar:'gold',cat:'转化',ba:false,   fl:'先借明天,打赢今天。',     desc:'能量能欠到 <b>−50</b> 也放技能;欠债时攻击变弱,收入先还债'},
-  {id:'s01',name:'翻篇',ico:'📄',school:'脑',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'swap',      fl:'这页不看了。',         desc:'<b>轻技能换成</b>:这题不要了,换一题(仅 40⚡)'},
-  {id:'s02',name:'一举两得',ico:'🪙',school:'脑',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'calc',    fl:'一枚钱,两面赢。',       desc:'<b>重技能换成</b>:攻击 ×4,还回 30 能量'},
-  {id:'s03',name:'推波助澜',ico:'💨',school:'手',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'flurry',fl:'风从不收手。',         desc:'<b>轻技能换成</b>:攻击 ×2,连击再+2'},
-  {id:'s04',name:'厚积薄发',ico:'🎇',school:'手',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'avalanche',fl:'攒了多久,炸多大。',   desc:'<b>重技能换成</b>:连击越高打得越疼,还定住它'},
-  {id:'s05',name:'未雨绸缪',ico:'☂️',school:'心',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'shield',fl:'雨没来,伞先开。',      desc:'<b>轻技能换成</b>:护盾,挡住 2 次攻击'},
-  {id:'s06',name:'争分夺秒',ico:'⏱',school:'心',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'timestop',fl:'它的时间,归你了。',    desc:'<b>重技能换成</b>:攻击 ×4,定住敌人 5 秒'},
+  {id:'s01',idline:'题是挑出来答的',name:'翻篇',ico:'📄',school:'脑',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'swap',      fl:'这页不看了。',         desc:'<b>轻技能换成</b>:这题不要了,换一题(仅 40⚡)'},
+  {id:'s02',idline:'放一次大招,赚回半管能量',name:'一举两得',ico:'🪙',school:'脑',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'calc',    fl:'一枚钱,两面赢。',       desc:'<b>重技能换成</b>:攻击 ×4,还回 30 能量'},
+  {id:'s03',idline:'浪越推越高',name:'推波助澜',ico:'💨',school:'手',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'flurry',fl:'风从不收手。',         desc:'<b>轻技能换成</b>:攻击 ×2,连击再+2'},
+  {id:'s04',idline:'攒一口气,一锤定音',name:'厚积薄发',ico:'🎇',school:'手',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'avalanche',fl:'攒了多久,炸多大。',   desc:'<b>重技能换成</b>:连击越高打得越疼,还定住它'},
+  {id:'s05',idline:'先立于不败,再谈赢',name:'未雨绸缪',ico:'☂️',school:'心',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'shield',fl:'雨没来,伞先开。',      desc:'<b>轻技能换成</b>:护盾,挡住 2 次攻击'},
+  {id:'s06',idline:'它的时间,归你管',name:'争分夺秒',ico:'⏱',school:'心',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'timestop',fl:'它的时间,归你了。',    desc:'<b>重技能换成</b>:攻击 ×4,定住敌人 5 秒'},
+  // 技能升级卡(觉醒):upgradeFor=对应技能卡id(默认形态用 'small'/'big'),uSlot=槽位
+  {id:'u01',name:'借题发挥',ico:'📤',school:'脑',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s01', fl:'题是死的,人是活的。',   desc:'翻篇升级:扔掉的那页砸它一下(攻击 <b>×2</b>),换来的一定是<b>简单题</b>'},
+  {id:'u02',name:'一波未平',ico:'🌊',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s03', fl:'一浪叠一浪。',           desc:'推波助澜升级:打完之后 <b>2</b> 题,答对就再拍一浪,每浪<b>普攻那么疼</b>'},
+  {id:'u03',name:'呼风唤雨',ico:'⛈',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s05', fl:'这场雨,我下的。',       desc:'未雨绸缪升级:伞每挡下一刀,雨点反打它<b>两下普攻</b>,还回 <b>10</b> 能量'},
+  {id:'u04',name:'一石三鸟',ico:'🐦',school:'脑',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s02', fl:'第三只鸟,白送。',       desc:'一举两得升级:放完大招,下一次轻技能<b>不要钱</b>'},
+  {id:'u05',name:'大雪封山',ico:'🏔',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s04', fl:'山封了,谁也走不了。',   desc:'厚积薄发升级:定住 3 秒变 <b>5</b> 秒,定住期间它挨打<b>更疼</b>'},
+  {id:'u06',name:'偷天换日',ico:'🌗',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s06', fl:'连时间都能偷第二次。',   desc:'争分夺秒升级:偷来的 <b>5</b> 秒,加进你这题的<b>倒计时</b>'},
+  {id:'u07',name:'一刀两断',ico:'⚔️',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'small', fl:'一刀不够,就两刀。',   desc:'轻斩升级:一刀变<b>两刀</b>,每刀攻击 <b>×2</b>'},
+  {id:'u08',name:'趁热打铁',ico:'🔨',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'big', fl:'铁凉了,就打不动了。',   desc:'重斩升级:它被震住的 <b>3</b> 秒里,每答对一题都<b>多打一锤</b>'},
+  // 高成长卡(只进前两抽;拿到自带预热)
+  {id:'g01',name:'集腋成裘',ico:'🧥',school:'手',rar:'gold',cat:'成长',ba:false, grow:true, idline:'一题一针,越答越疼',   fl:'腋下的毛,攒成大衣。', desc:'每答对 <b>2</b> 题,攻击永久加 1,最多加 <b>10</b>'},
+  {id:'g02',name:'熟能生巧',ico:'🎓',school:'脑',rar:'gold',cat:'成长',ba:false, grow:true, idline:'技能越放越便宜',     fl:'手熟了,力气就省了。', desc:'每答对 <b>3</b> 题,技能便宜 3 能量;轻技最低 30,重技最低 70'},
+  {id:'g03',name:'开枝散叶',ico:'🌿',school:'手',rar:'gold',cat:'成长',ba:false, grow:true, idline:'一刀下去,伤到一片', fl:'根扎得深,枝就长得远。', desc:'每答对 <b>3</b> 题,溅射更疼一点,最多疼<b>一倍</b>'},
+  {id:'g04',name:'一鼓作气',ico:'🥁',school:'心',rar:'prism',cat:'成长',ba:false, grow:true, idline:'只要不错,就一直变强', fl:'鼓声一断,气就泄了。', desc:'每答对 1 题攻击加 1,最多加 <b>12</b>;答错掉一半,再错<b>全没了</b>'},
+  // 联动卡(读技能槽行为)
+  {id:'x01',name:'顺水推舟',ico:'🛶',school:'脑',rar:'silver',cat:'联动',ba:false, fl:'船是借的,水是自己的。', desc:'放完轻技能,下一题不管答多慢,都<b>算快答</b>,能量也按快答给'},
+  {id:'x02',name:'余音绕梁',ico:'🔔',school:'手',rar:'gold',cat:'联动',ba:false,   fl:'钟停了,声音还在。',     desc:'放完重技能,之后 <b>3</b> 题答对都带一声<b>回声</b>,再打一下'},
+  {id:'x03',name:'落井下石',ico:'🪨',school:'心',rar:'silver',cat:'联动',ba:false, fl:'它站不稳,你捡便宜。',   desc:'敌人被<b>定住或减速</b>时,答对多拿 <b>10</b> 能量'},
 ];
-const GAMBLE_IDS = ['h16','h17','h18'];   // 赌卡:第 2 局起入池(渐进披露)
+const GAMBLE_IDS = ['h16','h17','h18','g04'];   // 赌卡+玻璃鼓:第 2 局起入池(渐进披露)
 const RAR_LABEL = {silver:'白银',gold:'黄金',prism:'棱彩'};
 const RAR_BY_SECTION = ['silver','gold','prism'];
 
@@ -935,10 +980,13 @@ let CUR_SCREEN = 'start';
 let BATTLE_TIMER = null;
 
 function freshRun(){
-  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, streak:0, judge:null, destinyIds:[], _dying:false, _betweenQ:false, _skillSig:'' };
-  R = { section:0, qInSection:0, results:[], blindBet:false, destinyDrawn:[], usedQ:new Set() };
+  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, streak:0, judge:null, destinyIds:[], _dying:false, _betweenQ:false, _skillSig:'', castCounts:{}, furCoat:0, skillDisc:0, leafSpread:0, drumAtk:0, _drumFaded:false, boatPush:false, echoLeft:0, hotIronUntil:0, freeSmall:false };
+  R = { section:0, qInSection:0, results:[], destinyDrawn:[], usedQ:new Set(),
+        fightMs:0, draftAt:(K.DRAFT_AT||[30000,75000,120000,180000]).slice(), draftIdx:0,
+        draftPending:null, _draftPendingSince:0, draftTimer:null, _draftLock:false, _pendingHeal:0,
+        _secDraft:null, _upRolled:false, _upSeen:false, _offer:[] };
   E = null;
-  telem = {
+  telem = { draftPicks:[], draftShownAt:[],
     eventQGaps:[], lastEventQ:0, globalQ:0,
     releases:{small:0, big:0}, overloadUses:0,
     breaks:0, recoveredAfterBreak:0,
@@ -978,17 +1026,25 @@ function consumeImmDouble(){   // 出鞘的翻倍是一次性的:技能吃掉它
 function immediateDamageRaw(){
   const tier = comboTier(P.combo);
   let dmg = has('h07') ? [16,19,22,26][tier] : K.TIER_DAMAGE[tier];
-  dmg += (P.bloodBonus||0);                          // 饮血:局内养出来的攻击
+  dmg += Math.min(16, (P.bloodBonus||0)+(P.furCoat||0)+(P.drumAtk||0));   // 饮血/集腋/一鼓:攻击加法共享封顶(红线处置:24→16)
   if(has('h18') && P.energy<0) dmg -= 4;             // 寅吃卯粮:负债期刀钝
   if(has('h11')) dmg += 2*(P.overloadStacks||0);     // 渊眼:囤过载=全技能变强
   return dmg;
 }
 function speedCap(){ return K.SPEED_CAP; }
 function windBonus(){ return has('h04') ? (P.windStacks||0)*0.06 : 0; }   // 追风:风层动量
-function splashRatio(){ return has('h08') ? 0.60 : K.SPLASH_RATIO; }
+function consumeBoatPush(){ if(!P.boatPush) return false; P.boatPush=false; return true; }   // 顺水推舟:绑定下一题,无论快慢对错都消耗
+function splashRatio(){ return Math.min(0.9, (has('h08') ? 0.60 : K.SPLASH_RATIO) + (P.leafSpread||0)); }
 function overloadMax(){ return has('h11') ? 8 : K.OVERLOAD_MAX; }
-function smallCost(){ return has('h12') ? 40 : K.SMALL_RELEASE_COST; }
-function bigCost(){ return has('h12') ? 80 : K.BIG_RELEASE_COST; }
+function skillCost(slot, key){
+  if(key==='swap' && has('u01')) return 40;   // 借题发挥:恒价,不进折扣链(堵白嫖)
+  let c = slot==='light' ? (key==='swap' ? 40 : K.SMALL_RELEASE_COST) : K.BIG_RELEASE_COST;
+  if(P.skillDisc) c = Math.max(c - P.skillDisc, slot==='light'?30:70);   // 熟能生巧:自带地板
+  if(has('h12')) c -= 20;
+  return Math.max(c, slot==='light'?25:50);   // 全局费用地板
+}
+function smallCost(){ const sc=ownedSkill('light'); return skillCost('light', sc?sc.skillKey:'small'); }
+function bigCost(){ const sc=ownedSkill('heavy'); return skillCost('heavy', sc?sc.skillKey:'big'); }
 function bigMult(){ return has('h10') ? 9 : K.BIG_MULT; }
 function smallEnabled(){ return !has('h10'); }
 function benchmark(type,diff){ let b=BENCH[type][diff]; if(diff==='hard' && has('h05')) b*=1.5; return b; }
@@ -997,10 +1053,10 @@ function benchmark(type,diff){ let b=BENCH[type][diff]; if(diff==='hard' && has(
 function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
 function pick(arr){ return arr[rnd(0,arr.length-1)]; }
 
-function genQuestion(section){
+function genQuestion(section, forceDiff){
   const mix = DIFF_MIX[Math.min(section,DIFF_MIX.length-1)];
   const r = Math.random();
-  const diff = r<mix[0] ? 'easy' : r<mix[0]+mix[1] ? 'medium' : 'hard';
+  const diff = forceDiff || (r<mix[0] ? 'easy' : r<mix[0]+mix[1] ? 'medium' : 'hard');
   const subj = pick(activeSubjects());
   if(subj !== 'math'){
     const mc = genBankQuestion(subj, diff);
@@ -1079,7 +1135,7 @@ function spawnFoe(){
     name:f.name, glyph:f.glyph, color:f.color, lines:f,
     atk: K.ENEMY_ATK[Math.min(i, K.ENEMY_ATK.length-1)],
     chargeNeed: K.ENEMY_CHARGE[Math.min(i, K.ENEMY_CHARGE.length-1)],
-    charge:0, stunnedUntil:0, slowedUntil:0, frozenUntil:0,
+    charge:0, stunnedUntil:0, slowedUntil:0, frozenUntil:0, graceUntil:0, stunCycleGuard:false,
     staggeredUntil:0, parryWindow:false, parryUsed:false, nextAtkMult:1, breachUntil:0, breatherUntil:0,
     dead:false, phase2:false, phaseClear:false,
     lastTick:Date.now(), enrToast:false,
@@ -1089,11 +1145,14 @@ function spawnFoe(){
 function phaseEndThreshold(){ return E.thresholds[Math.min(R.section-1, 2)]; }
 
 function combatTick(){
-  if(CUR_SCREEN!=='battle' || !E || E.dead || E.phaseClear || P.hp<=0) return;
+  if(CUR_SCREEN!=='battle' || PANEL_OPEN || DRAFT_OPEN || !E || E.dead || E.phaseClear || P.hp<=0) return;
   const now = Date.now();
   let dt = now - E.lastTick;
   E.lastTick = now;
   if(dt<=0){ return; }
+  R.fightMs += dt;   // 战斗时钟:与敌人充能同源,冻结通路自动正确
+  checkDraftClock();
+  renderDraftPips();
   // 速度奖池实时蒸发(眼看着奖励流走 → 催促感)
   if(q && !P._betweenQ){
     let base = K.ENERGY_BASE + K.ENERGY_PER_COMBO*P.combo;
@@ -1111,7 +1170,7 @@ function combatTick(){
     beep({f:62, f2:38, dur:.14, type:'sine', gain:.14});
     beep({f:58, f2:36, dur:.1, type:'sine', gain:.1, delay:.18});
   }
-  if(now < E.stunnedUntil || now < E.frozenUntil || now < E.staggeredUntil){ E.parryWindow=false; updateSceneUI(); return; }
+  if(now < E.stunnedUntil || now < E.frozenUntil || now < E.staggeredUntil || now < E.graceUntil){ E.parryWindow=false; updateSceneUI(); return; }
   let rate = 1;
   if(now < E.slowedUntil) rate *= K.SLOW_FACTOR;
   if(now < E.breatherUntil && now >= E.breachUntil) rate *= 0.5;   // 破绽窗后喘息:半速波谷
@@ -1137,10 +1196,16 @@ function combatTick(){
 function enemyAttack(){
   E.parryUsed = false;   // 新充能周期,拨挡窗重新可用
   E.parryWindow = false;
+  E.stunCycleGuard = false;   // 新周期,充能护栏复位
   if(P.shieldCharges>0){
     P.shieldCharges--;
     floatText('🛡 挡下!', '#3fe7ff', true, false, 'you');
     beep({f:520, f2:700, dur:.1, type:'triangle', gain:.12});
+    if(has('u03') && !E.dead){   // 呼风唤雨:伞挡一刀,雨点反打两下+回能
+      dealDamage(immediateDamageRaw()*2, '呼风唤雨', '#3fe7ff', true);
+      P.energy = Math.min(K.ENERGY_MAX, P.energy+10);
+      hexFire('u03','反打·+10⚡');
+    }
     updateSceneUI();
     return;
   }
@@ -1163,73 +1228,146 @@ function enemyAttack(){
 function applySlow(){
   if(E) E.slowedUntil = Math.max(E.slowedUntil, Date.now() + K.SLOW_SECONDS*1000);
 }
+function clearCharge(){   // 充能护栏:同一充能周期第二次清零只清一半(一条规则堵死永久控制链)
+  if(!E) return;
+  if(E.stunCycleGuard) E.charge = Math.round(E.charge/2);
+  else { E.charge = 0; E.stunCycleGuard = true; }
+}
 function applyStun(){
-  if(E){ E.stunnedUntil = Date.now() + K.STUN_SECONDS*1000; E.charge = 0; }
+  if(E){ E.stunnedUntil = Date.now() + K.STUN_SECONDS*1000; clearCharge(); }
+}
+function isControlled(){
+  if(!E) return false;
+  const t = Date.now();
+  return t<E.slowedUntil || t<E.frozenUntil || t<E.stunnedUntil || t<E.staggeredUntil;   // graceUntil 不算受控
 }
 /* 千钧一发:计时最后 1/4 为千钧区——等待第一次成为输入动词 */
 function inBladeZone(at){
-  return q && !P.judge && (at / (q.benchmark*K.TIMEOUT_FACTOR)) > 0.75;   // 千钧区全民开放(奖励端;审判题除外)
+  const full = q ? q.benchmark*K.TIMEOUT_FACTOR + (q._extMs||0)/1000 : 1;
+  return q && !P.judge && (at / full) > 0.75;   // 千钧区全民开放;偷天换日的加时计入分母(不白吃)
+}
+function addQuestionTime(ms){   // 偷天换日:给当前题加时,计时条与超时同步续
+  if(!q || P._betweenQ || document.getElementById('qInput').disabled) return;
+  clearTimeout(qTimer);
+  q._extMs = (q._extMs||0) + ms;
+  q._remain = null;   // 失效持久化余量,回到 qStart 单一口径
+  const total = q.benchmark*K.TIMEOUT_FACTOR*1000 + q._extMs;
+  const remain = Math.max(200, total - (Date.now()-qStart));
+  const fill=document.getElementById('qTimerFill');
+  fill.style.transition='none'; fill.style.width=(remain/total*100)+'%';
+  void fill.offsetWidth;
+  fill.style.transition=`width ${remain/1000}s linear`; fill.style.width='0%';
+  qTimer = setTimeout(()=>onTimeout(), remain);
 }
 
 /* ============================== 局流程 ============================== */
 let RUNS=0; try{ RUNS = Number(localStorage.getItem('ba_runs')||0); }catch(e){}
+let PITY=0; try{ PITY = Number(localStorage.getItem('ba_pity')||0); }catch(e){}   // 觉醒 pity:跨局累进
+function setPity(n){ PITY=Math.max(0,n); try{ localStorage.setItem('ba_pity', String(PITY)); }catch(e){} }
 function startRun(){
   RUNS++; try{ localStorage.setItem('ba_runs', String(RUNS)); }catch(e){}
-  readTuner(); freshRun(); rerollLeft=1; beginDraft();
-}
-
-function beginDraft(){
-  R.section++;
-  rerollLeft = 1;
-  lastOfferIds = [];
-  const rar = RAR_BY_SECTION[Math.min(R.section-1, RAR_BY_SECTION.length-1)];
-  document.getElementById('draftTag').textContent = `第 ${SEC_CN[R.section-1]||R.section} 关 · 海克斯抽取 · ${RAR_LABEL[rar]}`;
-  renderDraft(rar);
-  show('draft');
+  readTuner(); freshRun(); rerollLeft=1;
+  R.section = 1;
+  beginSection();   // 直接开打:海克斯在战斗时钟里来(30s/75s/2min/3min)
 }
 let lastOfferIds = [];
-function gambleLocked(h){ return RUNS<2 && GAMBLE_IDS.includes(h.id); }   // 首局不见赌卡
-function rollOffer(rar){
-  const pool = HEXES.filter(h=>h.rar===rar && !P.hexes.some(x=>x.id===h.id) && !gambleLocked(h));
-  const src = pool.length>=3 ? pool : HEXES.filter(h=>!P.hexes.some(x=>x.id===h.id) && !gambleLocked(h));
-  // 德州式诚实随机;重抽时优先给没见过的牌,不足再从上一手回填
-  const picks=[];
-  const fresh = src.filter(h=>!lastOfferIds.includes(h.id));
-  while(picks.length<3 && fresh.length) picks.push(fresh.splice(rnd(0,fresh.length-1),1)[0]);
-  const backfill = src.filter(h=>!picks.includes(h));
-  while(picks.length<3 && backfill.length) picks.push(backfill.splice(rnd(0,backfill.length-1),1)[0]);
-  lastOfferIds = picks.map(p=>p.id);
+function gambleLocked(h){ return RUNS<2 && GAMBLE_IDS.includes(h.id); }   // 首局不见赌卡/玻璃鼓
+/* ============================== 定时发牌:池子构成(§v5 B) ============================== */
+function slotUpgraded(slot){ return P.hexes.some(h=>h.cat==='升级' && h.uSlot===slot); }
+function growPool(){ return HEXES.filter(h=>h.grow && !has(h.id) && !gambleLocked(h)); }
+function skillCardPool(){ return HEXES.filter(h=>h.cat==='技能' && !has(h.id) && !slotUpgraded(h.skillSlot)); }
+function normalPool(){
+  return HEXES.filter(h=>!has(h.id) && !gambleLocked(h) && !h.grow && h.cat!=='升级' &&
+    (h.cat!=='技能' || !slotUpgraded(h.skillSlot)));
+}
+function eligibleUpgrades(){   // 觉醒资格:当前槽技能放满 3 次,才配见到它的升级卡
+  const out=[];
+  ['light','heavy'].forEach(slot=>{
+    if(slotUpgraded(slot)) return;
+    const sc = ownedSkill(slot);
+    const key = sc ? sc.skillKey : (slot==='light'?'small':'big');
+    if((P.castCounts[key]||0) < 3) return;
+    const want = sc ? sc.id : key;
+    HEXES.forEach(u=>{ if(u.cat==='升级' && !has(u.id) && u.upgradeFor===want) out.push(u); });
+  });
+  return out;
+}
+function pityBonus(){ return PITY>=3 ? 1 : PITY===2 ? 0.35 : PITY===1 ? 0.15 : 0; }
+function weightedDraw(pool, n, wfn){
+  const picks=[], p=pool.slice();
+  while(picks.length<n && p.length){
+    const ws=p.map(h=>Math.max(0.01, wfn?wfn(h):1));
+    let r=Math.random()*ws.reduce((a,b)=>a+b,0), i=0;
+    while(i<ws.length-1 && (r-=ws[i])>0) i++;
+    picks.push(p.splice(i,1)[0]);
+  }
   return picks;
 }
-function renderDraft(rar){
-  document.getElementById('curBuild').onclick = openBuildPanel;
-  // 听牌信息(德州 outs):天命剩几翻,你缺什么,粗算命中率
-  const di=document.getElementById('destinyInfo');
-  const revealsLeft = Math.max(0, K.SECTIONS - R.section);
-  if(revealsLeft>0){
-    const n = HEXES.filter(h=>!has(h.id)).length;
-    const miss = missedBonds();
-    const outsTxt = miss.length
-      ? ' ｜ 听牌:' + miss.map(b=>{
-          const lackN=b.pieces.filter(p=>!has(p)).length;
-          return `⛓${b.name} 缺<b>${lackN}</b>张`;
-        }).join(' · ')
-      : '';
-    const legend = R.section===1 ? '<br>📖 答对攒<b>能量</b>,攒够放技能 · <b>连击</b>越高打得越疼 · 能量满了继续答=攒<b>过载</b>,大招更猛' : '';
-    di.innerHTML = `🂠 天命牌还剩 <b>${revealsLeft}</b> 翻(过关随机送一张)+ 后续抽取也可补件${outsTxt}${legend}`;
-  } else di.innerHTML='';
-  const cb=document.getElementById('curBuild');
-  cb.innerHTML = '当前 Build:' + (P.hexes.length
-    ? P.hexes.map(h=>`<span class="bslot r-${h.rar}">${h.ico}</span>`).join('')
-    : '<span style="opacity:.6">(空)</span>');
-  const offer = rollOffer(rar);
-  const wrap = document.getElementById('draftCards'); wrap.innerHTML='';
+function rarW(h, table){ return table[h.rar]||0.2; }
+function rollOffer(roundIdx){
+  let picks=[];
+  if(roundIdx===0){   // 开宗立派:2 技能(1轻1重)+ 2 成长,尽量异系
+    const sk=skillCardPool();
+    const lights=sk.filter(h=>h.skillSlot==='light'), heavies=sk.filter(h=>h.skillSlot==='heavy');
+    const l=lights.length?pick(lights):null;
+    let hvc=heavies.filter(h=>!l||h.school!==l.school); if(!hvc.length) hvc=heavies;
+    const hv=hvc.length?pick(hvc):null;
+    const gp=growPool();
+    const g1=gp.length?pick(gp):null;
+    let g2c=gp.filter(x=>g1 && x.id!==g1.id && x.school!==g1.school);
+    if(!g2c.length) g2c=gp.filter(x=>!g1||x.id!==g1.id);
+    const g2=g2c.length?pick(g2c):null;
+    picks=[l,hv,g1,g2].filter(Boolean);
+  } else if(roundIdx===1){   // 续力:1 成长保底 + 3 普通(听牌/异槽技能加权)
+    const gp=growPool();
+    if(gp.length) picks.push(pick(gp));
+    const wf=h=>{
+      let w=rarW(h,{silver:.4,gold:.5,prism:.1});
+      if(h.cat==='技能') w *= ownedSkill(h.skillSlot) ? 0.5 : 1.5;
+      if(missedBonds().some(b=>b.pieces.includes(h.id))) w*=1.3;
+      return w;
+    };
+    picks.push(...weightedDraw(normalPool().filter(h=>!picks.includes(h)), 4-picks.length, wf));
+  } else {   // 亮刃/收网:3 选 1,成长永久出池,升级卡独立 roll(赌感所在)
+    const elig=eligibleUpgrades();
+    let p=0;
+    if(elig.length){
+      R._upRolled=true;
+      p = roundIdx===2 ? Math.min(1, 0.45+pityBonus())
+        : (R._upSeen ? 0.30 : Math.min(1, 0.65+pityBonus()));
+    }
+    if(Math.random()<p) picks.push(pick(elig));
+    const table = roundIdx===2 ? {silver:.05,gold:.70,prism:.30} : {silver:.05,gold:.40,prism:.60};
+    const SUSTAIN=['s05','h13','h17','h05','h02'];   // 收网轮偏续航
+    const wf=h=>{
+      let w=rarW(h,table);
+      if(roundIdx===3 && SUSTAIN.includes(h.id)) w*=1.5;
+      if(h.cat==='技能') w *= ownedSkill(h.skillSlot) ? 0.5 : 1;
+      return w;
+    };
+    picks.push(...weightedDraw(normalPool().filter(h=>!picks.includes(h)), 3-picks.length, wf));
+  }
+  while(picks.length < (roundIdx<2?4:3)){   // 池干涸兜底
+    const fb=HEXES.filter(h=>!has(h.id) && !picks.includes(h) && !gambleLocked(h) && h.cat!=='升级');
+    if(!fb.length) break;
+    picks.push(pick(fb));
+  }
+  if(picks.some(h=>h.cat==='升级')){ R._upSeen=true; setPity(0); }   // 出现过即清(拿不拿都算)
+  R._offer = picks;
+  lastOfferIds = picks.map(x=>x.id);
+  return picks;
+}
+/* ============================== 发牌渲染(战斗覆盖层 + 过关补给共用) ============================== */
+const DRAFT_NAMES=['开宗立派','续力 · 成长末班车','亮刃','收网'];
+const DRAFT_WHEN=['第 30 秒','1 分 15 秒','第 2 分钟','第 3 分钟'];
+function draftRoundTag(idx){ return `⛽ 补给 ${idx+1}/4 · ${DRAFT_NAMES[Math.min(idx,3)]}`; }
+function renderDraftCards(offer, wrap, roundIdx){
+  wrap.innerHTML='';
   const baseAtk = immediateDamage(), baseHv = heavySkill(), baseLt = lightSkill();
   offer.forEach(h=>{
     const el=document.createElement('div');
     el.className=`card r-${h.rar} sc-${SCHOOL_CLASS[h.school]||'ty'}`;
     el.title=h.cat;
-    // 力量跃迁预览:选之前就看见数字怎么变
     let delta='';
     P.hexes.push(h);
     {
@@ -1245,12 +1383,16 @@ function renderDraft(rar){
       const slotName = h.skillSlot==='light'?'轻技能':'重技能';
       delta = `<div class="delta">⚔ 你的${slotName}会变成「<b>${h.name}</b>」${cur?`(顶掉 ${cur.ico}${cur.name})`:''}</div>` + delta;
     }
+    if(h.cat==='升级'){
+      const base=HEXES.find(x=>x.id===h.upgradeFor);
+      const bn = base ? base.name : (h.upgradeFor==='small'?'轻斩':'重斩');
+      delta = `<div class="delta up">↗ 觉醒:你的「${bn}」直接进化</div>` + delta;
+    }
     const sc = schoolCount(h.school);
-    // 联动信息=整行说明文(名词只是装饰,效果必须写明白;手机无悬停)
     const syn = [];
     BONDS.filter(b=>b.pieces.includes(h.id)).forEach(b=>{
-      const others = b.pieces.filter(p=>p!==h.id);
-      if(others.every(p=>has(p)))
+      const others = b.pieces.filter(x=>x!==h.id);
+      if(others.every(x=>has(x)))
         syn.push({pri:0, html:`<div class="syn bond">⛓ 选它凑成「${b.name}」→ ${b.desc}</div>`});
       else {
         const oh=HEXES.find(x=>x.id===others[0]);
@@ -1260,57 +1402,96 @@ function renderDraft(rar){
     if(RESONANCE[h.school] && sc===1)
       syn.push({pri:1, html:`<div class="syn res">🔗 选它=第 2 张${h.school}卡,触发「${RESONANCE[h.school].name}」→ ${RESONANCE[h.school].desc}</div>`});
     const statusTags = syn.sort((a,b)=>a.pri-b.pri).slice(0,2).map(t=>t.html).join('');
-    const resTag = '';   // 共鸣说明已并入联动行,不再重复
+    const grptag = roundIdx===0 ? `<div class="grouptag">${h.cat==='技能'?'⚔ 换一手技':'🌱 养一条路'}</div>` : '';
+    const idl = (roundIdx<=1 && h.idline) ? `<div class="idline">${h.idline}</div>` : '';
+    const upBadge = h.cat==='升级' ? '<span class="upmark">↗</span>' : '';
+    const pityTag = (roundIdx===0 && h.cat==='技能' && PITY>0) ? `<div class="pitytag">${PITY>=3?'觉醒·就在下一手':'觉醒·近了'}</div>` : '';
     el.innerHTML=`<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>
+      ${grptag}
       <div class="ico">${h.ico}</div>
-      <div class="name">${h.name}${h.ba?' <span class="bastar">★</span>':''}</div>
+      <div class="name">${h.name}${upBadge}${h.ba?' <span class="bastar">★</span>':''}</div>
+      ${idl}
       <div class="flavor">「${h.fl}」</div>
       <div class="desc">${h.desc}</div>
       ${delta}
       ${statusTags}
+      ${pityTag}
       <div class="schooltag">${SCHOOL_LABEL[h.school]||h.school}${sc?` · 已持 ${sc} 张`:''}</div>`;
     el.onclick=()=>pickHex(h);
     wrap.appendChild(el);
   });
-  // 盲注(德州):弃掉三选一,本关结束翻双天命,+15HP 垫底
-  if(R.section < K.SECTIONS){
-    const bb=document.createElement('div');
-    bb.className='card blindbet';
-    bb.innerHTML=`<div class="ico" style="font-size:40px;">🂠</div><div class="name">盲注</div>
-      <div class="flavor">「不看牌,加倍下注。」</div>
-      <div class="desc">放弃本次三选一 → 本关结束翻<b>双天命</b>(纯随机),另 <b>+15 HP</b></div>
-      <div class="schooltag">🎰 系统 · 德州</div>`;
-    bb.onclick=()=>pickBlind();
-    wrap.appendChild(bb);
-  }
-  const rb=document.getElementById('rerollBtn');
-  const poolN = HEXES.filter(h=>h.rar===rar && !has(h.id)).length;
-  const effN = poolN>=3 ? poolN : HEXES.filter(h=>!has(h.id)).length;
-  if(effN<=3){ rb.disabled=true; rb.textContent='🎲 池已见底'; }
-  else { rb.disabled = rerollLeft<=0; rb.textContent = rerollLeft>0 ? '🎲 重抽(剩 1 次)' : '已用完重抽'; }
+}
+function renderBattleDraft(idx){
+  document.getElementById('bdTag').textContent = draftRoundTag(idx);
+  document.getElementById('bdSub').textContent = idx===0 ? '从这里开始,你在立流派' : (idx===1 ? '成长卡最后一轮' : '');
+  renderDraftCards(rollOffer(idx), document.getElementById('bdCards'), idx);
+  const rb=document.getElementById('bdReroll');
+  rb.disabled = rerollLeft<=0; rb.textContent = rerollLeft>0 ? '🎲 重抽(全局仅 1 次)' : '已用完重抽';
+}
+function renderSecDraft(idx){
+  document.getElementById('secDraft').classList.remove('hidden');
+  document.getElementById('sdTag').textContent = draftRoundTag(idx)+' · 过关补给';
+  renderDraftCards(rollOffer(idx), document.getElementById('sdCards'), idx);
+  document.getElementById('secresBtn').style.display='none';
+  const rb=document.getElementById('sdReroll');
+  rb.disabled = rerollLeft<=0; rb.textContent = rerollLeft>0 ? '🎲 重抽(全局仅 1 次)' : '已用完重抽';
 }
 function reroll(){
   if(rerollLeft<=0) return;
   rerollLeft--;
-  renderDraft(RAR_BY_SECTION[Math.min(R.section-1, RAR_BY_SECTION.length-1)]);
+  if(DRAFT_OPEN) renderBattleDraft(R.draftPending);
+  else if(R._secDraft!=null) renderSecDraft(R._secDraft);
 }
-function pickBlind(){
-  R.blindBet = true;
-  P.hp = Math.min(K.PLAYER_HP, P.hp + 15);
-  P._loadBanner = '🂠 盲注 · 双天命已押';
-  beginSection();
-}
-function pickHex(h){
+/* ============================== 选牌 ============================== */
+function applyHexPick(h){
   const resBefore = activeResonances().length;
   const bondsBefore = activeBonds().map(b=>b.id);
   P.hexes.push(h);
-  const newBond = activeBonds().find(b=>!bondsBefore.includes(b.id));
-  if(newBond){   // 羁绊结成优先播报
-    P._loadBanner = `⛓ 羁绊结成 · ${newBond.ico}${newBond.name}!`;
+  // 成长卡预热:拿到自带 2 层(晚拿不亏成断崖)
+  if(h.id==='g01') P.furCoat=Math.max(P.furCoat,2);
+  else if(h.id==='g02') P.skillDisc=Math.max(P.skillDisc,6);
+  else if(h.id==='g03') P.leafSpread=Math.max(P.leafSpread,0.10);
+  else if(h.id==='g04') P.drumAtk=Math.max(P.drumAtk,2);
+  else if(h.id==='h13') P.bloodBonus=Math.min(20,P.bloodBonus+4);
+  const newBond = activeBonds().find(b=>!bondsBefore.includes(b.id)) || null;
+  const newRes = activeResonances().length>resBefore ? RESONANCE[h.school] : null;
+  return {newBond, newRes};
+}
+function pickBanner(h, r){
+  if(r.newBond) return `⛓ 羁绊结成 · ${r.newBond.ico}${r.newBond.name}!`;
+  if(r.newRes) return `🔗 共鸣觉醒 · ${r.newRes.name}!`;
+  if(h.cat==='升级') return `↗ 觉醒 · ${h.ico}${h.name}!`;
+  return `${h.ico} ${h.name} · 已装载`;
+}
+function pickHex(h){
+  const r = applyHexPick(h);
+  if(DRAFT_OPEN){   // 战斗内定时发牌
+    const idx = R.draftPending;
+    R.draftPending = null; R.draftIdx++;
+    telem.draftPicks.push({idx, id:h.id, atMs:Math.round(R.fightMs)});
+    if(r.newBond || r.newRes || h.cat==='升级') SFX.res();
+    closeBattleDraft();
+    banner(idx===0 && h.cat==='技能' ? `🎏 立派 · ${h.name}!` : pickBanner(h,r));
+    toast(R.draftIdx < R.draftAt.length ? `⛽ 下一批海克斯 · ${DRAFT_WHEN[R.draftIdx]}` : '这是最后一批。接下来,全看你自己。');
+    renderBuild();
+    return;
+  }
+  if(R._secDraft!=null){   // 过关补给(结算屏内补发)
+    R._secDraft = null; R.draftIdx++;
+    telem.draftPicks.push({idx:R.draftIdx-1, id:h.id, atMs:Math.round(R.fightMs), sec:true});
+    document.getElementById('secDraft').classList.add('hidden');
+    document.getElementById('secresBtn').style.display='';
+    P._loadBanner = pickBanner(h,r);
+    if(r.newBond || r.newRes){ P._resSound = true; }
+    return;
+  }
+  // 兼容路径(无发牌上下文):装载后直接开战
+  if(r.newBond){
+    P._loadBanner = `⛓ 羁绊结成 · ${r.newBond.ico}${r.newBond.name}!`;
     P._resSound = true;
-    if(activeResonances().length>resBefore) toastQueue = `🔗 共鸣同时觉醒:${RESONANCE[h.school].name}`;
-  } else if(activeResonances().length>resBefore){
-    P._loadBanner = `🔗 共鸣觉醒 · ${RESONANCE[h.school].name}!`;
+    if(r.newRes) toastQueue = `🔗 共鸣同时觉醒:${RESONANCE[h.school].name}`;
+  } else if(r.newRes){
+    P._loadBanner = `🔗 共鸣觉醒 · ${r.newRes.name}!`;
     P._resSound = true;
   } else {
     P._loadBanner = `${h.ico} ${h.name} · 已装载`;
@@ -1320,6 +1501,13 @@ function pickHex(h){
 let toastQueue = null;
 
 function beginSection(){
+  clearTimeout(R.draftTimer); R.draftTimer=null; R._draftLock=false; R.draftPending=null;
+  if(R.section===K.SECTIONS){
+    // 终局追赶:没发完的牌全部拉进可达范围(12s 间隔)——快玩家的觉醒赌局不欠账
+    for(let i=R.draftIdx;i<R.draftAt.length;i++)
+      R.draftAt[i] = Math.min(R.draftAt[i], R.fightMs + 12000*(i-R.draftIdx+1));
+    if(P.hexes.some(h=>h.grow)) toastQueue = toastQueue || '🏁 终局冲刺 · 成长加倍';
+  }
   R.qInSection=0; P.dotQueue=[]; P.chainCount=0; P.shieldUsed=false; P.windStacks=0; P.streak=0;
   spawnFoe();
   if(P._resSound){ SFX.res(); P._resSound=false; }
@@ -1364,6 +1552,7 @@ function stopLoop(){ if(BATTLE_TIMER){ clearInterval(BATTLE_TIMER); BATTLE_TIMER
 function nextQuestion(){
   if(CUR_SCREEN!=='battle' || !E || E.dead || E.phaseClear || P.hp<=0) return;
   if(PANEL_OPEN){ setTimeout(nextQuestion, 350); return; }   // 面板开着不出题(轮询,面板关后≤350ms出题)
+  if(DRAFT_OPEN || R._draftLock) return;   // 发牌中不出题:closeBattleDraft 会亲自续上
   R.qInSection++;
   telem.globalQ++;
   if(R.qInSection > K.ENRAGE_AFTER-3 && R.qInSection <= K.ENRAGE_AFTER && E && !E.enrToast){
@@ -1414,7 +1603,7 @@ function renderOpts(){
 }
 
 function submitAnswer(){
-  if(!q || P.hp<=0 || PANEL_OPEN || P._betweenQ || document.getElementById('qInput').disabled) return;
+  if(!q || P.hp<=0 || PANEL_OPEN || DRAFT_OPEN || R._draftLock || P._betweenQ || document.getElementById('qInput').disabled) return;
   const val = parseInt(document.getElementById('qInput').value,10);
   if(isNaN(val)) return;
   clearTimeout(qTimer);
@@ -1447,7 +1636,7 @@ function flashFx(){
 }
 function onTyped(){
   const inp=document.getElementById('qInput');
-  if(!q || inp.disabled || PANEL_OPEN) return;
+  if(!q || inp.disabled || PANEL_OPEN || DRAFT_OPEN || R._draftLock) return;
   inp.value = inp.value.replace(/\D/g,'');
   inp.classList.remove('pop'); void inp.offsetWidth; inp.classList.add('pop');
   beep({f:820+inp.value.length*90, dur:.035, type:'triangle', gain:.05});
@@ -1458,25 +1647,36 @@ function onTyped(){
 function onCorrect(){
   const at = actualTime();
   const blade = inBladeZone(at);
-  const fast = at < q.benchmark;   // 速度引擎只认真实速度——压线换爆发,不白吃快答(堵套利)
+  const boatUsed = consumeBoatPush();
+  const fast = at < q.benchmark || boatUsed;   // 速度引擎只认真实速度;顺水推舟是唯一例外(付过 50⚡ 轻技)
   // 追风:快答叠风层(动量),慢答清零——易碎的成长
   if(has('h04')){
     if(fast){ P.windStacks = Math.min(5, (P.windStacks||0)+1); hexFire('h04', `风×${P.windStacks}`); }
     else if(P.windStacks>0){ P.windStacks = 0; floatText('🚀 风散了', '#7e8db0', true, false, 'you'); }
   }
   // 时间递减奖池:满额起步,基准×DECAY_WINDOW 内线性蒸发(封顶不变,不超模)+ 风层动量
-  const s = clamp(1 - at/(q.benchmark*K.DECAY_WINDOW), 0, 1) * speedCap() + windBonus();
+  let s = clamp(1 - at/(q.benchmark*K.DECAY_WINDOW), 0, 1) * speedCap() + windBonus();
+  if(boatUsed && at >= q.benchmark){ s = speedCap() + windBonus(); hexFire('x01','算你快答'); }
   let base = K.ENERGY_BASE + K.ENERGY_PER_COMBO*P.combo;
   if(has('h07')) base *= 0.6;
   let perQ = base * (1+s);
   if(q.difficulty==='hard' && has('h05')){ perQ += 15; hexFire('h05','+15⚡'); }
   P.energy = Math.min(K.ENERGY_MAX, P.energy + perQ);
+  if(has('x03') && isControlled()){ P.energy = Math.min(K.ENERGY_MAX, P.energy+10); hexFire('x03','+10⚡'); }
 
   const uPrev = tierUnlocks(P.combo);
   P.combo++;
   telem.correct++;
   telem.maxCombo = Math.max(telem.maxCombo, P.combo);
   P._betweenQ = true;
+  // 成长卡计数:第 3 关起速率×2(终局冲刺,保证兑现)
+  {
+    const gi = R.section>=K.SECTIONS ? 2 : 1;
+    if(has('g01')){ P._g01c=(P._g01c||0)+gi; while(P._g01c>=2 && P.furCoat<10){ P._g01c-=2; P.furCoat++; hexFire('g01',`+1攻(累计+${P.furCoat})`); } }
+    if(has('g02')){ P._g02c=(P._g02c||0)+gi; while(P._g02c>=3 && P.skillDisc<18){ P._g02c-=3; P.skillDisc+=3; hexFire('g02',`技能省${P.skillDisc}⚡`); } }
+    if(has('g03')){ P._g03c=(P._g03c||0)+gi; while(P._g03c>=3 && P.leafSpread<0.299){ P._g03c-=3; P.leafSpread=Math.min(0.30, Math.round((P.leafSpread+0.05)*100)/100); hexFire('g03',`溅射+${Math.round(P.leafSpread*100)}%`); } }
+    if(has('g04')){ P._drumFaded=false; if(P.drumAtk<12){ P.drumAtk=Math.min(12, P.drumAtk+gi); hexFire('g04',`+攻(累计+${P.drumAtk})`); } }
+  }
   if(blade){
     if(has('h15')){ hexFire('h15','千钧+50%·回10⚡'); P.energy=Math.min(K.ENERGY_MAX,P.energy+10); }
     else floatText('⏳ 千钧 +25%', '#ffcf4d', true, false, 'you');
@@ -1518,8 +1718,7 @@ function onCorrect(){
   if(u.double && !uPrev.double){ banner(has('h03')?'🔓 双响解锁!⚡山鸣提前':(has('h01')?'🔓 双响解锁!❄️早雪提前':'🔓 双响 解锁!')); SFX.tierUp(); hexFire('h03'); hexFire('h01'); }
   if(u.splash){
     let ratio = splashRatio();
-    const nowT = Date.now();
-    const controlled = E && (nowT<E.slowedUntil || nowT<E.frozenUntil || nowT<E.stunnedUntil || nowT<E.staggeredUntil);
+    const controlled = isControlled();
     if(has('h08') && controlled) ratio *= 2;   // 刀花:受控敌人吃双倍溅射(控制流喂输出流)
     dealDamage(Math.round(dmg*ratio), controlled&&has('h08')?'溅射·受控':'溅射', '#3fe7ff', true);
     hexFire('h08', controlled&&has('h08')?'受控翻倍':undefined);
@@ -1541,6 +1740,14 @@ function onCorrect(){
 
   resolveDot();
   if(has('h09')) P.dotQueue.push({ left:2, amount:Math.round(dmg*0.5) });
+  // 趁热打铁:震慑窗内答对追锤
+  if(has('u08') && Date.now()<P.hotIronUntil && E && !E.dead){ dealDamage(immediateDamageRaw(),'趁热打铁','#ffcf4d',true); hexFire('u08'); }
+  // 余音绕梁:重技后 3 题答对带回声
+  if(P.echoLeft>0 && E && !E.dead){
+    P.echoLeft--;
+    dealDamage(immediateDamageRaw(),'余音','#ffb1e6',true);
+    if(P.echoLeft===0) floatText('🔔 余音散了', '#7e8db0', true, false, 'you');
+  }
 
   // 抢答:伤害结算之后再上膛,保证翻倍作用于「下一刀」而非本刀
   if(has('h06')){
@@ -1587,10 +1794,14 @@ function onCorrect(){
 
 function resolveDot(){
   if(!P.dotQueue.length || E.dead) return;
-  let total=0;
-  P.dotQueue.forEach(d=>{ if(d.left>0){ total+=d.amount; d.left--; } });
+  const groups={};
+  P.dotQueue.forEach(d=>{ if(d.left>0){ const k=d.kind||'灼烧'; groups[k]=(groups[k]||0)+d.amount; d.left--; } });
   P.dotQueue = P.dotQueue.filter(d=>d.left>0);
-  if(total>0){ dealDamage(total,'灼烧','#ff5470',true); hexFire('h09'); }
+  Object.keys(groups).forEach(k=>{
+    if(groups[k]<=0) return;
+    dealDamage(groups[k], k, k==='灼烧'?'#ff5470':'#3fe7ff', true);
+    hexFire(k==='灼烧'?'h09':'u02');
+  });
 }
 
 function onTimeout(){ onBreak('超时'); }
@@ -1627,6 +1838,11 @@ function onBreak(reason){
   }
   P._wasBroken = true;
   P.windStacks = 0;   // 追风:断连风散
+  P.boatPush = false;   // 顺水推舟:答错也消耗
+  if(has('g04') && P.drumAtk>0){   // 一鼓作气:一错掉一半,连错全没
+    if(P._drumFaded){ P.drumAtk=0; floatText('🥁 鼓声断了,全没了', '#ff5470', false, true, 'you'); }
+    else { P.drumAtk=Math.floor(P.drumAtk/2); P._drumFaded=true; floatText(`🥁 鼓声乱了,剩+${P.drumAtk}`, '#ff5470', false, false, 'you'); }
+  }
   P.streak = 0; renderStreak();   // 羁绊连答:一错清零
   if(!skipCounter && reason==='答错' && has('h15') && inBladeZone(actualTime()) && E && !E.dead){
     E.charge = E.chargeNeed*1000;   // 千钧失手:敌人立刻出手
@@ -1643,33 +1859,35 @@ function ownedSkill(slot){
   return null;
 }
 function lightSkill(){
-  const disc = has('h12') ? 20 : 0;   // 赌徒之门:门槛-20,代价是 20% 卡壳
   const sc = ownedSkill('light');
   const key = sc ? sc.skillKey : 'small';
-  if(key==='swap')   return {key:'swap',  name:'翻篇',   cost:40-disc, od:'这题不要了,换一题', dmg:0};
-  if(key==='shield') return {key:'shield',name:'未雨绸缪',cost:50-disc, od:'挡住 2 次攻击', dmg:0};
-  if(key==='flurry') return {key:'flurry',name:'推波助澜',cost:50-disc, od:'打一下,连击+2', dmg:immediateDamage()*2};
-  return {key:'small', name:'轻斩', cost:50-disc, od:`攻击 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
+  const cost = skillCost('light', key);
+  if(key==='swap'){
+    if(has('u01')) return {key:'swap', name:'借题发挥', cost, od:'扔题砸它 ×2,换来简单题', dmg:immediateDamageRaw()*2};
+    return {key:'swap', name:'翻篇', cost, od:'这题不要了,换一题', dmg:0};
+  }
+  if(key==='shield') return {key:'shield', name:has('u03')?'呼风唤雨':'未雨绸缪', cost, od:has('u03')?'挡 2 刀,每挡反打+回能':'挡住 2 次攻击', dmg:0};
+  if(key==='flurry') return {key:'flurry', name:has('u02')?'一波未平':'推波助澜', cost, od:has('u02')?'×2 连击+2,后 2 题追浪':'打一下,连击+2', dmg:immediateDamage()*2};
+  if(has('u07'))     return {key:'small', name:'一刀两断', cost, od:'两刀,每刀 ×2', dmg:immediateDamage()*2+immediateDamageRaw()*2};
+  return {key:'small', name:'轻斩', cost, od:`攻击 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
 }
 function heavySkill(){
-  const disc = has('h12') ? 20 : 0;
   const odMult = 1 + K.OVERLOAD_PER_STACK*P.overloadStacks;
   const hammer = has('h10') ? 1.5 : 1;   // h10 一锤:重技 ×1.5(默认重斩 6→9)
   const sc = ownedSkill('heavy');
   const key = sc ? sc.skillKey : 'big';
   let v;
-  if(key==='avalanche')     v={key:'avalanche', name:'厚积薄发', base:4*(1+0.02*P.combo), od:'连击越高越疼,还定住它', stun:true};
-  else if(key==='timestop') v={key:'timestop',  name:'争分夺秒', base:4, od:'×4,定住敌人 5 秒', freeze:5000};
-  else if(key==='calc')     v={key:'calc',      name:'一举两得', base:4, od:'×4,回 30 能量', regen:30};
-  else                      v={key:'big',       name:'重斩',     base:K.BIG_MULT, od:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
-  v.cost = 100-disc;
+  if(key==='avalanche')     v={key:'avalanche', name:has('u05')?'大雪封山':'厚积薄发', base:4*(1+0.02*P.combo), od:has('u05')?'连击越高越疼,封山 5 秒':'连击越高越疼,还定住它', stun:true};
+  else if(key==='timestop') v={key:'timestop',  name:has('u06')?'偷天换日':'争分夺秒', base:4, od:has('u06')?'×4,冻 5 秒,这题+5 秒':'×4,定住敌人 5 秒', freeze:5000};
+  else if(key==='calc')     v={key:'calc',      name:has('u04')?'一石三鸟':'一举两得', base:4, od:has('u04')?'×4,回 30⚡,下次轻技免费':'×4,回 30 能量', regen:30};
+  else                      v={key:'big',       name:has('u08')?'趁热打铁':'重斩',     base:K.BIG_MULT, od:has('u08')?`×${K.BIG_MULT}+震慑,3 秒内答对追锤`:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
+  v.cost = skillCost('heavy', key);
   v.dmg = Math.round(immediateDamage()*v.base*hammer*odMult);
   return v;
 }
 function swapQuestion(forceDiff){
   // 换题:弃掉当前题,原地换新(计时重置,不算断连)
-  q = genQuestion(R.section-1);
-  if(forceDiff){ for(let i=0;i<20 && q.difficulty!==forceDiff;i++) q = genQuestion(2); }
+  q = genQuestion(R.section-1, forceDiff);
   document.getElementById('qType').textContent = TYPE_LABEL[q.type];
   const qd=document.getElementById('qDiff'); qd.textContent={easy:'★',medium:'★★',hard:'★★★'}[q.difficulty]; qd.className='qdiff '+q.difficulty;
   const pe=document.getElementById('qPrompt'); pe.textContent=q.prompt;
@@ -1687,12 +1905,16 @@ function swapQuestion(forceDiff){
   qTimer = setTimeout(()=>onTimeout(), timeout*1000);
 }
 function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
-  if(CUR_SCREEN!=='battle' || PANEL_OPEN || !smallEnabled() || E.dead || E.phaseClear || P.hp<=0) return;
+  if(CUR_SCREEN!=='battle' || PANEL_OPEN || DRAFT_OPEN || R._draftLock || !smallEnabled() || E.dead || E.phaseClear || P.hp<=0) return;
   const sk = lightSkill();
-  if(has('h18') && P.energy < 0) return;   // 负债期锁技能:一次透支一发
-  if(P.energy - sk.cost < (has('h18') ? -50 : 0)) return;
-  if(sk.key==='swap' && (P._betweenQ || document.getElementById('qInput').disabled)) return; // 只能换正在答的题
-  P.energy -= sk.cost;
+  const free = !!P.freeSmall;   // 一石三鸟:大招送的免费轻技
+  if(!free){
+    if(has('h18') && P.energy < 0) return;   // 负债期锁技能:一次透支一发
+    if(P.energy - sk.cost < (has('h18') ? -50 : 0)) return;
+  }
+  if(sk.key==='swap' && (P.judge || P._betweenQ || document.getElementById('qInput').disabled)) return; // 只能换正在答的题;审判题不许洗
+  P.energy -= free ? 0 : sk.cost;
+  if(free){ P.freeSmall=false; hexFire('u04','免费!'); }
   telem.releases.small++;
   telem.skillUse[sk.name]=(telem.skillUse[sk.name]||0)+1;
   // 赌徒之门:20% 卡壳,费照扣,效果减半
@@ -1700,24 +1922,44 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
   if(jam){ telem.jams++; floatText('🎲 卡壳!', '#ff5470', false, false, 'you'); SFX.odCrash(); hexFire('h12','卡壳'); }
   else hexFire('h12','省20⚡');
   const m = jam ? 0.5 : 1;
-  if(sk.key==='swap'){ SFX.small(); swapQuestion(); floatText('🔄 翻篇!', '#3fe7ff', true, false, 'you'); }
+  if(sk.key==='swap'){
+    SFX.small();
+    if(has('u01')){   // 借题发挥:扔掉的那页砸它一下,换来必是简单题
+      if(!q._u01Hit){ q._u01Hit=true; dealDamage(Math.round(immediateDamageRaw()*2),'借题发挥','#3fe7ff'); }
+      swapQuestion('easy');
+    } else swapQuestion();
+    floatText('🔄 翻篇!', '#3fe7ff', true, false, 'you');
+  }
   else if(sk.key==='shield'){ SFX.res(); P.shieldCharges = jam?1:2; floatText(`🛡 护盾 ×${P.shieldCharges}`, '#3fe7ff', true, false, 'you'); }
   else if(sk.key==='flurry'){
     SFX.small(); P.combo += 2;
     telem.maxCombo = Math.max(telem.maxCombo, P.combo);
     dealDamage(Math.round(immediateDamage()*2*m),'推波助澜','#3fe7ff');
+    if(has('u02')) P.dotQueue.push({left:2, amount:Math.round(immediateDamageRaw()*m), kind:'一波未平'});   // 追浪:施放瞬间快照
     floatText('连击 +2!', '#3fe7ff', true, false, 'you');
+  }
+  else if(has('u07')){   // 一刀两断:两刀各×2,翻倍只吃第一刀
+    SFX.small();
+    dealDamage(Math.round(immediateDamage()*2*m),'一刀两断','#3fe7ff');
+    const second = Math.round(immediateDamageRaw()*2*m);
+    setTimeout(()=>{ if(E && !E.dead && !E.phaseClear) dealDamage(second,'一刀两断','#3fe7ff',true); }, 120);
   }
   else { SFX.small(); dealDamage(Math.round(sk.dmg*m),'轻斩','#3fe7ff'); }
   if(sk.key==='flurry' || sk.key==='small') consumeImmDouble();   // 打出去的技能吃掉翻倍
+  P.castCounts[sk.key]=(P.castCounts[sk.key]||0)+1;   // 觉醒资格计数
+  if(P.castCounts[sk.key]===3 && !slotUpgraded('light')) toast(`↗ ${sk.name} · 觉醒资格达成`);
+  if(has('x01')){ P.boatPush=true; hexFire('x01','下一题稳算快答'); }
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 function releaseBig(){   // 重技能槽
-  if(CUR_SCREEN!=='battle' || PANEL_OPEN || E.dead || E.phaseClear || P.hp<=0) return;
+  if(CUR_SCREEN!=='battle' || PANEL_OPEN || DRAFT_OPEN || R._draftLock || E.dead || E.phaseClear || P.hp<=0) return;
   const sk = heavySkill();
   if(has('h18') && P.energy < 0) return;
   if(P.energy - sk.cost < (has('h18') ? -50 : 0)) return;
   P.energy -= sk.cost;
+  P.castCounts[sk.key]=(P.castCounts[sk.key]||0)+1;   // 觉醒资格计数(押注型也算)
+  if(P.castCounts[sk.key]===3 && !slotUpgraded('heavy')) toast(`↗ ${sk.name} · 觉醒资格达成`);
+  if(has('x02')){ P.echoLeft=3; hexFire('x02','回声 ×3 上膛'); }   // 余音绕梁:押注型也上膛
   const od = P.overloadStacks;
   // 共鸣·稳压核心:重技能保留一半过载层
   P.overloadStacks = hasRes('脑') ? Math.ceil(od/2) : 0;
@@ -1747,9 +1989,17 @@ function releaseBig(){   // 重技能槽
   if(jam){ telem.jams++; floatText('🎲 卡壳!', '#ff5470', false, false, 'you'); SFX.odCrash(); hexFire('h12','卡壳'); }
   else hexFire('h12','省20⚡');
   flashFx();
-  if(sk.stun) applyStun();
+  if(sk.stun){
+    if(sk.key==='avalanche' && has('u05')){   // 大雪封山:定 5 秒,定住期间挨打更疼(硬直通路)
+      E.stunnedUntil = Date.now()+5000; clearCharge();
+      E.staggeredUntil = Math.max(E.staggeredUntil, Date.now()+5000);
+      hexFire('u05','封山 5 秒');
+    } else applyStun();
+  }
   if(sk.freeze && E) E.frozenUntil = Date.now()+sk.freeze;
-  if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`一举两得 +${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); }
+  if(sk.key==='timestop' && has('u06')){ addQuestionTime(5000); floatText('🌗 这题 +5 秒', '#3fe7ff', true, false, 'you'); hexFire('u06'); }
+  if(sk.key==='big' && has('u08')){ P.hotIronUntil = Date.now()+3000; hexFire('u08','趁热 3 秒'); }
+  if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`一举两得 +${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); if(has('u04')){ P.freeSmall=true; floatText('🐦 下次轻技免费', '#3fe7ff', true, false, 'you'); } }
   if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio*(jam?0.5:1))});
   dealDamage(Math.round(sk.dmg*(jam?0.5:1)), od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
   consumeImmDouble();   // 重技全系带伤害,统一吃掉翻倍(dot 快照也已按翻倍计)
@@ -1787,7 +2037,9 @@ function dealDamage(amount, kind, color, secondary, raw){
     document.getElementById('core').classList.add('rage');
     banner('💥 暴走!破绽 5 秒——现在打!');
     toast(`${E.glyph}「${E.lines.phase2}」`);
-    setTimeout(()=>{ if(CUR_SCREEN==='battle' && E && !E.dead && !E.phaseClear && P.hp>0){ P.hp=Math.min(K.PLAYER_HP,P.hp+4); floatText('+4 喘息','#43e08a',true,false,'you'); updateSceneUI(); } }, 5600);
+    setTimeout(()=>{ if(CUR_SCREEN!=='battle' || !E || E.dead || E.phaseClear || P.hp<=0) return;
+      if(DRAFT_OPEN || PANEL_OPEN){ R._pendingHeal=(R._pendingHeal||0)+4; return; }   // 冻结中:顺延到解冻
+      P.hp=Math.min(K.PLAYER_HP,P.hp+4); floatText('+4 喘息','#43e08a',true,false,'you'); updateSceneUI(); }, 5600);
   }
   updateSceneUI();
   if(E.hp<=0 && !E.dead){
@@ -1807,16 +2059,42 @@ function dealDamage(amount, kind, color, secondary, raw){
 function afterAction(isBreak){
   updateHUD();
   if(CUR_SCREEN!=='battle' || E.dead || E.phaseClear || P.hp<=0) return;
+  // 定时发牌:只在结算拍开屏,永不打断进行中的题
+  if(R.draftPending!=null && draftGatesOpen()){
+    R._draftLock = true;   // 锁 650ms 空窗:开屏前不许放技能/打字
+    R.draftTimer = setTimeout(openBattleDraft, isBreak?1150:650);
+    return;
+  }
   // 心流加速:连击越高,下一题来得越快;断连后停顿更长,让正确答案被看见
   const delay = (isBreak ? 1150 : Math.max(240, 560 - P.combo*25)) + Math.round(Math.random()*140-60);
   setTimeout(nextQuestion, delay);
+}
+function checkDraftClock(){   // 到点只挂 pending(arm),开屏永远在结算拍
+  if(!R || R.draftIdx>=R.draftAt.length || R.draftPending!=null || DRAFT_OPEN) return;
+  if(RUNS===1 && R.draftIdx===0 && !R._bubbled && R.draftAt[0]-R.fightMs<3000){ R._bubbled=true; toast('⛽ 补给要到了'); }
+  const timeUp = R.fightMs >= R.draftAt[R.draftIdx];
+  const earlyD1 = R.draftIdx===0 && RUNS>=2 && telem.correct>=6;   // 首抽双条件:30s 或第 6 次答对(首局只认 30s,纯教学窗)
+  if(timeUp || earlyD1){
+    R.draftPending = R.draftIdx;
+    R._draftPendingSince = R.fightMs;
+  }
+}
+function draftGatesOpen(){   // 充能门+破绽门;饿死保险 8 秒后豁免这两门
+  if(!E) return true;
+  if(R.fightMs - R._draftPendingSince > 8000) return true;
+  const now = Date.now();
+  const stunned = now<E.stunnedUntil || now<E.frozenUntil;
+  const chargeOk = stunned || E.charge < E.chargeNeed*1000*0.7;   // 出手在即:让这刀先落地
+  const breachOk = now >= E.breachUntil;                          // 破绽窗内不打断输出
+  return chargeOk && breachOk;
 }
 function markEvent(){ telem.eventQGaps.push(telem.globalQ - telem.lastEventQ); telem.lastEventQ = telem.globalQ; }
 
 /* ============================== 节末/局末 ============================== */
 function sectionWin(){
   stopLoop(); stopAmbient();
-  const HEAVY_KINDS=['重斩','厚积薄发','争分夺秒','一举两得','成王败寇'];
+  clearTimeout(R.draftTimer); R.draftTimer=null; R._draftLock=false; R.draftPending=null;
+  const HEAVY_KINDS=['重斩','厚积薄发','争分夺秒','一举两得','成王败寇','大雪封山','偷天换日','一石三鸟','趁热打铁'];
   const heavyKill = E.lastHitKind && HEAVY_KINDS.some(k=>String(E.lastHitKind).startsWith(k));
   P.overloadStacks = 0;   // 节末白攒(SPEC §9 风险端)
   if(heavyKill && R.section < K.SECTIONS){
@@ -1826,13 +2104,14 @@ function sectionWin(){
   if(R.qInSection <= K.ENRAGE_AFTER && R.section < K.SECTIONS){
     P.energy = Math.min(K.ENERGY_MAX, P.energy+20);   // 狂暴前破关:+20⚡
   }
-  // 天命翻牌(德州公共牌):过关翻一张;盲注局翻两张
+  // 快玩家时钟保底:过关瞬间把战斗时钟抬到楼层,欠的牌关末补发
+  if(R.section < K.SECTIONS) R.fightMs = Math.max(R.fightMs, (K.DRAFT_FLOOR||[40000,130000])[R.section-1]||0);
+  // 天命翻牌(德州公共牌):过关翻一张
+  // 池收窄:技能卡出天命池 = 修复 ownedSkill 静默顶掉亲选技能的 bug,不可回退;升级/成长卡也不走天命(h13 豁免,保住羁绊听牌)
   R.destinyDrawn = [];
   if(R.section < K.SECTIONS){
-    const draws = R.blindBet ? 2 : 1;
-    R.blindBet = false;
-    for(let i=0;i<draws;i++){
-        const pool = HEXES.filter(h=>!has(h.id) && !gambleLocked(h));
+    for(let i=0;i<1;i++){
+        const pool = HEXES.filter(h=>!has(h.id) && !gambleLocked(h) && h.cat!=='技能' && h.cat!=='升级' && (!h.grow || h.id==='h13'));
       if(!pool.length) break;
       const bondsBefore = activeBonds().map(b=>b.id);
       const resBefore = activeResonances().length;
@@ -1859,7 +2138,7 @@ function sectionWin(){
   document.getElementById('secresMsg').innerHTML = `<span style="color:var(--silver);font-style:italic">${E.glyph}「${E.lines.defeat}」</span><br>` + (R.section < K.SECTIONS
     ? '下一名守门者更凶:攻击更疼、充能更快。选好你的海克斯。'
     : '塔顶到了——去看战报。');
-  document.getElementById('secresBtn').textContent = R.section >= K.SECTIONS ? '查看战报' : '下 一 节 抽 取';
+  document.getElementById('secresBtn').textContent = R.section >= K.SECTIONS ? '查看战报' : '下 一 关';
   // 天命翻牌演出(单张或盲注双张,交错翻面)
   const dbox=document.getElementById('destinyBox');
   const drow=document.getElementById('dRow');
@@ -1876,17 +2155,30 @@ function sectionWin(){
         const note=document.getElementById('dNote');
         if(d.newBond){ SFX.res(); note.textContent = `⛓ 羁绊结成 · ${d.newBond.ico}${d.newBond.name}!`; }
         else if(d.newRes){ SFX.res(); note.textContent = `🔗 共鸣觉醒 · ${d.newRes.name}!`; }
-        else { SFX.tierUp(); if(i===0) note.textContent = R.destinyDrawn.length>1 ? '🂠 盲注 · 双天命' : `🂠 天命 · 第 ${P.destinyIds.length} 翻`; }
+        else { SFX.tierUp(); if(i===0) note.textContent = `🂠 天命 · 第 ${P.destinyIds.length} 翻`; }
       }, 750 + i*700);
     });
-    document.getElementById('dNote').textContent = R.destinyDrawn.length>1 ? '🂠 盲注开牌…' : '🂠 天命…';
+    document.getElementById('dNote').textContent = '🂠 天命…';
   } else dbox.classList.add('hidden');
+  R._secDraft = null;
+  document.getElementById('secDraft').classList.add('hidden');
+  document.getElementById('secresBtn').style.display='';
+  if(R.section < K.SECTIONS){
+    let owed = 0;
+    while(R.draftIdx+owed < R.draftAt.length && R.fightMs >= R.draftAt[R.draftIdx+owed]) owed++;
+    if(owed > 0){
+      R._secDraft = R.draftIdx;
+      for(let i=1;i<owed;i++) R.draftAt[R.draftIdx+i] = R.fightMs + 20000*i;   // 其余欠牌下关战斗内补,绝不背靠背开屏
+      renderSecDraft(R._secDraft);
+    }
+  }
   show('secres');
 }
 function runLose(){
   if(P._dying) return;
   P._dying = true;
   stopLoop(); stopAmbient();
+  clearTimeout(R.draftTimer); R.draftTimer=null; R._draftLock=false; R.draftPending=null;
   clearTimeout(qTimer);
   document.getElementById('qInput').disabled = true;
   P.streak=0; renderStreak();
@@ -1897,12 +2189,13 @@ function runLose(){
   R.results.push({ section:R.section, q:R.qInSection, hpLeft:0, passed:false, dmgDone:E?E.total-E.hp:0, foeMax:E?E.total:1 });
   setTimeout(()=>finishRun(true), 1250);
 }
-function nextSection(){ if(R.section >= K.SECTIONS || (E && E.hp<=0)) finishRun(false); else beginDraft(); }
+function nextSection(){ if(R._secDraft!=null) return; if(R.section >= K.SECTIONS || (E && E.hp<=0)) finishRun(false); else { R.section++; beginSection(); } }
 function seg(v,k,cls){ const d=document.createElement('div'); d.className='resseg '+(cls||''); d.innerHTML=`<div class="big">${v}</div><div class="lab">${k}</div>`; return d; }
 
 function calcScore(){
   const won = R.results.filter(r=>r.passed).length;
   let s = won*1000 + P.hp*10 + telem.maxCombo*30 + telem.maxHit*2;
+  if(won===K.SECTIONS && R.draftIdx<=3) s += 300;   // 轻装通关:抽得少赢得下,给分
   const last = R.results[R.results.length-1];
   if(last && !last.passed && last.foeMax) s += Math.round(last.dmgDone/last.foeMax*600); // 阵亡节的进度分
   return s;
@@ -1911,6 +2204,9 @@ function gradeOf(score){ return score>=4400?'S' : score>=3300?'A' : score>=2000?
 
 function finishRun(defeat){
   stopLoop();
+  clearTimeout(R.draftTimer); R.draftTimer=null; R._draftLock=false;
+  // 觉醒空手局:pity 累进,承诺看得见
+  if(R._upRolled && !R._upSeen) setPity(PITY+1);
   if(defeat) SFX.lose(); else SFX.win();
   const won = R.results.filter(r=>r.passed).length;
   document.getElementById('finalTitle').textContent = defeat
@@ -1927,6 +2223,19 @@ function finishRun(defeat){
     dl.classList.remove('hidden');
   } else dl.classList.add('hidden');
 
+  // 轻装通关徽章 / 觉醒空手安慰
+  {
+    const fn=document.getElementById('finalNotes');
+    const notes=[];
+    if(!defeat && won===K.SECTIONS && R.draftIdx<=3) notes.push('🪶 轻装通关 · 少拿一手也赢了(+300 分)');
+    if(R._upRolled && !R._upSeen){
+      const el=eligibleUpgrades()[0];
+      const bn = el ? (HEXES.find(x=>x.id===el.upgradeFor)||{name:el.upgradeFor==='small'?'轻斩':'重斩'}).name : '技能';
+      notes.push(`↗ 你的「${bn}」还在等一个时机。(下局觉醒更近了)`);
+    }
+    if(notes.length){ fn.innerHTML=notes.join('<br>'); fn.classList.remove('hidden'); }
+    else fn.classList.add('hidden');
+  }
   // 得分 + 评级 + 纪录
   const score = calcScore();
   const g = gradeOf(score);
@@ -2048,15 +2357,22 @@ function updateHUD(){
   document.getElementById('tcDbl').classList.toggle('hidden', !P.nextImmDouble);
 
   const lsk = lightSkill(), hsk = heavySkill();
-  const rs=document.getElementById('rSmall'); const sOk=smallEnabled()&&P.energy>=lsk.cost;
+  const rs=document.getElementById('rSmall'); const sOk=smallEnabled()&&(P.freeSmall||P.energy>=lsk.cost);
   rs.style.display = smallEnabled()?'flex':'none'; rs.disabled=!sOk; rs.classList.toggle('ready',sOk);
   document.getElementById('rSmallName').textContent = lsk.name;
-  document.getElementById('rSmallCost').textContent = `${lsk.cost}⚡`;
+  document.getElementById('rSmallCost').textContent = P.freeSmall ? '免费' : `${lsk.cost}⚡`;
   document.getElementById('rSmallFill').style.width = Math.min(100, P.energy/lsk.cost*100)+'%';
   const phaseLeft = E && !E.dead && !E.phaseClear ? E.hp - phaseEndThreshold() : Infinity;
   const killS = sOk && lsk.dmg>0 && lsk.dmg >= phaseLeft;
   rs.classList.toggle('kill', !!killS);
   document.getElementById('rSmallOd').textContent = killS ? '⚔ 斩杀!' : lsk.od;
+  {  // 觉醒资格三点:放满 3 次,升级卡才可能来
+    const dS=document.getElementById('cdSmall'), dB=document.getElementById('cdBig');
+    if(dS){ const up=slotUpgraded('light'), n=Math.min(3,P.castCounts[lsk.key]||0);
+      dS.textContent = up?'↗ 已觉醒':('●'.repeat(n)+'○'.repeat(3-n)); dS.classList.toggle('full', up||n>=3); }
+    if(dB){ const up=slotUpgraded('heavy'), n=Math.min(3,P.castCounts[heavySkill().key]||0);
+      dB.textContent = up?'↗ 已觉醒':('●'.repeat(n)+'○'.repeat(3-n)); dB.classList.toggle('full', up||n>=3); }
+  }
   const rb=document.getElementById('rBig'); const bOk=P.energy>=hsk.cost;
   rb.disabled=!bOk; rb.classList.toggle('ready',bOk);
   document.getElementById('rBigName').textContent = hsk.name;
@@ -2091,9 +2407,49 @@ function floatText(txt,color,small,crit,side){
 function popCore(){ const c=document.getElementById('core'); c.classList.remove('hit'); void c.offsetWidth; c.classList.add('hit'); setTimeout(()=>c.classList.remove('hit'), 300); }
 /* 海克斯存在感:常驻栏 + 触发反馈 */
 /* ============================== 构筑详情面板(点击构筑栏;战斗中=时间冻结) ============================== */
-let PANEL_OPEN=false, PAUSE=null;
+let PANEL_OPEN=false, PAUSE=null, DRAFT_OPEN=false, DRAFT_PAUSE=null;
+function offsetClocks(dt){   // 冻结续走:所有墙钟字段统一在此偏移(新增字段必须登记)
+  if(E){ E.stunnedUntil+=dt; E.slowedUntil+=dt; E.frozenUntil+=dt; E.staggeredUntil+=dt; E.breachUntil+=dt; E.breatherUntil+=dt; E.graceUntil+=dt; E.lastTick=Date.now(); }
+  if(P && P.hotIronUntil) P.hotIronUntil+=dt;
+}
+function openBattleDraft(){
+  R.draftTimer=null;
+  if(DRAFT_OPEN) return;
+  if(!(CUR_SCREEN==='battle' && E && !E.dead && !E.phaseClear && P.hp>0)){ R._draftLock=false; return; }
+  if(PANEL_OPEN) closeBuildPanel();
+  DRAFT_OPEN=true; DRAFT_PAUSE={at:Date.now()};
+  stopLoop();
+  try{ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); }catch(e){}
+  renderBattleDraft(R.draftPending);
+  document.getElementById('bDraft').classList.remove('hidden');
+  SFX.tierUp();
+  telem.draftShownAt.push(Math.round(R.fightMs));
+}
+function closeBattleDraft(){
+  if(!DRAFT_OPEN) return;
+  DRAFT_OPEN=false;
+  document.getElementById('bDraft').classList.add('hidden');
+  const dt = Date.now()-DRAFT_PAUSE.at; DRAFT_PAUSE=null;
+  offsetClocks(dt);
+  if(R._pendingHeal && P.hp>0){ P.hp=Math.min(K.PLAYER_HP,P.hp+R._pendingHeal); floatText(`+${R._pendingHeal} 喘息`,'#43e08a',true,false,'you'); R._pendingHeal=0; }
+  if(E) E.graceUntil = Date.now()+1200;   // 重入缓冲:关屏 1.2 秒敌不充能(不算受控,不喂受控系)
+  R._draftLock=false;
+  const inp=document.getElementById('qInput'); if(inp) inp.value='';   // 冻结期预输入作废
+  if(CUR_SCREEN==='battle' && !BATTLE_TIMER && !PANEL_OPEN) BATTLE_TIMER = setInterval(combatTick, 100);
+  updateHUD(); updateSceneUI(); refocus();
+  nextQuestion();
+}
+function renderDraftPips(){   // 菱形刻度:无数字倒计时,末 8 秒呼吸
+  const el=document.getElementById('draftPips'); if(!el) return;
+  let html='';
+  for(let i=0;i<R.draftAt.length;i++){
+    const done=i<R.draftIdx, soon=(i===R.draftIdx) && (R.draftAt[i]-R.fightMs)<8000;
+    html+=`<span class="dpip${done?' done':''}${soon?' soon':''}">${done?'◆':'◇'}</span>`;
+  }
+  if(el._h!==html){ el._h=html; el.innerHTML=html; }
+}
 function openBuildPanel(){
-  if(PANEL_OPEN || !P || !P.hexes.length) return;
+  if(PANEL_OPEN || DRAFT_OPEN || !P || !P.hexes.length) return;
   PANEL_OPEN=true;
   try{ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); }catch(e){}
   renderBuildPanel();
@@ -2105,7 +2461,7 @@ function openBuildPanel(){
     stopLoop();
     if(q && !P._betweenQ && !document.getElementById('qInput').disabled){
       clearTimeout(qTimer);
-      PAUSE.qRemain = (q._remain!=null) ? q._remain : Math.max(200, q.benchmark*K.TIMEOUT_FACTOR*1000 - (Date.now()-qStart));
+      PAUSE.qRemain = (q._remain!=null) ? q._remain : Math.max(200, q.benchmark*K.TIMEOUT_FACTOR*1000 + (q._extMs||0) - (Date.now()-qStart));
       const fill=document.getElementById('qTimerFill');   // 冻住计时条
       const frac = PAUSE.qRemain/(q.benchmark*K.TIMEOUT_FACTOR*1000);
       fill.style.transition='none'; fill.style.width=(frac*100)+'%';
@@ -2119,7 +2475,8 @@ function closeBuildPanel(){
   if(PAUSE){
     const dt = Date.now()-PAUSE.at;
     qStart += dt;
-    if(E){ E.lastTick = Date.now(); E.stunnedUntil+=dt; E.slowedUntil+=dt; E.frozenUntil+=dt; }
+    offsetClocks(dt);
+    if(R._pendingHeal && P.hp>0){ P.hp=Math.min(K.PLAYER_HP,P.hp+R._pendingHeal); floatText(`+${R._pendingHeal} 喘息`,'#43e08a',true,false,'you'); R._pendingHeal=0; }
     if(PAUSE.qRemain!=null && CUR_SCREEN==='battle' && E && !E.dead && !E.phaseClear){
       q._remain = PAUSE.qRemain;   // 持久化:反复开关不重置保底
       qTimer = setTimeout(()=>onTimeout(), PAUSE.qRemain);
@@ -2130,7 +2487,7 @@ function closeBuildPanel(){
       fill.style.transition=`width ${PAUSE.qRemain/1000}s linear`; fill.style.width='0%';
     }
     const inp=document.getElementById('qInput'); if(inp) inp.value='';   // 冻结期预输入作废
-    if(CUR_SCREEN==='battle' && !BATTLE_TIMER) BATTLE_TIMER = setInterval(combatTick, 100);
+    if(CUR_SCREEN==='battle' && !BATTLE_TIMER && !DRAFT_OPEN) BATTLE_TIMER = setInterval(combatTick, 100);
     PAUSE=null;
     refocus();
   }
@@ -2240,8 +2597,8 @@ function rollNum(el, to, dur, fmt){
   })(t0);
 }
 function median(arr){ const a=arr.slice().sort((x,y)=>x-y); const n=a.length; return n? (n%2? a[(n-1)/2] : (a[n/2-1]+a[n/2])/2) : 0; }
-const SCREENS=['start','draft','battle','secres','final'];
-function show(id){ SCREENS.forEach(s=>document.getElementById(s).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); CUR_SCREEN=id; if(id!=='battle') document.getElementById('app').classList.remove('lowhp'); if(PANEL_OPEN) closeBuildPanel(); }
+const SCREENS=['start','battle','secres','final'];
+function show(id){ SCREENS.forEach(s=>document.getElementById(s).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); CUR_SCREEN=id; if(id!=='battle') document.getElementById('app').classList.remove('lowhp'); if(PANEL_OPEN) closeBuildPanel(); if(DRAFT_OPEN && id!=='battle'){ DRAFT_OPEN=false; DRAFT_PAUSE=null; document.getElementById('bDraft').classList.add('hidden'); R._draftLock=false; } }
 
 /* 调参表 UI */
 const TUNE_SCALARS = ['SECTIONS','BASE_IMMEDIATE','SPLASH_RATIO','ENERGY_BASE','ENERGY_PER_COMBO','ENERGY_MAX','SPEED_CAP','DECAY_WINDOW','SMALL_RELEASE_COST','BIG_RELEASE_COST','SMALL_MULT','BIG_MULT','OVERLOAD_MAX','OVERLOAD_PER_STACK','TIMEOUT_FACTOR','PLAYER_HP','HEAL_PER_SECTION','STUN_SECONDS','SLOW_SECONDS','SLOW_FACTOR','ENRAGE_AFTER'];
