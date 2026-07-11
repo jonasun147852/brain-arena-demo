@@ -595,7 +595,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.14</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.15</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -2175,7 +2175,6 @@ function renderDraftCards(offer, wrap, roundIdx){
       syn.push({pri:1, html:`<div class="syn res">🔗 选它=第 2 张${h.school}卡,触发「${RESONANCE[h.school].name}」→ ${RESONANCE[h.school].desc}</div>`});
     const statusTags = syn.sort((a,b)=>a.pri-b.pri).slice(0,2).map(t=>t.html).join('');
     const grptag = roundIdx===0 ? `<div class="grouptag">${h.cat==='技能'?'⚔ 换一手技':'🌱 养一条路'}</div>` : '';
-    const idl = (roundIdx<=2 && h.idline) ? `<div class="idline">${h.idline}</div>` : '';
     const upBadge = h.cat==='升级' ? '<span class="upmark">↗</span>' : '';
     const pityTag = (roundIdx===0 && h.cat==='技能' && PITY>0) ? `<div class="pitytag">${PITY>=3?'觉醒·就在下一手':'觉醒·近了'}</div>` : '';
     const badge = roundIdx===0 ? '' : (h.cat==='升级' ? '<div class="rarbadge awaken">↗ 觉醒</div>' : `<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`);
@@ -2183,8 +2182,6 @@ function renderDraftCards(offer, wrap, roundIdx){
       ${grptag}
       <div class="ico">${h.ico}</div>
       <div class="name">${h.name}${upBadge}${h.ba?' <span class="bastar">★</span>':''}</div>
-      ${idl}
-      <div class="flavor">「${h.fl}」</div>
       <div class="desc">${h.desc}</div>
       ${delta}
       ${statusTags}
@@ -3424,7 +3421,6 @@ function renderBuildPanel(){
     html += `<div class="bcard sc-${SCHOOL_CLASS[h.school]||''}" style="border-left-color:var(--${h.school==='脑'?'blue':h.school==='手'?'red':'green'})">
       <div class="bico">${h.ico}</div><div class="bmain">
       <div><span class="bname">${h.name}</span><span class="bmeta">${SCHOOL_LABEL[h.school]||h.school} · ${RAR_LABEL[h.rar]}${dest}</span></div>
-      <div class="bfl">「${h.fl}」</div>
       <div class="bdesc">${h.desc}</div></div></div>`;
   });
   const res = activeResonances();
