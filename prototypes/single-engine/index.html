@@ -532,7 +532,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.7</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.7.1</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -2801,7 +2801,7 @@ function updateHUD(){
   const eEl=document.getElementById('sEnergy');
   if(eEl._t!==Math.floor(P.energy)){ eEl._t=Math.floor(P.energy); rollNum(eEl, Math.floor(P.energy), 350); }
   eEl.style.color = P.energy<0 ? 'var(--red)' : '';
-  eEl.parentElement.style.setProperty('--ep', Math.max(0,Math.min(1,P.energy/K.ENERGY_MAX)));
+  if(eEl.parentElement && eEl.parentElement.style) eEl.parentElement.style.setProperty('--ep', Math.max(0,Math.min(1,P.energy/K.ENERGY_MAX)));
   {  // 过载=充能宝珠(层数画出来,不报数)
     const so=document.getElementById('sOver'), om=overloadMax();
     const key='g'+om+'_'+P.overloadStacks;
