@@ -226,7 +226,12 @@
   .topbar,.towerwrap,.scene,.hud,.tierchips,.trialbar,.qbox,.releases,#keypad{position:relative; z-index:1;}   /* 只提流内元素;banner/toast/vsplash 等浮层保持各自定位 */
   .fxon .core{opacity:0;}
   .fxon .chargebar{opacity:0;}
-  .fxon .scene{background:transparent; border-color:rgba(30,42,66,.4);}
+  .fxon .scene{background:transparent; border-color:transparent;}
+  .fxon .hud .stat{background:transparent; border-color:transparent;}
+  .fxon .hud .stat .v{text-shadow:0 0 16px currentColor, 0 2px 0 rgba(0,0,0,.85);}
+  .fxon .qbox{background:linear-gradient(180deg, rgba(10,16,30,.62), rgba(8,13,24,.86)); border-color:transparent; border-top:1px solid rgba(63,231,255,.28); backdrop-filter:blur(3px);}
+  .fxon .rbtn{border-radius:8px;}
+  .fxon .rbtn.ready{box-shadow:0 0 18px rgba(255,207,77,.4), inset 0 0 14px rgba(255,207,77,.12);}
   .releases{width:100%; display:flex; gap:9px;}
   .rbtn{flex:1; padding:9px 6px; border-radius:12px; font-size:13.5px; font-weight:800; border:1px solid var(--line2); background:linear-gradient(180deg,var(--panel),#080e1c); display:flex; flex-direction:column; gap:1px; align-items:center; transition:transform .1s, box-shadow .25s; position:relative;}
   .rbtn .cost{font-size:10px; font-weight:700; color:var(--dim);}
@@ -507,7 +512,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.5</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.6</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1010,9 +1015,14 @@ function stopAmbient(){
 const FX = (function(){
   const stub = {real:false, ensure(){}, hit(){}, strike(){}, rage(){}, shatter(){}};
   if(typeof PIXI==='undefined' || typeof window==='undefined') return stub;
-  const THEME = [0x3fe7ff, 0xb561ff, 0xff5470];   // 磐石Σ青 / 猎手Ω紫 / 霸主Δ红
+  // 环的性格即角色性格:石=少段厚环慢转 / 影=三细环快转+出手前瞬缩 / 焰=三角锐环+火粒外溢
+  const THEMES = [
+    {hex:0x3fe7ff, rings:[{r:6,n:6,len:0.62,w:3.5,sp:0.008},{r:16,n:4,len:0.70,w:2.5,sp:-0.005}]},
+    {hex:0xb561ff, rings:[{r:5,n:12,len:0.22,w:1.5,sp:0.030},{r:12,n:9,len:0.25,w:1.2,sp:-0.042},{r:19,n:7,len:0.20,w:1.0,sp:0.052}], preShrink:true},
+    {hex:0xff5470, rings:[{r:7,n:3,len:0.95,w:3.2,sp:0.016},{r:17,n:3,len:0.55,w:2.0,sp:-0.024}], fire:true},
+  ];
   let app=null, layerFoe, layerFx;
-  let foeC, orb, ringA, ringB, glyphT, aura, chargeG, shadowG;
+  let foeC, orb, glyphT, aura, chargeG, shadowG, rings=[], ringScale=1, stopN=0, waves=[];
   let embers=[], floats=[], parts=[], dotTex=null, triTex=null;
   let anchor={x:260,y:80,r:44}, shake=0, lunge=0, squash=0, t=0, syncT=0, foeAlpha=1;
   function C(hex){ return parseInt(String(hex||'#ffffff').replace('#',''),16)||0xffffff; }
@@ -1038,11 +1048,12 @@ const FX = (function(){
     // 守门者实体
     foeC=new PIXI.Container();
     shadowG=new PIXI.Graphics(); aura=new PIXI.Graphics();
-    ringA=new PIXI.Graphics(); ringB=new PIXI.Graphics();
+    rings=[new PIXI.Graphics(), new PIXI.Graphics(), new PIXI.Graphics()];
+    rings.forEach(g=>g._rot=0);
     orb=new PIXI.Graphics(); chargeG=new PIXI.Graphics();
     glyphT=new PIXI.Text('Σ',{fontFamily:'Arial Black,Arial,sans-serif',fontSize:40,fontWeight:'900',fill:0xffffff,dropShadow:true,dropShadowBlur:8,dropShadowAlpha:0.6,dropShadowDistance:0});
     glyphT.anchor.set(0.5);
-    foeC.addChild(shadowG,aura,ringA,ringB,orb,chargeG,glyphT);
+    foeC.addChild(shadowG,aura,rings[0],rings[1],rings[2],orb,chargeG,glyphT);
     layerFoe.addChild(foeC);
     const b=document.getElementById('battle'); if(b) b.classList.add('fxon');
     app.ticker.add(tick);
@@ -1066,7 +1077,7 @@ const FX = (function(){
     anchor.y = br.top-rr.top+Math.min(64, br.height*0.5);
     anchor.r = Math.min(52, Math.max(38, br.width*0.24));
   }
-  function theme(){ return THEME[Math.min(((typeof R!=='undefined'&&R&&R.section)||1)-1,2)]; }
+  function theme(){ return THEMES[Math.min(((typeof R!=='undefined'&&R&&R.section)||1)-1,2)]; }
   function dashes(g,r,n,len,col,alpha,w){
     g.clear();
     for(let i=0;i<n;i++){
@@ -1080,14 +1091,15 @@ const FX = (function(){
     const battle = (typeof CUR_SCREEN!=='undefined' && CUR_SCREEN==='battle' && typeof E!=='undefined' && E && typeof P!=='undefined' && P);
     app.stage.visible = battle;
     if(!battle) return;
+    if(stopN>0){ stopN--; return; }   // 顿帧:暴击的那一下,世界停 3 帧
     if(++syncT>30){ syncT=0; syncAnchor(); resize(); }
     const now=Date.now(), th=theme();
     const stunned=now<E.stunnedUntil, frozen=now<E.frozenUntil, rev=now<E.reversedUntil, stag=now<E.staggeredUntil, enraged=!!E.phase2;
-    const col = frozen?0x9adfff : th;
+    const col = frozen?0x9adfff : th.hex;
     // 余烬
     const W=app.renderer.width/app.renderer.resolution, H=app.renderer.height/app.renderer.resolution;
     embers.forEach(sp=>{
-      sp.tint=th; sp.x+=sp._vx+Math.sin((t+sp._ph*60)*0.01)*0.2; sp.y+=sp._vy;
+      sp.tint=th.hex; sp.x+=sp._vx+Math.sin((t+sp._ph*60)*0.01)*0.2; sp.y+=sp._vy;
       sp.alpha=0.10+0.10*Math.sin(t*0.02+sp._ph);
       if(sp.y<-8||sp.x<-8||sp.x>W+8){ sp.y=H+6; sp.x=Math.random()*W; }
     });
@@ -1104,12 +1116,36 @@ const FX = (function(){
     foeC.scale.set(breath*(1+squash), breath*(1-squash));
     // 形体
     const r=anchor.r;
-    shadowG.clear().beginFill(th,0.12).drawEllipse(0,r+24,r*1.5,9).endFill();
+    shadowG.clear().beginFill(th.hex,0.12).drawEllipse(0,r+24,r*1.5,9).endFill();
     const ar=r+15+Math.sin(t*0.08)*4+(enraged?8:0);
     aura.clear().beginFill(enraged?0xff5470:col, enraged?0.15:0.08).drawCircle(0,0,ar).endFill();
-    if(!stunned&&!frozen){ ringA.rotation+=0.012+(enraged?0.02:0); ringB.rotation-=0.017; }
-    dashes(ringA, r+6, 8, 0.42, col, 0.9, 2);
-    dashes(ringB, r+16, 5, 0.5, col, 0.45, 1.5);
+    // 环性格:配置驱动;猎手出手前瞬缩(读条 ≥85% 收拢=起手式)
+    const pct0=Math.max(0,Math.min(1,E.charge/((E.chargeNeed||8)*1000)));
+    const tgt=(th.preShrink && pct0>0.85 && !stunned && !frozen) ? 0.86 : 1;
+    ringScale += (tgt-ringScale)*0.15;
+    for(let i=0;i<3;i++){
+      const cfg=th.rings[i];
+      if(!cfg){ rings[i].clear(); continue; }
+      if(!stunned&&!frozen) rings[i]._rot += cfg.sp*(enraged?2.2:1);
+      rings[i].rotation = rings[i]._rot;
+      rings[i].scale.set(ringScale);
+      dashes(rings[i], (r+cfg.r)*1, cfg.n, cfg.len, col, i===0?0.9:(i===1?0.55:0.4), cfg.w);
+    }
+    // 霸主:火粒外溢
+    if(th.fire && t%6===0 && foeAlpha>0.5){
+      const sp=new PIXI.Sprite(dotTex); sp.anchor.set(0.5);
+      sp.tint=Math.random()<0.5?0xff5470:0xffcf4d;
+      sp.x=anchor.x+(Math.random()-0.5)*r*1.6; sp.y=anchor.y+(Math.random()-0.5)*r;
+      sp._vx=(Math.random()-0.5)*0.6; sp._vy=-(0.8+Math.random()*1.2); sp._g=-0.01; sp._f=0.02;
+      sp.scale.set(0.3+Math.random()*0.4);
+      layerFx.addChild(sp); parts.push(sp);
+    }
+    // 冲击波(暴击涟漪)
+    for(let i=waves.length-1;i>=0;i--){ const wv=waves[i];
+      wv.rr+=wv.sp; wv.a-=0.045;
+      wv.g.clear();
+      if(wv.a>0) wv.g.lineStyle(3,wv.c,wv.a).drawCircle(wv.x,wv.y,wv.rr);
+      else { layerFx.removeChild(wv.g); waves.splice(i,1); } }
     orb.clear()
       .beginFill(col,0.14).drawCircle(0,0,r).endFill()
       .beginFill(col,0.30).drawCircle(0,0,r*0.66).endFill()
@@ -1117,7 +1153,7 @@ const FX = (function(){
       .lineStyle(1.5,col,0.9).drawCircle(0,0,r);
     glyphT.text=(E.glyph||'Σ'); glyphT.y=Math.sin(t*0.05)*2;
     // 充能弧:满弧渐红;点名倒流=紫
-    const pct=Math.max(0,Math.min(1,E.charge/((E.chargeNeed||8)*1000)));
+    const pct=pct0;
     const cc = rev?0xb561ff : (pct>0.72?0xff5470 : col);
     chargeG.clear();
     if(pct>0.01){
@@ -1160,11 +1196,15 @@ const FX = (function(){
       if(kind && kind!=='普攻' && !secondary) dmgText(anchor.x, anchor.y+18, kind, col, 13, false);
       burst(anchor.x, anchor.y, col, Math.min(24, 4+Math.round(amount/8)), crit?4.6:2.6, 0.08);
       squash=Math.min(0.3, squash+(crit?0.22:0.1));
-      if(crit) shake=Math.max(shake,9); else shake=Math.max(shake, Math.min(5, amount/24));
+      if(crit){
+        shake=Math.max(shake,9); stopN=3;   // 顿帧
+        const g=new PIXI.Graphics(); layerFx.addChild(g);
+        waves.push({g, x:anchor.x, y:anchor.y, rr:anchor.r*0.6, sp:5.5, a:0.9, c:col});
+      } else shake=Math.max(shake, Math.min(5, amount/24));
     },
     strike(){ if(!app) return; lunge=34; shake=Math.max(shake,7); burst(anchor.x-anchor.r-6, anchor.y+6, 0xff5470, 8, 3, 0.1); },
     rage(){ if(!app) return; shake=Math.max(shake,10); burst(anchor.x, anchor.y, 0xff5470, 26, 5, 0.05); },
-    shatter(){ if(!app) return; shake=Math.max(shake,11); const th=theme(); burst(anchor.x, anchor.y, th, 34, 6, 0.12); burst(anchor.x, anchor.y, 0xffffff, 12, 3.4, 0.1); },
+    shatter(){ if(!app) return; shake=Math.max(shake,11); const th=theme(); burst(anchor.x, anchor.y, th.hex, 34, 6, 0.12); burst(anchor.x, anchor.y, 0xffffff, 12, 3.4, 0.1); },
   };
 })();
 
