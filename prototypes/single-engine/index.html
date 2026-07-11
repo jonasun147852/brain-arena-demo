@@ -532,7 +532,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.10.2</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.10.3</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1141,7 +1141,7 @@ const HEXES = [
   {id:'h10',name:'只练这一锤',ico:'🔨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'此生,只练这一锤。',       desc:'重技能伤害 <b>×1.5</b>,但<b>失去</b>轻技能'},
   {id:'h11',name:'深渊的注视',ico:'☢️',school:'脑',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限提升至 <b>8</b> 层,每层额外 <b>+2</b> 攻击力'},
   {id:'h12',name:'赌徒之门',ico:'🎲',school:'脑',rar:'prism',cat:'转化',ba:false,   fl:'门后是什么,开了才知道。', desc:'技能消耗降低 <b>20</b> 能量;但施放时有 <b>20%</b> 概率<b>哑火</b>,效果减半'},
-  {id:'h13',name:'饮血',ico:'🌀',school:'脑',rar:'gold',cat:'成长',ba:false, grow:true, idline:'放大招回能,刀永久变利',        fl:'它的痛,是你的粮。',       desc:'重技能命中时回复 <b>40</b> 能量,并<b>永久 +2</b> 攻击力'},
+  {id:'h13',name:'饮血',ico:'🌀',school:'脑',rar:'gold',cat:'成长',ba:false, grow:true, idline:'回复能量,永久成长',        fl:'它的痛,是你的粮。',       desc:'重技能命中时回复 <b>40</b> 能量,并<b>永久 +2</b> 攻击力'},
   {id:'h14',name:'第五个答案',ico:'🗝️',school:'心',rar:'prism',cat:'引擎',ba:false,      fl:'塔,在第五答开门。',       desc:'每答对 <b>5</b> 题,对对手造成一次<b>额外攻击</b>,并<b>定身</b>对手'},
   {id:'h15',name:'千钧一发',ico:'⏳',school:'心',rar:'gold',cat:'改写规则',ba:false, fl:'最后一刻,刀最快。',       desc:'千钧区答对:伤害 <b>+50%</b> 并回复 10 能量;千钧区答错:对手<b>立即攻击</b>'},
   {id:'h16',name:'成王败寇',ico:'👑',school:'手',rar:'prism',cat:'转化',ba:false,    fl:'赢的人,书写规则。',       desc:'重技能改为<b>押注</b>:立即出现一道难题——答对,伤害<b>翻倍</b>;答错,伤害<b>归零</b>'},
@@ -1169,10 +1169,10 @@ const HEXES = [
   {id:'u10',name:'拍桌',ico:'🫱',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s08', fl:'谁的桌子响,谁有理。', desc:'举手觉醒:暂停延长至 <b>5</b> 秒,且期间<b>可以作答</b>'},
   {id:'u11',name:'罚站',ico:'🧍',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s09', fl:'答不上来,就站好。', desc:'点名觉醒:充能被倒转至 0 时,<b>定身</b>对手 2 秒,期间受到的伤害提高'},
   // 高成长卡(只进前两抽;拿到自带预热)
-  {id:'g01',name:'织衣',ico:'🧥',school:'手',rar:'gold',cat:'成长',ba:false, grow:true, idline:'一题一针,越答越疼',   fl:'腋下的毛,攒成大衣。', desc:'每答对 <b>2</b> 题,攻击力永久 <b>+1</b>(上限 +10)'},
-  {id:'g02',name:'手感来了',ico:'🎓',school:'脑',rar:'gold',cat:'成长',ba:false, grow:true, idline:'技能越放越便宜',     fl:'手熟了,力气就省了。', desc:'每答对 <b>3</b> 题,技能消耗降低 3(轻技能最低 30,重技能最低 70)'},
-  {id:'g03',name:'狂野生长',ico:'🌿',school:'手',rar:'gold',cat:'成长',ba:false, grow:true, idline:'一刀下去,伤到一片', fl:'根扎得深,枝就长得远。', desc:'每答对 <b>3</b> 题,溅射伤害提高 5%(上限 <b>+30%</b>)'},
-  {id:'g04',name:'连续击鼓',ico:'🥁',school:'心',rar:'prism',cat:'成长',ba:false, grow:true, idline:'只要不错,就一直变强', fl:'鼓声一断,气就泄了。', desc:'每答对一题,攻击力 <b>+1</b>(上限 +12);答错<b>减半</b>,连续答错则<b>全部清零</b>'},
+  {id:'g01',name:'织衣',ico:'🧥',school:'手',rar:'gold',cat:'成长',ba:false, grow:true, idline:'攻击力持续成长',   fl:'腋下的毛,攒成大衣。', desc:'每答对 <b>2</b> 题,攻击力永久 <b>+1</b>(上限 +10)'},
+  {id:'g02',name:'手感来了',ico:'🎓',school:'脑',rar:'gold',cat:'成长',ba:false, grow:true, idline:'技能消耗持续降低',     fl:'手熟了,力气就省了。', desc:'每答对 <b>3</b> 题,技能消耗降低 3(轻技能最低 30,重技能最低 70)'},
+  {id:'g03',name:'狂野生长',ico:'🌿',school:'手',rar:'gold',cat:'成长',ba:false, grow:true, idline:'溅射伤害持续成长', fl:'根扎得深,枝就长得远。', desc:'每答对 <b>3</b> 题,溅射伤害提高 5%(上限 <b>+30%</b>)'},
+  {id:'g04',name:'连续击鼓',ico:'🥁',school:'心',rar:'prism',cat:'成长',ba:false, grow:true, idline:'不出错,就不停变强', fl:'鼓声一断,气就泄了。', desc:'每答对一题,攻击力 <b>+1</b>(上限 +12);答错<b>减半</b>,连续答错则<b>全部清零</b>'},
   {id:'h19',name:'落袋为安',ico:'👝',school:'脑',rar:'gold',cat:'转化',ba:false, fl:'钱到手,才算钱。', desc:'每答对一题,侧袋存入 <b>5</b> 能量(上限 40);施放技能时<b>全额结算</b>;答错则侧袋<b>清空</b>'},
   {id:'h20',name:'先斩后奏',ico:'🧾',school:'手',rar:'prism',cat:'转化',ba:false, fl:'刀已出,账后算。', desc:'施放技能时<b>暂不扣费</b>:下一题答对,只支付<b>七成</b>;答错,支付<b>一倍半</b>'},
   // 联动卡(读技能槽行为)
