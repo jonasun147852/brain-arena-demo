@@ -73,6 +73,26 @@ three guardian sigils (cyan sigma, violet omega, red delta) orbiting the tower,
 epic scale, title splash composition with dark space at top for logo --ar 16:9
 ```
 
+## 第二批 · 炉石质感包(UI 材质件,2026-07-11 增)
+
+> 目标:「符文机枢」三分法(圣经 §7.5)。**分层用锚,不许混**:
+> - **框架件锚(Arena 冷)**:`dark etched metal game UI frame, hextech style, engraved rune lines, beveled edges, subtle cyan energy seams, brushed gunmetal --no wood, warm light, plastic`
+> - **交互件锚(金铲铲 亮)**:`polished enamel and gem game button, saturated inlay, soft specular highlight, matte metal socket, TFT mobile style, clean silhouette --no flat vector`
+> - **内容件锚(炉石 暖)**:`hand-painted illustration, visible painterly brushstrokes, warm rim light, blizzard style --no photo, 3d render`
+
+| # | 资产 | 层/锚 | 文件名 | 尺寸 | Prompt 要点 |
+|---|---|---|---|---|---|
+| 9 | 题目控制台框 | 框架(冷) | ui-console@2x.png | 1024×512 九宫格 | etched gunmetal tablet frame, rune-engraved border, empty center, cyan energy seam corners |
+| 10 | 技能瓦片底 ×2 | 交互(亮) | ui-tile-{light,heavy}@2x.png | 512² | enamel gem button socket, {cyan crystal / amber ember} inlay, matte metal bezel |
+| 11 | Boss 血条框 | 框架(冷) | ui-bossbar@2x.png | 2048×128 九宫格 | hextech metal health bar housing, segmented, engraved caps |
+| 12 | 玩家血条框 | 框架(冷) | ui-hpbar@2x.png | 1024×96 | compact etched metal bar frame, green gem end-caps |
+| 13 | 过载宝珠 ×2 | 交互(亮) | ui-gem-{off,lit}@2x.png | 128² | rhombus enamel gem, {dark socket / glowing violet lit} |
+| 14 | 稀有度徽章 ×3 | 交互(亮) | ui-badge-{silver,gold,prism}@2x.png | 256² | enamel rarity emblem, {silver/gold/iridescent} |
+| 15 | 卡面底纹 ×3 | 内容(暖) | ui-cardbg-{silver,gold,prism}@2x.png | 3:4 | hand-painted card back, subtle {silver/gold/prismatic} filigree |
+| 16 | 发牌幕布 | 内容(暖) | ui-drafttable@2x.jpg | 16:9 | painted dark arcane cloth backdrop, faint rune weave, vignette |
+
+生成技巧:每件出 4 张挑最干净的;UI 件比立绘更吃"边缘干净",提示词里加 clean silhouette, centered, symmetrical;九宫格件要求四角装饰对称。
+
 ## 验收清单(每件资产过一遍)
 - [ ] 暗部占比 ≥70%,能沉进 #04060c 底色
 - [ ] 主宰色相正确,没有第四个高饱和色相入侵(圣经 1.3)

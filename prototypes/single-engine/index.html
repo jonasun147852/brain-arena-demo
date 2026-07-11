@@ -241,6 +241,20 @@
   .fxon .qbox{background:linear-gradient(180deg, rgba(10,16,30,.62), rgba(8,13,24,.86)); border-color:transparent; border-top:1px solid rgba(63,231,255,.28); backdrop-filter:blur(3px);}
   .fxon .rbtn{border-radius:8px;}
   .ricon{font-size:24px; line-height:1.05; filter:drop-shadow(0 0 6px rgba(63,231,255,.35));}
+  /* ===== 符文机枢 · 程序化材质近似(圣经 §7.5;位图资产到位前的预览) ===== */
+  .fxon .qbox{ box-shadow: inset 0 1px 0 rgba(255,255,255,.07), inset 0 -1px 0 rgba(0,0,0,.55), 0 8px 28px -14px rgba(0,0,0,.9); }
+  .towerbar, .phpbar{ border-color:#39435c; box-shadow: inset 0 2px 6px rgba(0,0,0,.75), inset 0 -1px 0 rgba(255,255,255,.06), 0 1px 0 rgba(255,255,255,.05); }
+  .rbtn{ background:linear-gradient(180deg,#1a2440,#0b1322 55%,#080e1c) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.09), inset 0 -2px 7px rgba(0,0,0,.55); border-color:#39435c; }
+  .rbtn .ricon{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto;
+    background:radial-gradient(circle at 35% 28%, rgba(255,255,255,.20), rgba(63,231,255,.07) 45%, rgba(4,8,16,.6) 75%);
+    box-shadow: inset 0 1px 2px rgba(255,255,255,.16), inset 0 -3px 6px rgba(0,0,0,.55), 0 0 12px rgba(63,231,255,.14); }
+  .rbtn.big .ricon{ box-shadow: inset 0 1px 2px rgba(255,255,255,.16), inset 0 -3px 6px rgba(0,0,0,.55), 0 0 12px rgba(255,207,77,.16);
+    background:radial-gradient(circle at 35% 28%, rgba(255,255,255,.20), rgba(255,207,77,.09) 45%, rgba(16,10,4,.6) 75%); }
+  .odgem.lit{ background:radial-gradient(circle at 35% 28%, #e9c8ff, #b561ff 55%, #6b2fa0); border-color:#d9b3ff; }
+  .qopt .qn{ background:radial-gradient(circle at 35% 28%, #c6f4ff, rgba(63,231,255,.9) 60%, #1587a8);
+    box-shadow: inset 0 1px 1px rgba(255,255,255,.4), inset 0 -1px 2px rgba(0,0,0,.35); }
+  .card{ box-shadow: inset 0 1px 0 rgba(255,255,255,.05), inset 0 -1px 0 rgba(0,0,0,.5); }
   /* ===== 玩家大血条(余光可感原则) ===== */
   .php{width:100%; display:flex; align-items:center; gap:8px; position:relative; z-index:1;}
   .phplab{font-size:13px;}
@@ -560,7 +574,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.11</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.12</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
