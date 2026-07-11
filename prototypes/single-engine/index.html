@@ -532,7 +532,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.10</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.10.1</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1131,10 +1131,10 @@ const GRADE_FLAVOR = {S:'宗师', A:'高手', B:'熟练', C:'学徒', D:'梦游'
 const HEXES = [
   {id:'h01',name:'早到的雪',ico:'❄️',school:'心',rar:'silver',cat:'改写规则',ba:true,   fl:'雪,比所有人先落。',       desc:'连击奖励提前触发:<b>2/4/6</b> 连击即解锁(原为 3/6/9)'},
   {id:'h02',name:'不化的雪',ico:'🛡️',school:'心',rar:'gold',cat:'改写规则',ba:false,fl:'雪线之下,寸雪不失。',     desc:'答错时,连击不再减半,仅<b>回落至上一档</b>'},
-  {id:'h03',name:'山的回应',ico:'⚡',school:'心',rar:'prism',cat:'改写规则',ba:false,   fl:'山,替你喊出第二声。',     desc:'双响的触发门槛降至 <b>7</b> 连击(原为 9)'},
-  {id:'h04',name:'借来的风',ico:'🚀',school:'脑',rar:'silver',cat:'引擎',ba:false,     fl:'风未停,你已至。',         desc:'每次快答获得 1 层风:能量获取 <b>+6%</b>,最多 <b>5</b> 层;慢答时全部消散'},
+  {id:'h03',name:'回声',ico:'⚡',school:'心',rar:'prism',cat:'改写规则',ba:false,   fl:'山,替你喊出第二声。',     desc:'双响的触发门槛降至 <b>7</b> 连击(原为 9)'},
+  {id:'h04',name:'乘风',ico:'🚀',school:'脑',rar:'silver',cat:'引擎',ba:false,     fl:'风未停,你已至。',         desc:'每次快答获得 1 层风:能量获取 <b>+6%</b>,最多 <b>5</b> 层;慢答时全部消散'},
   {id:'h05',name:'破壁人',ico:'🧠',school:'脑',rar:'gold',cat:'改写规则',ba:false,  fl:'墙,是门的原料。',         desc:'高难题目的作答时间<b>延长 50%</b>,答对额外获得 <b>15</b> 能量'},
-  {id:'h06',name:'出鞘的那一刀',ico:'🎯',school:'手',rar:'prism',cat:'引擎',ba:true,       fl:'刀比题快。',               desc:'连续快答 <b>3</b> 题后,下一次攻击伤害<b>翻倍</b>'},
+  {id:'h06',name:'出鞘',ico:'🎯',school:'手',rar:'prism',cat:'引擎',ba:true,       fl:'刀比题快。',               desc:'连续快答 <b>3</b> 题后,下一次攻击伤害<b>翻倍</b>'},
   {id:'h07',name:'一把钝刀',ico:'🪨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'钝,但从不缺席。',         desc:'攻击力提升至 <b>16</b>,但能量获取降低 <b>40%</b>'},
   {id:'h08',name:'盛开的刀',ico:'💥',school:'手',rar:'gold',cat:'改写规则',ba:false,    fl:'一朵刀,开成一片。',       desc:'溅射伤害提升至 <b>60%</b>;对手处于<b>受控状态</b>时,溅射翻倍'},
   {id:'h09',name:'余烬',ico:'🔥',school:'手',rar:'prism',cat:'转化',ba:false,       fl:'火走了,烫还在。',         desc:'攻击命中时施加<b>燃烧</b>:后续 <b>2</b> 题结算时,对对手造成持续伤害'},
@@ -1169,10 +1169,10 @@ const HEXES = [
   {id:'u10',name:'拍桌',ico:'🫱',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s08', fl:'谁的桌子响,谁有理。', desc:'举手觉醒:暂停延长至 <b>5</b> 秒,且期间<b>可以作答</b>'},
   {id:'u11',name:'罚站',ico:'🧍',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s09', fl:'答不上来,就站好。', desc:'点名觉醒:充能被倒转至 0 时,<b>定身</b>对手 2 秒,期间受到的伤害提高'},
   // 高成长卡(只进前两抽;拿到自带预热)
-  {id:'g01',name:'攒出来的大衣',ico:'🧥',school:'手',rar:'gold',cat:'成长',ba:false, grow:true, idline:'一题一针,越答越疼',   fl:'腋下的毛,攒成大衣。', desc:'每答对 <b>2</b> 题,攻击力永久 <b>+1</b>(上限 +10)'},
-  {id:'g02',name:'熟练的手',ico:'🎓',school:'脑',rar:'gold',cat:'成长',ba:false, grow:true, idline:'技能越放越便宜',     fl:'手熟了,力气就省了。', desc:'每答对 <b>3</b> 题,技能消耗降低 3(轻技能最低 30,重技能最低 70)'},
-  {id:'g03',name:'疯长的枝叶',ico:'🌿',school:'手',rar:'gold',cat:'成长',ba:false, grow:true, idline:'一刀下去,伤到一片', fl:'根扎得深,枝就长得远。', desc:'每答对 <b>3</b> 题,溅射伤害提高 5%(上限 <b>+30%</b>)'},
-  {id:'g04',name:'不能停的鼓',ico:'🥁',school:'心',rar:'prism',cat:'成长',ba:false, grow:true, idline:'只要不错,就一直变强', fl:'鼓声一断,气就泄了。', desc:'每答对一题,攻击力 <b>+1</b>(上限 +12);答错<b>减半</b>,连续答错则<b>全部清零</b>'},
+  {id:'g01',name:'织衣',ico:'🧥',school:'手',rar:'gold',cat:'成长',ba:false, grow:true, idline:'一题一针,越答越疼',   fl:'腋下的毛,攒成大衣。', desc:'每答对 <b>2</b> 题,攻击力永久 <b>+1</b>(上限 +10)'},
+  {id:'g02',name:'手感',ico:'🎓',school:'脑',rar:'gold',cat:'成长',ba:false, grow:true, idline:'技能越放越便宜',     fl:'手熟了,力气就省了。', desc:'每答对 <b>3</b> 题,技能消耗降低 3(轻技能最低 30,重技能最低 70)'},
+  {id:'g03',name:'狂野生长',ico:'🌿',school:'手',rar:'gold',cat:'成长',ba:false, grow:true, idline:'一刀下去,伤到一片', fl:'根扎得深,枝就长得远。', desc:'每答对 <b>3</b> 题,溅射伤害提高 5%(上限 <b>+30%</b>)'},
+  {id:'g04',name:'连续击鼓',ico:'🥁',school:'心',rar:'prism',cat:'成长',ba:false, grow:true, idline:'只要不错,就一直变强', fl:'鼓声一断,气就泄了。', desc:'每答对一题,攻击力 <b>+1</b>(上限 +12);答错<b>减半</b>,连续答错则<b>全部清零</b>'},
   {id:'h19',name:'落袋为安',ico:'👝',school:'脑',rar:'gold',cat:'转化',ba:false, fl:'钱到手,才算钱。', desc:'每答对一题,侧袋存入 <b>5</b> 能量(上限 40);施放技能时<b>全额结算</b>;答错则侧袋<b>清空</b>'},
   {id:'h20',name:'先斩后奏',ico:'🧾',school:'手',rar:'prism',cat:'转化',ba:false, fl:'刀已出,账后算。', desc:'施放技能时<b>暂不扣费</b>:下一题答对,只支付<b>七成</b>;答错,支付<b>一倍半</b>'},
   // 联动卡(读技能槽行为)
