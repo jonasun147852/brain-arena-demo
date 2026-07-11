@@ -255,6 +255,14 @@
   .qopt .qn{ background:radial-gradient(circle at 35% 28%, #c6f4ff, rgba(63,231,255,.9) 60%, #1587a8);
     box-shadow: inset 0 1px 1px rgba(255,255,255,.4), inset 0 -1px 2px rgba(0,0,0,.35); }
   .card{ box-shadow: inset 0 1px 0 rgba(255,255,255,.05), inset 0 -1px 0 rgba(0,0,0,.5); }
+  /* ===== 符文机枢 · 位图资产接线(AI 生成,渐进增强) ===== */
+  .fxon .qbox{ border:22px solid transparent; border-image:url('art/ui-console.png') 96 fill / 22px stretch; border-radius:0; background:none; backdrop-filter:none; }
+  .rbtn{ background:url('art/ui-tile-light.png') center/100% 100% no-repeat !important; border:none !important; box-shadow:0 4px 14px rgba(0,0,0,.5) !important; }
+  .rbtn.big{ background-image:url('art/ui-tile-heavy.png') !important; }
+  .rbtn .rfill{ opacity:.35; }
+  .odgem{ width:15px; height:15px; border:none; transform:none; border-radius:0;
+    background:url('art/ui-gem-off.png') center/contain no-repeat; box-shadow:none; }
+  .odgem.lit{ background:url('art/ui-gem-lit.png') center/contain no-repeat; box-shadow:none; }
   /* ===== 玩家大血条(余光可感原则) ===== */
   .php{width:100%; display:flex; align-items:center; gap:8px; position:relative; z-index:1;}
   .phplab{font-size:13px;}
@@ -574,7 +582,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.12</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.13</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
