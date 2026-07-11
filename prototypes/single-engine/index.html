@@ -220,6 +220,13 @@
   .qinput{caret-color:var(--cyan); transition:transform .08s;}
   .qinput.pop{transform:scale(1.045);}
 
+  /* ===== 游戏感渲染层 ===== */
+  #pixiRoot{position:absolute; inset:0; z-index:0; pointer-events:none;}
+  #pixiRoot canvas{position:absolute; inset:0; width:100%; height:100%;}
+  .topbar,.towerwrap,.scene,.hud,.tierchips,.trialbar,.qbox,.releases,#keypad{position:relative; z-index:1;}   /* 只提流内元素;banner/toast/vsplash 等浮层保持各自定位 */
+  .fxon .core{opacity:0;}
+  .fxon .chargebar{opacity:0;}
+  .fxon .scene{background:transparent; border-color:rgba(30,42,66,.4);}
   .releases{width:100%; display:flex; gap:9px;}
   .rbtn{flex:1; padding:9px 6px; border-radius:12px; font-size:13.5px; font-weight:800; border:1px solid var(--line2); background:linear-gradient(180deg,var(--panel),#080e1c); display:flex; flex-direction:column; gap:1px; align-items:center; transition:transform .1s, box-shadow .25s; position:relative;}
   .rbtn .cost{font-size:10px; font-weight:700; color:var(--dim);}
@@ -500,13 +507,14 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.4</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.5</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
 
   <!-- BATTLE -->
   <div id="battle" class="screen hidden">
+    <div id="pixiRoot"></div>
     <div class="topbar">
       <span class="sec" id="bSec">第 1 节</span>
       <span class="foename" id="foeName">磐石 · Σ</span>
@@ -647,6 +655,7 @@
   </div>
 
 </div>
+<script src="vendor/pixi.min.js"></script>
 <script>
 /* ============================== §14 可调常量 ============================== */
 const DEFAULTS = {
@@ -996,6 +1005,169 @@ function stopAmbient(){
   }catch(e){}
   AU.amb=null;
 }
+
+/* ============================== 游戏感渲染层:PixiJS 战斗舞台(拉取式读状态,零逻辑侵入;无 PIXI 自动空壳) ============================== */
+const FX = (function(){
+  const stub = {real:false, ensure(){}, hit(){}, strike(){}, rage(){}, shatter(){}};
+  if(typeof PIXI==='undefined' || typeof window==='undefined') return stub;
+  const THEME = [0x3fe7ff, 0xb561ff, 0xff5470];   // 磐石Σ青 / 猎手Ω紫 / 霸主Δ红
+  let app=null, layerFoe, layerFx;
+  let foeC, orb, ringA, ringB, glyphT, aura, chargeG, shadowG;
+  let embers=[], floats=[], parts=[], dotTex=null, triTex=null;
+  let anchor={x:260,y:80,r:44}, shake=0, lunge=0, squash=0, t=0, syncT=0, foeAlpha=1;
+  function C(hex){ return parseInt(String(hex||'#ffffff').replace('#',''),16)||0xffffff; }
+  function mkDot(){ const g=new PIXI.Graphics().beginFill(0xffffff).drawCircle(0,0,4).endFill(); return app.renderer.generateTexture(g); }
+  function mkTri(){ const g=new PIXI.Graphics().beginFill(0xffffff).drawPolygon([0,-6,5,4,-5,4]).endFill(); return app.renderer.generateTexture(g); }
+  function boot(){
+    if(app) return;
+    const el=document.getElementById('pixiRoot');
+    if(!el || !el.appendChild) return;
+    try{ app = new PIXI.Application({backgroundAlpha:0, antialias:true, resolution:Math.min(2,window.devicePixelRatio||1), autoDensity:true}); }catch(e){ return; }
+    el.appendChild(app.view);
+    dotTex=mkDot(); triTex=mkTri();
+    layerFoe=new PIXI.Container(); layerFx=new PIXI.Container();
+    app.stage.addChild(layerFoe, layerFx);
+    // 氛围余烬
+    for(let i=0;i<36;i++){
+      const sp=new PIXI.Sprite(dotTex); sp.anchor.set(0.5);
+      sp._vx=(Math.random()-0.5)*0.25; sp._vy=-(0.2+Math.random()*0.55); sp._ph=Math.random()*7;
+      sp.scale.set(0.2+Math.random()*0.5); sp.alpha=0;
+      sp.x=Math.random()*800; sp.y=Math.random()*600;
+      embers.push(sp); app.stage.addChildAt(sp,0);
+    }
+    // 守门者实体
+    foeC=new PIXI.Container();
+    shadowG=new PIXI.Graphics(); aura=new PIXI.Graphics();
+    ringA=new PIXI.Graphics(); ringB=new PIXI.Graphics();
+    orb=new PIXI.Graphics(); chargeG=new PIXI.Graphics();
+    glyphT=new PIXI.Text('Σ',{fontFamily:'Arial Black,Arial,sans-serif',fontSize:40,fontWeight:'900',fill:0xffffff,dropShadow:true,dropShadowBlur:8,dropShadowAlpha:0.6,dropShadowDistance:0});
+    glyphT.anchor.set(0.5);
+    foeC.addChild(shadowG,aura,ringA,ringB,orb,chargeG,glyphT);
+    layerFoe.addChild(foeC);
+    const b=document.getElementById('battle'); if(b) b.classList.add('fxon');
+    app.ticker.add(tick);
+  }
+  function ensure(){
+    boot();
+    if(app){ requestAnimationFrame(()=>{ resize(); syncAnchor(); }); }
+  }
+  function resize(){
+    const el=document.getElementById('pixiRoot');
+    if(!app||!el) return;
+    const w=el.clientWidth||window.innerWidth, h=el.clientHeight||window.innerHeight;
+    if(w>0&&h>0) app.renderer.resize(w,h);
+  }
+  function syncAnchor(){
+    const f=document.getElementById('foeF'), rt=document.getElementById('pixiRoot');
+    if(!f||!rt||!f.getBoundingClientRect) return;
+    const br=f.getBoundingClientRect(), rr=rt.getBoundingClientRect();
+    if(br.width===0) return;
+    anchor.x = br.left-rr.left+br.width/2;
+    anchor.y = br.top-rr.top+Math.min(64, br.height*0.5);
+    anchor.r = Math.min(52, Math.max(38, br.width*0.24));
+  }
+  function theme(){ return THEME[Math.min(((typeof R!=='undefined'&&R&&R.section)||1)-1,2)]; }
+  function dashes(g,r,n,len,col,alpha,w){
+    g.clear();
+    for(let i=0;i<n;i++){
+      const a0=i/n*Math.PI*2;
+      g.lineStyle(w,col,alpha).arc(0,0,r,a0,a0+len);
+      g.moveTo(Math.cos(a0+len+0.2)*r, Math.sin(a0+len+0.2)*r);
+    }
+  }
+  function tick(){
+    t++;
+    const battle = (typeof CUR_SCREEN!=='undefined' && CUR_SCREEN==='battle' && typeof E!=='undefined' && E && typeof P!=='undefined' && P);
+    app.stage.visible = battle;
+    if(!battle) return;
+    if(++syncT>30){ syncT=0; syncAnchor(); resize(); }
+    const now=Date.now(), th=theme();
+    const stunned=now<E.stunnedUntil, frozen=now<E.frozenUntil, rev=now<E.reversedUntil, stag=now<E.staggeredUntil, enraged=!!E.phase2;
+    const col = frozen?0x9adfff : th;
+    // 余烬
+    const W=app.renderer.width/app.renderer.resolution, H=app.renderer.height/app.renderer.resolution;
+    embers.forEach(sp=>{
+      sp.tint=th; sp.x+=sp._vx+Math.sin((t+sp._ph*60)*0.01)*0.2; sp.y+=sp._vy;
+      sp.alpha=0.10+0.10*Math.sin(t*0.02+sp._ph);
+      if(sp.y<-8||sp.x<-8||sp.x>W+8){ sp.y=H+6; sp.x=Math.random()*W; }
+    });
+    // 实体消隐(阶段击破/死亡)
+    const gone = E.dead||E.phaseClear;
+    foeAlpha += ((gone?0:1)-foeAlpha)*0.12;
+    foeC.alpha=foeAlpha;
+    // 位置 + 冲击位移 + 震屏
+    lunge*=0.82; squash*=0.82; if(shake>0) shake*=0.82;
+    const jx=(stag? (Math.random()-0.5)*3 :0) + (shake>0.4? (Math.random()-0.5)*shake :0);
+    const jy=(shake>0.4? (Math.random()-0.5)*shake*0.6 :0);
+    foeC.x=anchor.x - lunge + jx; foeC.y=anchor.y + jy;
+    const breath=1+Math.sin(t*0.05)*0.035+(enraged?Math.sin(t*0.4)*0.02:0);
+    foeC.scale.set(breath*(1+squash), breath*(1-squash));
+    // 形体
+    const r=anchor.r;
+    shadowG.clear().beginFill(th,0.12).drawEllipse(0,r+24,r*1.5,9).endFill();
+    const ar=r+15+Math.sin(t*0.08)*4+(enraged?8:0);
+    aura.clear().beginFill(enraged?0xff5470:col, enraged?0.15:0.08).drawCircle(0,0,ar).endFill();
+    if(!stunned&&!frozen){ ringA.rotation+=0.012+(enraged?0.02:0); ringB.rotation-=0.017; }
+    dashes(ringA, r+6, 8, 0.42, col, 0.9, 2);
+    dashes(ringB, r+16, 5, 0.5, col, 0.45, 1.5);
+    orb.clear()
+      .beginFill(col,0.14).drawCircle(0,0,r).endFill()
+      .beginFill(col,0.30).drawCircle(0,0,r*0.66).endFill()
+      .beginFill(col,0.85).drawCircle(0,0,r*0.30).endFill()
+      .lineStyle(1.5,col,0.9).drawCircle(0,0,r);
+    glyphT.text=(E.glyph||'Σ'); glyphT.y=Math.sin(t*0.05)*2;
+    // 充能弧:满弧渐红;点名倒流=紫
+    const pct=Math.max(0,Math.min(1,E.charge/((E.chargeNeed||8)*1000)));
+    const cc = rev?0xb561ff : (pct>0.72?0xff5470 : col);
+    chargeG.clear();
+    if(pct>0.01){
+      chargeG.lineStyle(4.5, cc, 0.95).arc(0,0,r+11,-Math.PI/2,-Math.PI/2+pct*Math.PI*2);
+    }
+    // 粒子/伤害字
+    for(let i=parts.length-1;i>=0;i--){ const sp=parts[i];
+      sp.x+=sp._vx; sp.y+=sp._vy; sp._vy+=sp._g; sp.alpha-=sp._f; sp.rotation+=sp._vr||0;
+      if(sp.alpha<=0){ layerFx.removeChild(sp); parts.splice(i,1); } }
+    for(let i=floats.length-1;i>=0;i--){ const tx=floats[i];
+      tx.x+=tx._vx; tx.y+=tx._vy; tx._vy+=0.05; tx._life--;
+      if(tx._life<18) tx.alpha=tx._life/18;
+      if(tx._pop>0){ tx.scale.set(tx.scale.x+tx._pop); tx._pop-=0.03; }
+      if(tx._life<=0){ layerFx.removeChild(tx); floats.splice(i,1); } }
+  }
+  function burst(x,y,col,n,speed,g){
+    for(let i=0;i<n;i++){
+      const sp=new PIXI.Sprite(Math.random()<0.4?triTex:dotTex);
+      sp.anchor.set(0.5); sp.tint=col; sp.x=x; sp.y=y;
+      const a=Math.random()*Math.PI*2, v=speed*(0.4+Math.random());
+      sp._vx=Math.cos(a)*v; sp._vy=Math.sin(a)*v-1; sp._g=g; sp._f=0.02+Math.random()*0.02;
+      sp._vr=(Math.random()-0.5)*0.3; sp.scale.set(0.5+Math.random()*0.8);
+      layerFx.addChild(sp); parts.push(sp);
+    }
+  }
+  function dmgText(x,y,str,col,size,crit){
+    const tx=new PIXI.Text(str,{fontFamily:'Arial Black,Arial,sans-serif',fontSize:size,fontWeight:'900',fill:col,
+      stroke:0x05070d, strokeThickness:Math.max(4,size*0.14), dropShadow:crit, dropShadowBlur:10, dropShadowAlpha:0.5, dropShadowDistance:0, dropShadowColor:col});
+    tx.anchor.set(0.5); tx.x=x+(Math.random()-0.5)*26; tx.y=y-10;
+    tx._vx=(Math.random()-0.5)*1.2; tx._vy=crit?-2.6:-1.8; tx._life=crit?64:46; tx._pop=crit?0.28:0.12;
+    layerFx.addChild(tx); floats.push(tx);
+  }
+  return {
+    real:true, ensure,
+    hit(amount, kind, color, crit, secondary){
+      if(!app) return;
+      const col=C(color);
+      const size = secondary? 15 : Math.min(40, 19+amount*0.09) * (crit?1.35:1);
+      dmgText(anchor.x, anchor.y-(secondary?34:14), (secondary?'':'−')+amount, col, size, crit);
+      if(kind && kind!=='普攻' && !secondary) dmgText(anchor.x, anchor.y+18, kind, col, 13, false);
+      burst(anchor.x, anchor.y, col, Math.min(24, 4+Math.round(amount/8)), crit?4.6:2.6, 0.08);
+      squash=Math.min(0.3, squash+(crit?0.22:0.1));
+      if(crit) shake=Math.max(shake,9); else shake=Math.max(shake, Math.min(5, amount/24));
+    },
+    strike(){ if(!app) return; lunge=34; shake=Math.max(shake,7); burst(anchor.x-anchor.r-6, anchor.y+6, 0xff5470, 8, 3, 0.1); },
+    rage(){ if(!app) return; shake=Math.max(shake,10); burst(anchor.x, anchor.y, 0xff5470, 26, 5, 0.05); },
+    shatter(){ if(!app) return; shake=Math.max(shake,11); const th=theme(); burst(anchor.x, anchor.y, th, 34, 6, 0.12); burst(anchor.x, anchor.y, 0xffffff, 12, 3.4, 0.1); },
+  };
+})();
+
 /* 桌面:按钮点击会偷走输入焦点,打字打空气——夺回来 */
 function refocus(){
   if(IS_TOUCH || CUR_SCREEN!=='battle') return;
@@ -1272,6 +1444,7 @@ function enemyAttack(){
     updateSceneUI();
     return;
   }
+  FX.strike();
   const atkDmg = Math.round(E.atk * (E.nextAtkMult||1));
   if(E.nextAtkMult>1){ floatText('×2!', '#ff5470', true, true, 'you'); }
   E.nextAtkMult = 1;
@@ -1671,6 +1844,7 @@ function beginSection(){
   document.getElementById('scene').classList.remove('dead');
   document.getElementById('scene').style.setProperty('--enemy', E.color);
   show('battle');
+  FX.ensure();
   renderBuild();
   stopLoop();
   // VS 演出:关卡亮相 + 守门者台词 + 本关装载,演出结束才开战
@@ -2230,7 +2404,8 @@ function dealDamage(amount, kind, color, secondary, raw){
   }
   const crit = !secondary && amount>=70;
   const tag = (kind && kind!=='普攻') ? kind+' ' : '';
-  floatText(`${tag}${secondary?'':'−'}${amount}`, color, secondary, crit, 'foe');
+  if(FX.real){ FX.hit(amount, kind, color, crit, secondary); }
+  else floatText(`${tag}${secondary?'':'−'}${amount}`, color, secondary, crit, 'foe');
   if(!secondary && amount>telem.maxHit){
     telem.maxHit=amount; telem.maxHitCombo=P.combo; telem.maxHitOver=P.overloadStacks; telem.maxHitKind=kind;
   }
@@ -2240,6 +2415,7 @@ function dealDamage(amount, kind, color, secondary, raw){
   // 守门者暴走:本阶段血量窗口过半
   if(!E.phase2 && E.hp>thr && E.hp <= (E.phaseStartHp+thr)/2){
     E.phase2=true; E.chargeNeed*=0.85;
+    FX.rage();
     E.breachUntil = Date.now()+5000;          // 破绽窗:5 秒内敌受伤 +50%——留着重技等这一刻
     E.breatherUntil = E.breachUntil+4000;     // 窗后喘息:敌充能半速 4 秒(挣来的波谷)
     document.getElementById('core').classList.add('rage');
@@ -2251,13 +2427,13 @@ function dealDamage(amount, kind, color, secondary, raw){
   }
   updateSceneUI();
   if(E.hp<=0 && !E.dead){
-    E.dead=true; SFX.kill(); flashFx();
+    E.dead=true; SFX.kill(); flashFx(); FX.shatter();
     document.getElementById('core').classList.add('shatter');
     for(let i=0;i<6;i++) floatText('✦','#fff',true,false,'foe');
     clearTimeout(qTimer); setTimeout(sectionWin, 800);
   } else if(!E.phaseClear && E.hp <= thr){
     // 阶段击破:守门者倒下,血池不回,下一位接管
-    E.phaseClear=true; SFX.kill(); flashFx();
+    E.phaseClear=true; SFX.kill(); flashFx(); FX.shatter();
     document.getElementById('core').classList.add('shatter');
     for(let i=0;i<6;i++) floatText('✦','#fff',true,false,'foe');
     clearTimeout(qTimer); setTimeout(sectionWin, 800);
