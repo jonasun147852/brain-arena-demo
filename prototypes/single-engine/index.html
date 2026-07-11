@@ -140,15 +140,19 @@
   .vs{font-size:17px; font-weight:900; color:var(--gold); text-shadow:0 0 16px rgba(255,207,77,.5);}
   /* 塔脉血池:贯穿全局的一条血,构筑成长的舞台 */
   .towerwrap{width:100%; display:flex; align-items:center; gap:9px;}
-  .towerbar{flex:1; height:13px; background:#0a1020; border:1px solid var(--line); border-radius:8px; overflow:hidden; position:relative;}
+  .towerbar{flex:1; height:18px; background:#070d18; border:1px solid rgba(255,255,255,.14); border-radius:4px; overflow:hidden; position:relative; box-shadow:inset 0 2px 6px rgba(0,0,0,.7);}
+  .towerbar::before{content:''; position:absolute; inset:0; z-index:2; pointer-events:none;
+    background:repeating-linear-gradient(90deg, transparent 0, transparent calc(10% - 1px), rgba(4,6,12,.75) calc(10% - 1px), rgba(4,6,12,.75) 10%);}
   .towerfill{height:100%; width:100%; background:linear-gradient(90deg,#7a2038,var(--red) 40%,var(--gold)); transition:width .35s cubic-bezier(.2,.8,.2,1); box-shadow:0 0 14px rgba(255,84,112,.4);}
   .towerfill.low{background:linear-gradient(90deg,#5a1428,#c22f4a);}
   .towerfill.gold{background:linear-gradient(90deg,#b8860b,var(--gold)); box-shadow:0 0 18px rgba(255,207,77,.7);}
   .towerghost{position:absolute; left:0; top:0; bottom:0; width:100%; background:rgba(255,255,255,.4);
     transition:width .9s ease .3s; z-index:0;}
   .towerfill{position:relative; z-index:1;}
+  .towerfill::after{content:''; position:absolute; right:-2px; top:-3px; bottom:-3px; width:5px; border-radius:3px;
+    background:#fff; box-shadow:0 0 12px 3px rgba(255,207,77,.85); opacity:.9;}
   .tnotch{position:absolute; top:-2px; bottom:-2px; width:2px; background:rgba(255,255,255,.55); box-shadow:0 0 6px rgba(255,255,255,.4);}
-  .towernum{font-size:12px; font-weight:800; color:var(--silver); min-width:46px; text-align:right; font-feature-settings:"tnum" 1;}
+  .towernum{font-family:'Game',sans-serif; font-size:13px; color:var(--gold); min-width:46px; text-align:right; text-shadow:0 0 10px rgba(255,207,77,.4);}
   .hpbar{width:110px; height:7px; background:#0a1020; border:1px solid var(--line); border-radius:4px; overflow:hidden;}
   .hpfill{height:100%; background:linear-gradient(90deg,#2fae6d,#43e08a); width:100%; transition:width .2s;}
   .hpfill.low{background:linear-gradient(90deg,#c22f4a,var(--red));}
@@ -168,7 +172,10 @@
   .hud{width:100%; display:flex; gap:10px; padding:0 6px;}
   .stat{flex:1; background:linear-gradient(100deg,var(--panel2),#080e1c); border:1px solid var(--line); border-left-width:3px; border-radius:6px; padding:7px 8px; text-align:center; transform:skewX(-8deg);}
   .stat>*{transform:skewX(8deg);}
-  .stat .v{font-size:21px; font-weight:900; line-height:1.1;}
+  .stat .v{font-family:'Game',sans-serif; font-size:22px; line-height:1.1;}
+  .stat.energy{background:linear-gradient(90deg, rgba(255,207,77,.15) calc(var(--ep,0)*100%), transparent calc(var(--ep,0)*100%)) !important; border-radius:6px;}
+  .odgem{display:inline-block; width:9px; height:9px; margin:0 2.5px; transform:rotate(45deg); border:1.5px solid rgba(181,97,255,.5); border-radius:2px; vertical-align:middle;}
+  .odgem.lit{background:var(--purple); border-color:var(--purple); box-shadow:0 0 9px rgba(181,97,255,.8);}
   .stat .v.bump{animation:vbump .3s cubic-bezier(.2,1.8,.3,1);}
   @keyframes vbump{0%{transform:skewX(8deg) scale(1);}40%{transform:skewX(8deg) scale(1.35);}100%{transform:skewX(8deg) scale(1);}}
   .stat .k{font-size:9.5px; color:var(--dim); letter-spacing:1.5px; margin-top:2px;}
@@ -195,11 +202,11 @@
   .qprompt.qp-l{font-size:40px;} .qprompt.qp-m{font-size:30px;} .qprompt.qp-s{font-size:23px;}
   .qprompt.qp-mc{font-size:19px; letter-spacing:.5px; line-height:1.45; max-width:94%;}
   .qopts{width:92%; display:grid; grid-template-columns:1fr 1fr; gap:7px;}
-  .qopt{padding:9px 10px; border-radius:10px; background:linear-gradient(180deg,var(--panel2),#0a1120); border:1px solid var(--line2);
+  .qopt{padding:9px 10px; border-radius:6px; background:linear-gradient(90deg, rgba(63,231,255,.08), rgba(63,231,255,.015) 60%); border:1px solid rgba(63,231,255,.22); border-left:3px solid rgba(63,231,255,.6); position:relative; overflow:hidden;
     font-size:13.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:7px; transition:transform .08s, border-color .15s;}
   .qopt:hover{border-color:var(--cyan);}
   .qopt:active{transform:scale(.96);}
-  .qopt .qn{min-width:19px; height:19px; border-radius:6px; background:rgba(63,231,255,.12); border:1px solid rgba(63,231,255,.4);
+  .qopt .qn{min-width:19px; height:19px; border-radius:3px; transform:rotate(0deg); background:rgba(63,231,255,.85); color:#04060c; font-weight:900; border:none; font-family:'Game',sans-serif;
     color:var(--cyan); font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .subjrow{display:flex; gap:7px; flex-wrap:wrap; justify-content:center; max-width:92%;}
   .sj{font-size:12.5px; font-weight:800; padding:5px 15px; border-radius:20px; border:1px solid var(--line2); color:var(--dim);
@@ -215,12 +222,14 @@
   .qtimer .bench{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--green); box-shadow:0 0 8px var(--green);}
   .qzone{position:absolute; left:0; top:0; bottom:0; width:25%; background:linear-gradient(90deg, rgba(255,84,112,.4), rgba(255,84,112,.12)); z-index:0;}
   .qtimerfill{position:relative; z-index:1;}
-  .qinput{font-size:26px; font-weight:800; text-align:center; width:210px; background:#05080f; border:2px solid var(--line2); color:var(--text); border-radius:11px; padding:8px; font-family:inherit; letter-spacing:1px;}
+  .qinput{width:min(320px,72%); background:transparent; border:none; border-bottom:2px solid rgba(63,231,255,.55); border-radius:0; color:#fff; font-family:'Game',sans-serif; font-size:26px; letter-spacing:5px; text-align:center; padding:4px 8px; caret-color:var(--gold); outline:none;}
+  .qinput:focus{border-bottom-color:var(--gold); box-shadow:0 8px 18px -10px rgba(255,207,77,.5);}
   .qinput:focus{outline:none; border-color:var(--cyan); box-shadow:0 0 0 4px rgba(63,231,255,.12);}
   .qinput{caret-color:var(--cyan); transition:transform .08s;}
   .qinput.pop{transform:scale(1.045);}
 
   /* ===== 游戏感渲染层 ===== */
+  @font-face{font-family:'Game'; src:url('vendor/russo.woff2') format('woff2'); font-display:swap;}
   #pixiRoot{position:absolute; inset:0; z-index:0; pointer-events:none;}
   #pixiRoot canvas{position:absolute; inset:0; width:100%; height:100%;}
   .topbar,.towerwrap,.scene,.hud,.tierchips,.trialbar,.qbox,.releases,#keypad{position:relative; z-index:1;}   /* 只提流内元素;banner/toast/vsplash 等浮层保持各自定位 */
@@ -231,6 +240,9 @@
   .fxon .hud .stat .v{text-shadow:0 0 16px currentColor, 0 2px 0 rgba(0,0,0,.85);}
   .fxon .qbox{background:linear-gradient(180deg, rgba(10,16,30,.62), rgba(8,13,24,.86)); border-color:transparent; border-top:1px solid rgba(63,231,255,.28); backdrop-filter:blur(3px);}
   .fxon .rbtn{border-radius:8px;}
+  .ricon{font-size:24px; line-height:1.05; filter:drop-shadow(0 0 6px rgba(63,231,255,.35));}
+  .rbtn .cost{font-family:'Game',sans-serif;}
+  .rbtn .kbd{font-family:'Game',sans-serif;}
   .fxon .rbtn.ready{box-shadow:0 0 18px rgba(255,207,77,.4), inset 0 0 14px rgba(255,207,77,.12);}
   .releases{width:100%; display:flex; gap:9px;}
   .rbtn{flex:1; padding:9px 6px; border-radius:12px; font-size:13.5px; font-weight:800; border:1px solid var(--line2); background:linear-gradient(180deg,var(--panel),#080e1c); display:flex; flex-direction:column; gap:1px; align-items:center; transition:transform .1s, box-shadow .25s; position:relative;}
@@ -490,6 +502,14 @@
 #secres, #final{ overflow-y:auto; justify-content:flex-start; padding-top:3vh; padding-bottom:5vh; }
 .card.r-id{ border-color:#3d4d70; }
 .card.r-awaken{ border-color:#ffcf4d; box-shadow:0 0 18px rgba(255,207,77,.25); }
+.card.r-gold{ animation:goldbreathe 2.6s ease-in-out infinite; }
+@keyframes goldbreathe{0%,100%{box-shadow:0 0 10px rgba(255,207,77,.12);}50%{box-shadow:0 0 22px rgba(255,207,77,.34);}}
+.card.r-prism{ position:relative; }
+.card.r-prism::before{content:''; position:absolute; inset:-2px; border-radius:inherit; padding:2px; pointer-events:none;
+  background:conic-gradient(from 0deg,#ff5470,#ffcf4d,#43e08a,#3fe7ff,#b561ff,#ff5470);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude;
+  animation:prismspin 5s linear infinite; opacity:.75;}
+@keyframes prismspin{to{filter:hue-rotate(360deg);}}
 .bdraft.lucky .bdwrap{ border:1px solid rgba(255,215,0,.55); border-radius:16px; box-shadow:0 0 42px rgba(255,215,0,.22) inset, 0 0 28px rgba(255,215,0,.28); background:linear-gradient(180deg, rgba(50,40,8,.25), transparent); }
 .secdraft.lucky{ border:1px solid rgba(255,215,0,.5); border-radius:14px; padding:8px; box-shadow:0 0 22px rgba(255,215,0,.2); }
 .dpip.gilded{ color:#ffd700; }
@@ -512,7 +532,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.6</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.7</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -574,8 +594,8 @@
     </div>
 
     <div class="releases">
-      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span id="rSmallName">一闪</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">攻击 × 3</span><span class="castdots" id="cdSmall"></span></button>
-      <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span id="rBigName">擂鼓</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">攻击 × 6 + 震慑</span><span class="odpips" id="odPips"></span><span class="castdots" id="cdBig"></span></button>
+      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span class="ricon" id="rSmallIco">⚡</span><span id="rSmallName">一闪</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">攻击 × 3</span><span class="castdots" id="cdSmall"></span></button>
+      <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span class="ricon" id="rBigIco">🥁</span><span id="rBigName">擂鼓</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">攻击 × 6 + 震慑</span><span class="odpips" id="odPips"></span><span class="castdots" id="cdBig"></span></button>
     </div>
 
     <div class="keypad" id="keypad">
@@ -1060,6 +1080,7 @@ const FX = (function(){
   }
   function ensure(){
     boot();
+    try{ document.fonts && document.fonts.load('16px Game'); }catch(e){}
     if(app){ requestAnimationFrame(()=>{ resize(); syncAnchor(); }); }
   }
   function resize(){
@@ -1180,7 +1201,7 @@ const FX = (function(){
     }
   }
   function dmgText(x,y,str,col,size,crit){
-    const tx=new PIXI.Text(str,{fontFamily:'Arial Black,Arial,sans-serif',fontSize:size,fontWeight:'900',fill:col,
+    const tx=new PIXI.Text(str,{fontFamily:'Game,Arial Black,Arial,sans-serif',fontSize:size,fontWeight:'900',fill:col,
       stroke:0x05070d, strokeThickness:Math.max(4,size*0.14), dropShadow:crit, dropShadowBlur:10, dropShadowAlpha:0.5, dropShadowDistance:0, dropShadowColor:col});
     tx.anchor.set(0.5); tx.x=x+(Math.random()-0.5)*26; tx.y=y-10;
     tx._vx=(Math.random()-0.5)*1.2; tx._vy=crit?-2.6:-1.8; tx._life=crit?64:46; tx._pop=crit?0.28:0.12;
@@ -2780,7 +2801,12 @@ function updateHUD(){
   const eEl=document.getElementById('sEnergy');
   if(eEl._t!==Math.floor(P.energy)){ eEl._t=Math.floor(P.energy); rollNum(eEl, Math.floor(P.energy), 350); }
   eEl.style.color = P.energy<0 ? 'var(--red)' : '';
-  document.getElementById('sOver').textContent = P.overloadStacks;
+  eEl.parentElement.style.setProperty('--ep', Math.max(0,Math.min(1,P.energy/K.ENERGY_MAX)));
+  {  // 过载=充能宝珠(层数画出来,不报数)
+    const so=document.getElementById('sOver'), om=overloadMax();
+    const key='g'+om+'_'+P.overloadStacks;
+    if(so._k!==key){ so._k=key; so.innerHTML=Array.from({length:om},(_,i)=>`<i class="odgem${i<P.overloadStacks?' lit':''}"></i>`).join(''); }
+  }
 
   const qb=document.getElementById('qbox');
   ['g1','g2','g3'].forEach(g=>qb.classList.remove(g));
@@ -2796,6 +2822,13 @@ function updateHUD(){
   const rs=document.getElementById('rSmall'); const sOk=smallEnabled()&&(P.freeSmall||P.energy>=lsk.cost);
   rs.style.display = smallEnabled()?'flex':'none'; rs.disabled=!sOk; rs.classList.toggle('ready',sOk);
   document.getElementById('rSmallName').textContent = lsk.name;
+  {  // 技能瓦片大图标:觉醒>技能卡>默认
+    const ICO={small:'⚡',big:'🥁',swap:'📄',flurry:'🌊',shield:'☂️',cross:'❌',hand:'🙋',calc:'🪙',avalanche:'🌨',timestop:'⏱',rollcall:'🫵'};
+    const ico=(slot,key)=>{ const up=P.hexes.find(h=>h.cat==='升级'&&h.uSlot===slot); if(up) return up.ico; const sc=ownedSkill(slot); return (sc&&sc.ico)||ICO[key]||'⚔'; };
+    const iS=document.getElementById('rSmallIco'), iB=document.getElementById('rBigIco');
+    if(iS) iS.textContent=ico('light',lsk.key);
+    if(iB) iB.textContent=ico('heavy',heavySkill().key);
+  }
   document.getElementById('rSmallCost').textContent = P.freeSmall ? '免费' : `${lsk.cost}⚡`;
   document.getElementById('rSmallFill').style.width = Math.min(100, P.energy/lsk.cost*100)+'%';
   const phaseLeft = E && !E.dead && !E.phaseClear ? E.hp - phaseEndThreshold() : Infinity;
