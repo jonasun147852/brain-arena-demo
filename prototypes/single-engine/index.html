@@ -585,7 +585,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.17</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.18</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1196,23 +1196,23 @@ const HEXES = [
   {id:'h10',name:'只练这一锤',ico:'🔨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'此生,只练这一锤。',       desc:'重技能伤害 <b>×1.5</b>,但<b>失去</b>轻技能'},
   {id:'h11',name:'深渊的注视',ico:'☢️',school:'脑',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限提升至 <b>8</b> 层,每层额外 <b>+2</b> 攻击力'},
   {id:'h12',name:'赌徒之门',ico:'🎲',school:'脑',rar:'prism',cat:'转化',ba:false,   fl:'门后是什么,开了才知道。', desc:'技能消耗降低 <b>20</b> 能量;但施放时有 <b>20%</b> 概率<b>哑火</b>,效果减半'},
-  {id:'h13',name:'饮血',ico:'🌀',school:'脑',rar:'gold',cat:'成长',ba:false, grow:true, idline:'回复能量,永久成长',        fl:'它的痛,是你的粮。',       desc:'重技能命中时回复 <b>40</b> 能量,并<b>永久 +2</b> 攻击力'},
+  {id:'h13',name:'回能',ico:'🌀',school:'脑',rar:'gold',cat:'成长',ba:false, grow:true, idline:'回复能量,永久成长',        fl:'它的痛,是你的粮。',       desc:'重技能命中时回复 <b>40</b> 能量,并<b>永久 +2</b> 攻击力'},
   {id:'h14',name:'第五个答案',ico:'🗝️',school:'心',rar:'prism',cat:'引擎',ba:false,      fl:'塔,在第五答开门。',       desc:'每答对 <b>5</b> 题,对对手造成一次<b>额外攻击</b>,并<b>定身</b>对手'},
   {id:'h15',name:'千钧一发',ico:'⏳',school:'心',rar:'gold',cat:'改写规则',ba:false, fl:'最后一刻,刀最快。',       desc:'千钧区答对:伤害 <b>+50%</b> 并回复 10 能量;千钧区答错:对手<b>立即攻击</b>'},
   {id:'h16',name:'成王败寇',ico:'👑',school:'手',rar:'prism',cat:'转化',ba:false,    fl:'赢的人,书写规则。',       desc:'重技能改为<b>押注</b>:立即出现一道难题——答对,伤害<b>翻倍</b>;答错,伤害<b>归零</b>'},
   {id:'h17',name:'趁火打劫',ico:'🪓',school:'心',rar:'gold',cat:'转化',ba:false,     fl:'它抬手时,你出手。',       desc:'拨挡成功时<b>窃取 15 能量</b>,该次反击 ×1.5;拨挡窗内答错,下次受到的攻击<b>翻倍</b>'},
   {id:'h18',name:'寅吃卯粮',ico:'💳',school:'通用',rar:'gold',cat:'转化',ba:false,   fl:'先借明天,打赢今天。',     desc:'能量可<b>透支</b>至 −50 施放技能;负债期间攻击力降低,收入优先偿还债务'},
   {id:'s01',idline:'题是挑出来答的',name:'撕卷',ico:'📄',school:'脑',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'swap',      fl:'这题不配做。',         desc:'<b>轻技能替换</b>:弃置当前题目,更换一道新题(仅消耗 <b>40</b> 能量)'},
-  {id:'s02',idline:'放一次大招,赚回半管能量',name:'结账',ico:'🧾',school:'脑',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'calc',    fl:'这刀,得给钱。',       desc:'<b>重技能替换</b>:造成 <b>×4</b> 伤害,并回复 <b>30</b> 能量'},
+  {id:'s02',idline:'放一次大招,赚回半管能量',name:'重击',ico:'💥',school:'脑',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'calc',    fl:'一刀,顶四刀。',       desc:'<b>重技能替换</b>:造成 <b>×4</b> 伤害,并回复 <b>30</b> 能量'},
   {id:'s03',idline:'浪越推越高',name:'起浪',ico:'🌊',school:'手',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'flurry',fl:'先拍两下,后面还有。',         desc:'<b>轻技能替换</b>:造成 <b>×2</b> 伤害,连击数 <b>+2</b>'},
   {id:'s04',idline:'攒得越厚,崩得越狠',name:'雪崩',ico:'🌨',school:'手',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'avalanche',fl:'攒了多久,就崩多狠。',   desc:'<b>重技能替换</b>:伤害随连击提升,并<b>定身</b>对手'},
-  {id:'s05',idline:'先立于不败,再谈赢',name:'闭关',ico:'🚪',school:'心',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'shield',fl:'闭关期间,概不见客。',      desc:'<b>轻技能替换</b>:展开护盾,<b>格挡</b>接下来的 2 次攻击'},
+  {id:'s05',idline:'先立于不败,再谈赢',name:'举盾',ico:'🛡',school:'心',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'shield',fl:'盾在,人就在。',      desc:'<b>轻技能替换</b>:展开护盾,<b>格挡</b>接下来的 2 次攻击'},
   {id:'s06',idline:'它的时间,归你管',name:'时间到',ico:'⏰',school:'心',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'timestop',fl:'停笔,收卷。',    desc:'<b>重技能替换</b>:造成 <b>×4</b> 伤害,<b>冻结</b>对手 5 秒'},
   // 技能升级卡(觉醒):upgradeFor=对应技能卡id(默认形态用 'small'/'big'),uSlot=槽位
   {id:'u01',name:'砸卷',ico:'📤',school:'脑',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s01', fl:'揉成团砸脸上,换道容易的。',   desc:'撕卷觉醒:弃置的题目将<b>砸向对手</b>(×2 伤害),且新题<b>必为简单题</b>'},
   {id:'u02',name:'追浪',ico:'🌊',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s03', fl:'答对一题,追上一浪。',           desc:'起浪觉醒:施放后 <b>2</b> 题内,每次答对<b>追加一次</b>普攻伤害'},
-  {id:'u03',name:'出关',ico:'⛩',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s05', fl:'出关那天,债一起算。',       desc:'闭关觉醒:每次格挡成功,<b>反击两次</b>普攻伤害,并回复 <b>10</b> 能量'},
-  {id:'u04',name:'回本',ico:'💰',school:'脑',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s02', fl:'本捞回来了,下一刀白送。',       desc:'结账觉醒:施放后,下一次轻技能<b>免费</b>'},
+  {id:'u03',name:'盾击',ico:'💢',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s05', fl:'挡下的,都还回去。',       desc:'举盾觉醒:每次格挡成功,<b>反击两次</b>普攻伤害,并回复 <b>10</b> 能量'},
+  {id:'u04',name:'回本',ico:'💰',school:'脑',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s02', fl:'本捞回来了,下一刀白送。',       desc:'重击觉醒:施放后,下一次轻技能<b>免费</b>'},
   {id:'u05',name:'封山',ico:'🏔',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s04', fl:'雪停了,山也别想开。',   desc:'雪崩觉醒:定身延长至 <b>5</b> 秒;定身期间,对手受到的伤害<b>提高 30%</b>'},
   {id:'u06',name:'偷秒',ico:'⏱',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s06', fl:'你的五秒,现在是我的了。',   desc:'时间到觉醒:冻结的 <b>5</b> 秒将<b>追加</b>至当前题目的倒计时'},
   {id:'u07',name:'再闪',ico:'⚔️',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'small', fl:'还没看清第一刀,第二刀到了。',   desc:'一闪觉醒:攻击变为<b>两段</b>,每段 <b>×2</b> 伤害'},
@@ -1230,6 +1230,7 @@ const HEXES = [
   {id:'g04',name:'连续击鼓',ico:'🥁',school:'心',rar:'prism',cat:'成长',ba:false, grow:true, idline:'不出错,就不停变强', fl:'鼓声一断,气就泄了。', desc:'每答对一题,攻击力 <b>+1</b>(上限 +12);答错<b>减半</b>,连续答错则<b>全部清零</b>'},
   {id:'h19',name:'落袋为安',ico:'👝',school:'脑',rar:'gold',cat:'转化',ba:false, fl:'钱到手,才算钱。', desc:'每答对一题,侧袋存入 <b>5</b> 能量(上限 40);施放技能时<b>全额结算</b>;答错则侧袋<b>清空</b>'},
   {id:'h20',name:'先斩后奏',ico:'🧾',school:'手',rar:'prism',cat:'转化',ba:false, fl:'刀已出,账后算。', desc:'施放技能时<b>暂不扣费</b>:下一题答对,只支付<b>七成</b>;答错,支付<b>一倍半</b>'},
+  {id:'h21',name:'饮血',ico:'🩸',school:'手',rar:'silver',cat:'引擎',ba:false, fl:'它的血,是你的药。', desc:'技能<b>命中</b>时,回复 <b>6</b> 生命'},
   // 联动卡(读技能槽行为)
   {id:'x01',name:'顺水推舟',ico:'🛶',school:'脑',rar:'silver',cat:'联动',ba:false, fl:'船是借的,水是自己的。', desc:'施放轻技能后,下一题<b>必定判定为快答</b>,能量按快答结算'},
   {id:'x02',name:'余音绕梁',ico:'🔔',school:'手',rar:'gold',cat:'联动',ba:false,   fl:'钟停了,声音还在。',     desc:'施放重技能后,接下来 <b>3</b> 题答对时<b>追加一次</b>普攻伤害'},
@@ -1744,7 +1745,7 @@ function consumeImmDouble(){   // 出鞘的翻倍是一次性的:技能吃掉它
 function immediateDamageRaw(){
   const tier = comboTier(P.combo);
   let dmg = has('h07') ? [16,19,22,26][tier] : K.TIER_DAMAGE[tier];
-  dmg += Math.min(16, (P.bloodBonus||0)+(P.furCoat||0)+(P.drumAtk||0));   // 饮血/集腋/一鼓:攻击加法共享封顶(红线处置:24→16)
+  dmg += Math.min(16, (P.bloodBonus||0)+(P.furCoat||0)+(P.drumAtk||0));   // 回能/集腋/一鼓:攻击加法共享封顶(红线处置:24→16)
   if(has('h18') && P.energy<0) dmg -= 4;             // 寅吃卯粮:负债期刀钝
   if(has('h11')) dmg += 2*(P.overloadStacks||0);     // 渊眼:囤过载=全技能变强
   return dmg;
@@ -1959,8 +1960,8 @@ function enemyAttack(){
     P.shieldCharges--;
     floatText('🛡 挡下!', '#3fe7ff', true, false, 'you');
     beep({f:520, f2:700, dur:.1, type:'triangle', gain:.12});
-    if(has('u03') && !E.dead){   // 出关:关门挡一刀,出关反打两下+回能
-      dealDamage(immediateDamageRaw()*2, '出关', '#3fe7ff', true);
+    if(has('u03') && !E.dead){   // 盾击:挡一刀,盾面反打两下+回能
+      dealDamage(immediateDamageRaw()*2, '盾击', '#3fe7ff', true);
       P.energy = Math.min(K.ENERGY_MAX, P.energy+10);
       hexFire('u03','反打·+10⚡');
     }
@@ -2634,6 +2635,7 @@ function onCorrect(){
   if(P.judge){
     const j = P.judge; P.judge = null;
     dealDamage(j.snap*2, '成王败寇', '#ffcf4d', false, true);
+    skillLifesteal();
     if(j.stun) applyStun();
     P.energy = Math.min(K.ENERGY_MAX, P.energy+30);
     banner(`👑 成王!${j.snap}×2`);
@@ -2726,7 +2728,7 @@ function lightSkill(){
     if(has('u01')) return {key:'swap', name:'砸卷', cost, od:'扔题砸它 ×2,换来简单题', dmg:immediateDamageRaw()*2};
     return {key:'swap', name:'撕卷', cost, od:'这题不要了,换一题', dmg:0};
   }
-  if(key==='shield') return {key:'shield', name:has('u03')?'出关':'闭关', cost, od:has('u03')?'挡 2 刀,每挡反击+回能':'挡住 2 次攻击', dmg:0};
+  if(key==='shield') return {key:'shield', name:has('u03')?'盾击':'举盾', cost, od:has('u03')?'挡 2 刀,每挡反击+回能':'挡住 2 次攻击', dmg:0};
   if(key==='flurry') return {key:'flurry', name:has('u02')?'追浪':'起浪', cost, od:has('u02')?'×2 连击+2,后 2 题追浪':'打一下,连击+2', dmg:immediateDamage()*2};
   if(key==='cross') return {key:'cross', name:has('u09')?'点破':'排除法', cost, od:has('u09')?'只剩答案亮着(这题不给分)':'排除错项/漏答案线索', dmg:0};
   if(key==='hand')  return {key:'hand', name:has('u10')?'拍桌':'举手', cost, od:has('u10')?'你的表停 5 秒,笔能动':'你的表停 4 秒,笔不能动', dmg:0};
@@ -2741,7 +2743,7 @@ function heavySkill(){
   let v;
   if(key==='avalanche')     v={key:'avalanche', name:has('u05')?'封山':'雪崩', base:4*(1+0.02*P.combo), od:has('u05')?'连击越高越疼,封山 5 秒':'连击越高越疼,还定住它', stun:true};
   else if(key==='timestop') v={key:'timestop',  name:has('u06')?'偷秒':'时间到', base:4, od:has('u06')?'×4,冻 5 秒,这题+5 秒':'×4,定住敌人 5 秒', freeze:5000};
-  else if(key==='calc')     v={key:'calc',      name:has('u04')?'回本':'结账', base:4, od:has('u04')?'×4,回 30⚡,下次轻技免费':'×4,回 30 能量', regen:30};
+  else if(key==='calc')     v={key:'calc',      name:has('u04')?'回本':'重击', base:4, od:has('u04')?'×4,回 30⚡,下次轻技免费':'×4,回 30 能量', regen:30};
   else if(key==='rollcall') v={key:'rollcall', name:has('u11')?'罚站':'点名', base:3, od:has('u11')?'×3,倒空了它就罚站':'×3,充能倒走 3.5 秒', reverse:3500};
   else                      v={key:'big',       name:has('u08')?'连擂':'擂鼓',     base:K.BIG_MULT, od:has('u08')?`×${K.BIG_MULT}+震慑,3 秒内答对追锤`:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
   v.cost = skillCost('heavy', key);
@@ -2792,7 +2794,7 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
   if(sk.key==='swap'){
     SFX.small();
     if(has('u01')){   // 砸卷:扔掉的题砸它一下,换来必是简单题
-      if(!q._u01Hit){ q._u01Hit=true; dealDamage(Math.round(immediateDamageRaw()*2),'砸卷','#3fe7ff'); }
+      if(!q._u01Hit){ q._u01Hit=true; dealDamage(Math.round(immediateDamageRaw()*2),'砸卷','#3fe7ff'); skillLifesteal(); }
       swapQuestion('easy');
     } else swapQuestion();
     floatText('📄 撕卷!', '#3fe7ff', true, false, 'you');
@@ -2822,21 +2824,21 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
     q._hand = true;
     handFreeze(has('u10') ? 5000 : 4000, has('u10'));
   }
-  else if(sk.key==='shield'){ SFX.res(); P.shieldCharges = jam?1:2; floatText(`🚪 闭关 ×${P.shieldCharges}`, '#3fe7ff', true, false, 'you'); }
+  else if(sk.key==='shield'){ SFX.res(); P.shieldCharges = jam?1:2; floatText(`🛡 举盾 ×${P.shieldCharges}`, '#3fe7ff', true, false, 'you'); }
   else if(sk.key==='flurry'){
     SFX.small(); P.combo += 2;
     telem.maxCombo = Math.max(telem.maxCombo, P.combo);
-    dealDamage(Math.round(immediateDamage()*2*m),'起浪','#3fe7ff');
+    dealDamage(Math.round(immediateDamage()*2*m),'起浪','#3fe7ff'); skillLifesteal();
     if(has('u02')) P.dotQueue.push({left:2, amount:Math.round(immediateDamageRaw()*m), kind:'追浪'});   // 追浪:施放瞬间快照
     floatText('连击 +2!', '#3fe7ff', true, false, 'you');
   }
   else if(has('u07')){   // 再闪:两刀各×2,翻倍只吃第一刀
     SFX.small();
-    dealDamage(Math.round(immediateDamage()*2*m),'再闪','#3fe7ff');
+    dealDamage(Math.round(immediateDamage()*2*m),'再闪','#3fe7ff'); skillLifesteal();
     const second = Math.round(immediateDamageRaw()*2*m);
     setTimeout(()=>{ if(E && !E.dead && !E.phaseClear) dealDamage(second,'再闪','#3fe7ff',true); }, 120);
   }
-  else { SFX.small(); dealDamage(Math.round(sk.dmg*m),'一闪','#3fe7ff'); }
+  else { SFX.small(); dealDamage(Math.round(sk.dmg*m),'一闪','#3fe7ff'); skillLifesteal(); }
   if(sk.key==='flurry' || sk.key==='small') consumeImmDouble();   // 打出去的技能吃掉翻倍
   P.castCounts[sk.key]=(P.castCounts[sk.key]||0)+1;   // 觉醒资格计数
   cashPot();
@@ -2861,7 +2863,7 @@ function releaseBig(){   // 重技能槽
   if(has('h13')){
     const sip = 40;
     P.energy = Math.min(K.ENERGY_MAX, P.energy+sip);
-    if(P.bloodBonus < 20){ P.bloodBonus += 2; }        // 饮血:局内养刀,封顶+20
+    if(P.bloodBonus < 20){ P.bloodBonus += 2; }        // 回能:局内养刀,封顶+20
     hexFire('h13',`+${sip}⚡·攻击+2`);
   }   // 羁绊·永动机 40→70
   telem.releases.big++;
@@ -2901,13 +2903,20 @@ function releaseBig(){   // 重技能槽
     E._rcPunished = false;
     banner('🫵 点名!下一个,它答!');
   }
-  if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`🧾 结账 +${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); if(has('u04')){ P.freeSmall=true; floatText('💰 下次轻技免费', '#3fe7ff', true, false, 'you'); } }
+  if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`+${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); if(has('u04')){ P.freeSmall=true; floatText('💰 下次轻技免费', '#3fe7ff', true, false, 'you'); } }
   if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio*(jam?0.5:1))});
   dealDamage(Math.round(sk.dmg*(jam?0.5:1)), od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
+  skillLifesteal();
   consumeImmDouble();   // 重技全系带伤害,统一吃掉翻倍(dot 快照也已按翻倍计)
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 
+function skillLifesteal(){   // 饮血:技能命中,喝一口(只在真扣血时喊名)
+  if(!has('h21') || P.hp<=0) return;
+  const before=P.hp;
+  P.hp = Math.min(K.PLAYER_HP, P.hp + 6);
+  if(P.hp>before) hexFire('h21','+6 生命');
+}
 function dealDamage(amount, kind, color, secondary, raw){
   if(!E || E.dead) return;
   amount = Math.round(amount);
@@ -2998,7 +3007,7 @@ function markEvent(){ telem.eventQGaps.push(telem.globalQ - telem.lastEventQ); t
 function sectionWin(){
   stopLoop(); stopAmbient();
   clearTimeout(R.draftTimer); R.draftTimer=null; R._draftLock=false; R.draftPending=null;
-  const HEAVY_KINDS=['擂鼓','雪崩','时间到','结账','成王败寇','封山','偷秒','回本','连擂','点名','罚站'];
+  const HEAVY_KINDS=['擂鼓','雪崩','时间到','重击','成王败寇','封山','偷秒','回本','连擂','点名','罚站'];
   const heavyKill = E.lastHitKind && HEAVY_KINDS.some(k=>String(E.lastHitKind).startsWith(k));
   P.overloadStacks = 0;   // 节末白攒(SPEC §9 风险端)
   if(heavyKill && R.section < K.SECTIONS){
