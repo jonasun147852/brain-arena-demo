@@ -476,18 +476,21 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .core.rage .r1{animation-duration:2.2s;}
 
   /* VS 关卡演出(格斗游戏开场仪式) */
-  .vsplash{position:absolute; inset:0; z-index:12; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+  .vsplash{position:absolute; inset:0; z-index:12; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
     background:radial-gradient(600px 400px at 50% 45%, rgba(10,16,32,.97), rgba(2,4,10,.99)); pointer-events:none; opacity:0;}
   .vsplash.play{animation:vsp 2.0s ease forwards;}
   @keyframes vsp{0%{opacity:0; transform:scale(1.06);}10%{opacity:1; transform:scale(1);}82%{opacity:1;}100%{opacity:0; visibility:hidden;}}
-  .vsk{font-size:15px; letter-spacing:8px; color:var(--dim);}
-  .vsg{font-size:74px; font-weight:900; line-height:1;
+  .vsk{font-size:13px; letter-spacing:10px; color:var(--silver); border:1px solid rgba(255,255,255,.2); padding:5px 20px 5px 30px; border-radius:20px; background:rgba(4,6,12,.55); backdrop-filter:blur(2px);}
+  .vsg{font-size:128px; font-weight:900; line-height:1; font-family:'Game',Arial,sans-serif; position:relative;
     background:linear-gradient(160deg, #fff, var(--enemy,#3fe7ff)); -webkit-background-clip:text; background-clip:text; color:transparent;
-    filter:drop-shadow(0 0 34px var(--enemy,#3fe7ff)); animation:vsgIn .5s cubic-bezier(.2,1.6,.4,1);}
+    filter:drop-shadow(0 0 44px var(--enemy,#3fe7ff)) drop-shadow(0 4px 4px rgba(0,0,0,.85)); animation:vsgIn .5s cubic-bezier(.2,1.6,.4,1);}
   @keyframes vsgIn{0%{transform:scale(2.6); opacity:0;}100%{transform:scale(1); opacity:1;}}
-  .vsn{font-size:24px; font-weight:900; letter-spacing:4px;}
-  .vsq{font-size:14px; color:var(--silver); font-style:italic; letter-spacing:1px; max-width:80%; text-align:center;}
-  .vsload{font-size:12px; color:var(--gold); border:1px solid rgba(255,207,77,.4); padding:4px 14px; border-radius:20px; margin-top:8px;}
+  .vsn{font-size:30px; font-weight:900; letter-spacing:7px; margin-right:-7px;
+    text-shadow:0 0 26px var(--enemy,#3fe7ff), 0 2px 3px rgba(0,0,0,.9);}
+  .vsq{font-size:15px; color:var(--silver); font-style:italic; letter-spacing:1.5px; max-width:80%; text-align:center;
+    text-shadow:0 2px 8px rgba(0,0,0,.95);}
+  .vsload{font-size:12px; color:var(--gold); border:1px solid rgba(255,207,77,.4); padding:4px 14px; border-radius:20px; margin-top:10px;
+    background:rgba(4,6,12,.55); text-shadow:0 1px 4px rgba(0,0,0,.9);}
   .vsplash.play{pointer-events:auto; cursor:pointer;}
   .vskip{position:absolute; bottom:18px; font-size:11px; color:var(--dim); letter-spacing:2px; opacity:.7;}
   .bestline{font-size:12.5px; color:var(--gold); letter-spacing:1px; border:1px solid rgba(255,207,77,.3); padding:4px 16px; border-radius:20px; background:rgba(255,207,77,.06);}
@@ -571,7 +574,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     .buildrow{min-height:18px;}
     .grade{width:70px; height:70px; font-size:38px;}
     .scorenum{font-size:26px;}
-    .vsg{font-size:54px;} .vsn{font-size:18px;} .vsq{font-size:12px;}
+    .vsg{font-size:88px;} .vsn{font-size:22px; letter-spacing:4px;} .vsq{font-size:13px;}
     .tagline{font-size:12px; letter-spacing:4px;}
   }
 /* ===== v5 定时发牌 ===== */
@@ -643,7 +646,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.24</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.25</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -2439,6 +2442,16 @@ function beginSection(){
   document.getElementById('vsSec').textContent = `第 ${SEC_CN[R.section-1]||R.section} 关`;
   document.getElementById('vsGlyph').textContent = E.glyph;
   document.getElementById('vsGlyph').style.setProperty('--enemy', E.color);
+  {  // 亮相幕:本关手绘底图+主宰色涌入(与击破屏成对;E.color 是 var() 引用,不能拼 alpha,用色表)
+    const GATE_HEX=['#3fe7ff','#b561ff','#ff5470'];
+    const gc=GATE_HEX[Math.min(R.section-1,2)];
+    const vsEl=document.getElementById('vsplash');
+    vsEl.style.setProperty('--enemy', gc);
+    vsEl.style.background =
+      `radial-gradient(ellipse at 50% 40%, ${gc}26, transparent 58%),`+
+      `linear-gradient(180deg, rgba(4,6,12,.84), rgba(4,6,12,.78) 45%, #04060c 96%),`+
+      `url('art/bg-gate${Math.min(R.section,3)}.jpg') center/cover no-repeat #04060c`;
+  }
   document.getElementById('vsName').textContent = E.name;
   document.getElementById('vsQuote').textContent = `「${E.lines.intro}」`;
   document.getElementById('vsLoad').textContent = (P._loadBanner||'') + (morphed?`  ⚔ ${sig}`:'');
