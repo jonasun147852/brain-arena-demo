@@ -46,6 +46,25 @@
   .btn:disabled{opacity:.35; cursor:not-allowed; transform:none; box-shadow:none; filter:grayscale(.7);}
   .btn.ghost{background:transparent; border:1px solid var(--line2); color:var(--silver); box-shadow:none; padding:11px 26px; font-size:14px; letter-spacing:1px;}
   .btn.ghost:hover{border-color:var(--cyan); color:var(--cyan);}
+  /* ===== 开局主页面:键画打底,暗部渐变保字(圣经:暗部70%/禁hero图构图=居中花字直给) ===== */
+  #start{ background:
+      radial-gradient(ellipse at 50% 36%, rgba(4,6,12,.18) 0%, rgba(4,6,12,.06) 46%, rgba(4,6,12,.6) 100%),
+      linear-gradient(180deg, rgba(4,6,12,.16) 0%, rgba(4,6,12,0) 36%, rgba(4,6,12,.28) 78%, rgba(4,6,12,.7) 100%),
+      url('art/keyart-title.jpg') center 42%/cover no-repeat, #04060c; overflow:hidden; }
+  #start h1{ font-size:56px; letter-spacing:11px; margin-right:-11px;
+    filter:drop-shadow(0 6px 34px rgba(63,231,255,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.9)); }
+  #start .tagline{ font-size:15px; letter-spacing:11px; margin-right:-11px; }
+  #start .tag{ backdrop-filter:blur(2px); }
+  #start .sub{ text-shadow:0 2px 10px rgba(0,0,0,.95), 0 0 3px rgba(0,0,0,.9); }
+  #start .sj{ background:rgba(4,6,12,.62); backdrop-filter:blur(2px); color:#b8c6de; border-color:rgba(184,198,222,.28); }
+  #start .btn.cta{ padding:17px 56px; font-size:18px; letter-spacing:3px; border-radius:14px; margin-top:8px;
+    box-shadow:0 14px 44px rgba(63,231,255,.42), 0 0 0 1px rgba(63,231,255,.35), inset 0 1px 0 rgba(255,255,255,.45); }
+  #start .emb{ position:absolute; bottom:-10px; width:5px; height:5px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #dffaff, var(--cyan) 60%, transparent); opacity:0;
+    animation:embrise linear infinite; pointer-events:none; }
+  #start .emb.g{ background:radial-gradient(circle at 35% 30%, #fff3cf, var(--gold) 60%, transparent); }
+  @keyframes embrise{ 0%{transform:translate(0,0) scale(1); opacity:0;} 10%{opacity:.6;} 60%{opacity:.35;}
+    100%{transform:translate(26px,-88vh) scale(.5); opacity:0;} }
   .tunbtn{font-size:12px; color:var(--dim); background:none; border:1px solid var(--line); padding:7px 16px; border-radius:9px;}
   .tunbtn:hover{color:var(--cyan); border-color:var(--cyan);}
 
@@ -498,6 +517,8 @@
     #app{width:100vw; height:100vh; height:100dvh; border-radius:0; border:none;}
     .screen{padding:14px; gap:10px;}
     h1{font-size:26px; letter-spacing:3px;}
+    #start h1{font-size:36px; letter-spacing:7px; margin-right:-7px;}
+    #start .tagline{letter-spacing:7px; margin-right:-7px;}
     .sub{font-size:12px; line-height:1.65;}
     #start,#draft,#final{justify-content:flex-start; overflow:auto; padding-top:26px;}
     .cards{gap:10px;}
@@ -576,6 +597,14 @@
 
   <!-- START -->
   <div id="start" class="screen">
+    <span class="emb"   style="left:8%;  animation-duration:11s; animation-delay:0s;"></span>
+    <span class="emb g" style="left:22%; animation-duration:14s; animation-delay:3s;"></span>
+    <span class="emb"   style="left:37%; animation-duration:9s;  animation-delay:6s;"></span>
+    <span class="emb"   style="left:55%; animation-duration:13s; animation-delay:1.5s;"></span>
+    <span class="emb g" style="left:68%; animation-duration:10s; animation-delay:4.5s;"></span>
+    <span class="emb"   style="left:79%; animation-duration:12s; animation-delay:8s;"></span>
+    <span class="emb"   style="left:90%; animation-duration:15s; animation-delay:2s;"></span>
+    <span class="emb g" style="left:47%; animation-duration:16s; animation-delay:10s;"></span>
     <span class="tag">BRAIN ARENA</span>
     <h1>脑力竞技</h1>
     <div class="tagline">以 答 为 刃</div>
@@ -585,7 +614,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.18</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.19</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 

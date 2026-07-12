@@ -11,7 +11,8 @@ const ENAMEL = 'polished enamel and gem game UI element, saturated inlay, soft s
 const PAINT = 'hand-painted game illustration, visible painterly brushstrokes, rich texture, warm rim light against deep blue darkness, no text';
 
 const ASSETS = [
- {f:'bg-gate1.jpg', s:'1536x1024', q:'high', bg:'opaque', p:`vast underground rune cavern arena, glowing cyan glyph pillars, mist floor reflection, wide empty center stage, ${PAINT}, deep blue darkness dominates 70 percent, cinematic wide shot`},
+ {f:'keyart-title.jpg', s:'1536x1024', q:'high', bg:'opaque', p:`epic title splash: a glowing luminous pen morphing into a sword blade held aloft, before a colossal dark rune tower, three guardian sigils orbiting the tower (cyan sigma, violet omega, crimson delta), ${PAINT}, dark negative space at top third for logo, deep blue darkness dominates, cinematic scale`},
+  {f:'bg-gate1.jpg', s:'1536x1024', q:'high', bg:'opaque', p:`vast underground rune cavern arena, glowing cyan glyph pillars, mist floor reflection, wide empty center stage, ${PAINT}, deep blue darkness dominates 70 percent, cinematic wide shot`},
  {f:'bg-gate2.jpg', s:'1536x1024', q:'high', bg:'opaque', p:`twisted shadow forest arena at night, violet witchlights between tall black trees, wide empty center stage, ${PAINT}, darkness dominates 70 percent, cinematic wide shot`},
  {f:'bg-gate3.jpg', s:'1536x1024', q:'high', bg:'opaque', p:`open-air tower summit arena above clouds, crimson storm sky, burning rune ring on floor, wide empty center stage, ${PAINT}, darkness dominates 70 percent, cinematic wide shot`},
  {f:'ui-console.png',  s:'1536x1024', q:'high',   bg:'transparent', p:`ornate rectangular frame border for a quiz console panel, ${FRAME}, completely empty transparent center for nine-slice scaling, gold corner accents`},
