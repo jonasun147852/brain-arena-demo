@@ -585,7 +585,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.16</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.17</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1203,24 +1203,24 @@ const HEXES = [
   {id:'h17',name:'趁火打劫',ico:'🪓',school:'心',rar:'gold',cat:'转化',ba:false,     fl:'它抬手时,你出手。',       desc:'拨挡成功时<b>窃取 15 能量</b>,该次反击 ×1.5;拨挡窗内答错,下次受到的攻击<b>翻倍</b>'},
   {id:'h18',name:'寅吃卯粮',ico:'💳',school:'通用',rar:'gold',cat:'转化',ba:false,   fl:'先借明天,打赢今天。',     desc:'能量可<b>透支</b>至 −50 施放技能;负债期间攻击力降低,收入优先偿还债务'},
   {id:'s01',idline:'题是挑出来答的',name:'撕卷',ico:'📄',school:'脑',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'swap',      fl:'这题不配做。',         desc:'<b>轻技能替换</b>:弃置当前题目,更换一道新题(仅消耗 <b>40</b> 能量)'},
-  {id:'s02',idline:'放一次大招,赚回半管能量',name:'回血',ico:'🪙',school:'脑',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'calc',    fl:'这刀不白出。',       desc:'<b>重技能替换</b>:造成 <b>×4</b> 伤害,并回复 <b>30</b> 能量'},
+  {id:'s02',idline:'放一次大招,赚回半管能量',name:'结账',ico:'🧾',school:'脑',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'calc',    fl:'这刀,得给钱。',       desc:'<b>重技能替换</b>:造成 <b>×4</b> 伤害,并回复 <b>30</b> 能量'},
   {id:'s03',idline:'浪越推越高',name:'起浪',ico:'🌊',school:'手',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'flurry',fl:'先拍两下,后面还有。',         desc:'<b>轻技能替换</b>:造成 <b>×2</b> 伤害,连击数 <b>+2</b>'},
   {id:'s04',idline:'攒得越厚,崩得越狠',name:'雪崩',ico:'🌨',school:'手',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'avalanche',fl:'攒了多久,就崩多狠。',   desc:'<b>重技能替换</b>:伤害随连击提升,并<b>定身</b>对手'},
-  {id:'s05',idline:'先立于不败,再谈赢',name:'撑伞',ico:'☂️',school:'心',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'shield',fl:'随便砍,我打着伞呢。',      desc:'<b>轻技能替换</b>:展开护盾,<b>格挡</b>接下来的 2 次攻击'},
-  {id:'s06',idline:'它的时间,归你管',name:'掐表',ico:'⏱',school:'心',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'timestop',fl:'你的表,停了。',    desc:'<b>重技能替换</b>:造成 <b>×4</b> 伤害,<b>冻结</b>对手 5 秒'},
+  {id:'s05',idline:'先立于不败,再谈赢',name:'闭关',ico:'🚪',school:'心',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'shield',fl:'闭关期间,概不见客。',      desc:'<b>轻技能替换</b>:展开护盾,<b>格挡</b>接下来的 2 次攻击'},
+  {id:'s06',idline:'它的时间,归你管',name:'时间到',ico:'⏰',school:'心',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'timestop',fl:'停笔,收卷。',    desc:'<b>重技能替换</b>:造成 <b>×4</b> 伤害,<b>冻结</b>对手 5 秒'},
   // 技能升级卡(觉醒):upgradeFor=对应技能卡id(默认形态用 'small'/'big'),uSlot=槽位
   {id:'u01',name:'砸卷',ico:'📤',school:'脑',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s01', fl:'揉成团砸脸上,换道容易的。',   desc:'撕卷觉醒:弃置的题目将<b>砸向对手</b>(×2 伤害),且新题<b>必为简单题</b>'},
   {id:'u02',name:'追浪',ico:'🌊',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s03', fl:'答对一题,追上一浪。',           desc:'起浪觉醒:施放后 <b>2</b> 题内,每次答对<b>追加一次</b>普攻伤害'},
-  {id:'u03',name:'泼雨',ico:'⛈',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s05', fl:'落在伞上的,全泼回去。',       desc:'撑伞觉醒:每次格挡成功,<b>反击两次</b>普攻伤害,并回复 <b>10</b> 能量'},
-  {id:'u04',name:'回本',ico:'💰',school:'脑',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s02', fl:'本捞回来了,下一刀白送。',       desc:'回血觉醒:施放后,下一次轻技能<b>免费</b>'},
+  {id:'u03',name:'出关',ico:'⛩',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s05', fl:'出关那天,债一起算。',       desc:'闭关觉醒:每次格挡成功,<b>反击两次</b>普攻伤害,并回复 <b>10</b> 能量'},
+  {id:'u04',name:'回本',ico:'💰',school:'脑',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s02', fl:'本捞回来了,下一刀白送。',       desc:'结账觉醒:施放后,下一次轻技能<b>免费</b>'},
   {id:'u05',name:'封山',ico:'🏔',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s04', fl:'雪停了,山也别想开。',   desc:'雪崩觉醒:定身延长至 <b>5</b> 秒;定身期间,对手受到的伤害<b>提高 30%</b>'},
-  {id:'u06',name:'偷秒',ico:'⏱',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s06', fl:'你的五秒,现在是我的了。',   desc:'掐表觉醒:冻结的 <b>5</b> 秒将<b>追加</b>至当前题目的倒计时'},
+  {id:'u06',name:'偷秒',ico:'⏱',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s06', fl:'你的五秒,现在是我的了。',   desc:'时间到觉醒:冻结的 <b>5</b> 秒将<b>追加</b>至当前题目的倒计时'},
   {id:'u07',name:'再闪',ico:'⚔️',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'small', fl:'还没看清第一刀,第二刀到了。',   desc:'一闪觉醒:攻击变为<b>两段</b>,每段 <b>×2</b> 伤害'},
   {id:'u08',name:'连擂',ico:'🔨',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'big', fl:'你懵着,我一题一锤地敲。',   desc:'擂鼓觉醒:震慑期间(3 秒),每次答对<b>追加一锤</b>普攻伤害'},
-  {id:'s07',idline:'错的划掉,剩下的才叫选项',name:'划叉',ico:'❌',school:'脑',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'cross', fl:'错的,先死。', desc:'<b>轻技能替换</b>:排除 <b>2</b> 个错误选项(数学题改为提示位数与首位);受助题目奖励<b>减半</b>'},
+  {id:'s07',idline:'错的划掉,剩下的才叫选项',name:'排除法',ico:'✂️',school:'脑',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'cross', fl:'错的,先死。', desc:'<b>轻技能替换</b>:排除 <b>2</b> 个错误选项(数学题改为提示位数与首位);受助题目奖励<b>减半</b>'},
   {id:'s08',idline:'不会做?先举手',name:'举手',ico:'🙋',school:'心',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'hand', fl:'老师,这题印错了吧?', desc:'<b>轻技能替换</b>:<b>暂停</b>己方计时 4 秒(奖池同步冻结);期间无法作答,对手充能不受影响'},
   {id:'s09',idline:'叫到名字,条往回走',name:'点名',ico:'🫵',school:'心',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'rollcall', fl:'下一个,你来答。', desc:'<b>重技能替换</b>:造成 <b>×3</b> 伤害,并使对手充能<b>倒转</b> 3.5 秒'},
-  {id:'u09',name:'点破',ico:'💡',school:'脑',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s07', fl:'答案就在这。', desc:'划叉觉醒:<b>排除全部错误选项</b>;但该题不提供能量,连击不增长'},
+  {id:'u09',name:'点破',ico:'💡',school:'脑',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s07', fl:'答案就在这。', desc:'排除法觉醒:<b>排除全部错误选项</b>;但该题不提供能量,连击不增长'},
   {id:'u10',name:'拍桌',ico:'🫱',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s08', fl:'谁的桌子响,谁有理。', desc:'举手觉醒:暂停延长至 <b>5</b> 秒,且期间<b>可以作答</b>'},
   {id:'u11',name:'罚站',ico:'🧍',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s09', fl:'答不上来,就站好。', desc:'点名觉醒:充能被倒转至 0 时,<b>定身</b>对手 2 秒,期间受到的伤害提高'},
   // 高成长卡(只进前两抽;拿到自带预热)
@@ -1959,8 +1959,8 @@ function enemyAttack(){
     P.shieldCharges--;
     floatText('🛡 挡下!', '#3fe7ff', true, false, 'you');
     beep({f:520, f2:700, dur:.1, type:'triangle', gain:.12});
-    if(has('u03') && !E.dead){   // 泼雨:伞挡一刀,雨点反打两下+回能
-      dealDamage(immediateDamageRaw()*2, '泼雨', '#3fe7ff', true);
+    if(has('u03') && !E.dead){   // 出关:关门挡一刀,出关反打两下+回能
+      dealDamage(immediateDamageRaw()*2, '出关', '#3fe7ff', true);
       P.energy = Math.min(K.ENERGY_MAX, P.energy+10);
       hexFire('u03','反打·+10⚡');
     }
@@ -2200,19 +2200,15 @@ function renderDraftCards(offer, wrap, roundIdx){
     if(RESONANCE[h.school] && sc===1)
       syn.push({pri:1, html:`<div class="syn res">🔗 选它=第 2 张${h.school}卡,触发「${RESONANCE[h.school].name}」→ ${RESONANCE[h.school].desc}</div>`});
     const statusTags = syn.sort((a,b)=>a.pri-b.pri).slice(0,2).map(t=>t.html).join('');
-    const grptag = roundIdx===0 ? `<div class="grouptag">${h.cat==='技能'?'⚔ 换一手技':'🌱 养一条路'}</div>` : '';
     const upBadge = h.cat==='升级' ? '<span class="upmark">↗</span>' : '';
-    const pityTag = (roundIdx===0 && h.cat==='技能' && PITY>0) ? `<div class="pitytag">${PITY>=3?'觉醒·就在下一手':'觉醒·近了'}</div>` : '';
     const badge = roundIdx===0 ? '' : (h.cat==='升级' ? '<div class="rarbadge awaken">↗ 觉醒</div>' : `<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`);
     el.innerHTML=`${badge}
-      ${grptag}
       <div class="ico">${h.ico}</div>
       <div class="name">${h.name}${upBadge}${h.ba?' <span class="bastar">★</span>':''}</div>
       <div class="desc">${h.desc}</div>
       ${delta}
       ${statusTags}
-      ${pityTag}
-      <div class="schooltag">${SCHOOL_LABEL[h.school]||h.school}${sc?` · 已持 ${sc} 张`:''}</div>`;
+`;
     el.onclick=()=>pickHexFromDraft(h);
     wrap.appendChild(el);
   });
@@ -2518,7 +2514,7 @@ function onCorrect(){
   if(has('h07')) base *= 0.6;
   let perQ = base * (1+s);
   if(q.difficulty==='hard' && has('h05')){ perQ += 15; hexFire('h05','+15⚡'); }
-  if(q._aided) perQ *= 0.5;    // 划叉:求助的题,奖励减半
+  if(q._aided) perQ *= 0.5;    // 排除法:求助的题,奖励减半
   if(q._pointed) perQ = 0;     // 点破:老师点破的题,分不进账
   settleBill(true);            // 先斩后奏:答对,只付七成
   if(has('h19') && P.sidePot < 40){ P.sidePot = Math.min(40, P.sidePot + 5); hexFire('h19', `侧袋 ${P.sidePot}⚡`); }
@@ -2730,9 +2726,9 @@ function lightSkill(){
     if(has('u01')) return {key:'swap', name:'砸卷', cost, od:'扔题砸它 ×2,换来简单题', dmg:immediateDamageRaw()*2};
     return {key:'swap', name:'撕卷', cost, od:'这题不要了,换一题', dmg:0};
   }
-  if(key==='shield') return {key:'shield', name:has('u03')?'泼雨':'撑伞', cost, od:has('u03')?'挡 2 刀,每挡泼回去+回能':'挡住 2 次攻击', dmg:0};
+  if(key==='shield') return {key:'shield', name:has('u03')?'出关':'闭关', cost, od:has('u03')?'挡 2 刀,每挡反击+回能':'挡住 2 次攻击', dmg:0};
   if(key==='flurry') return {key:'flurry', name:has('u02')?'追浪':'起浪', cost, od:has('u02')?'×2 连击+2,后 2 题追浪':'打一下,连击+2', dmg:immediateDamage()*2};
-  if(key==='cross') return {key:'cross', name:has('u09')?'点破':'划叉', cost, od:has('u09')?'只剩答案亮着(这题不给分)':'划掉错项/漏答案线索', dmg:0};
+  if(key==='cross') return {key:'cross', name:has('u09')?'点破':'排除法', cost, od:has('u09')?'只剩答案亮着(这题不给分)':'排除错项/漏答案线索', dmg:0};
   if(key==='hand')  return {key:'hand', name:has('u10')?'拍桌':'举手', cost, od:has('u10')?'你的表停 5 秒,笔能动':'你的表停 4 秒,笔不能动', dmg:0};
   if(has('u07'))     return {key:'small', name:'再闪', cost, od:'两刀,每刀 ×2', dmg:immediateDamage()*2+immediateDamageRaw()*2};
   return {key:'small', name:'一闪', cost, od:`攻击 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
@@ -2744,8 +2740,8 @@ function heavySkill(){
   const key = sc ? sc.skillKey : 'big';
   let v;
   if(key==='avalanche')     v={key:'avalanche', name:has('u05')?'封山':'雪崩', base:4*(1+0.02*P.combo), od:has('u05')?'连击越高越疼,封山 5 秒':'连击越高越疼,还定住它', stun:true};
-  else if(key==='timestop') v={key:'timestop',  name:has('u06')?'偷秒':'掐表', base:4, od:has('u06')?'×4,冻 5 秒,这题+5 秒':'×4,定住敌人 5 秒', freeze:5000};
-  else if(key==='calc')     v={key:'calc',      name:has('u04')?'回本':'回血', base:4, od:has('u04')?'×4,回 30⚡,下次轻技免费':'×4,回 30 能量', regen:30};
+  else if(key==='timestop') v={key:'timestop',  name:has('u06')?'偷秒':'时间到', base:4, od:has('u06')?'×4,冻 5 秒,这题+5 秒':'×4,定住敌人 5 秒', freeze:5000};
+  else if(key==='calc')     v={key:'calc',      name:has('u04')?'回本':'结账', base:4, od:has('u04')?'×4,回 30⚡,下次轻技免费':'×4,回 30 能量', regen:30};
   else if(key==='rollcall') v={key:'rollcall', name:has('u11')?'罚站':'点名', base:3, od:has('u11')?'×3,倒空了它就罚站':'×3,充能倒走 3.5 秒', reverse:3500};
   else                      v={key:'big',       name:has('u08')?'连擂':'擂鼓',     base:K.BIG_MULT, od:has('u08')?`×${K.BIG_MULT}+震慑,3 秒内答对追锤`:`攻击 × ${K.BIG_MULT} + 震慑`, stun:true};
   v.cost = skillCost('heavy', key);
@@ -2801,7 +2797,7 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
     } else swapQuestion();
     floatText('📄 撕卷!', '#3fe7ff', true, false, 'you');
   }
-  else if(sk.key==='cross'){   // 划叉:考场第一本能——错的先死
+  else if(sk.key==='cross'){   // 排除法:考场第一本能——错的先死
     SFX.small();
     q._aided = true;   // 求助的题,奖励减半(点破归零)——锁死永不答错机器
     if(has('u09')) q._pointed = true;
@@ -2809,7 +2805,7 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
       const wrong = [0,1,2,3].filter(i=>i!==q.answer-1);
       q._crossed = has('u09') ? wrong : weightedDraw(wrong,2).map(x=>x);
       renderOpts();
-      floatText(has('u09')?'💡 点破!':'❌ 划掉俩!', '#ffcf4d', true, false, 'you');
+      floatText(has('u09')?'💡 点破!':'✂️ 排除俩!', '#ffcf4d', true, false, 'you');
     } else {
       q._crossed = [];
       const astr = String(q.answer);
@@ -2826,7 +2822,7 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
     q._hand = true;
     handFreeze(has('u10') ? 5000 : 4000, has('u10'));
   }
-  else if(sk.key==='shield'){ SFX.res(); P.shieldCharges = jam?1:2; floatText(`🛡 护盾 ×${P.shieldCharges}`, '#3fe7ff', true, false, 'you'); }
+  else if(sk.key==='shield'){ SFX.res(); P.shieldCharges = jam?1:2; floatText(`🚪 闭关 ×${P.shieldCharges}`, '#3fe7ff', true, false, 'you'); }
   else if(sk.key==='flurry'){
     SFX.small(); P.combo += 2;
     telem.maxCombo = Math.max(telem.maxCombo, P.combo);
@@ -2905,7 +2901,7 @@ function releaseBig(){   // 重技能槽
     E._rcPunished = false;
     banner('🫵 点名!下一个,它答!');
   }
-  if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`回血 +${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); if(has('u04')){ P.freeSmall=true; floatText('💰 下次轻技免费', '#3fe7ff', true, false, 'you'); } }
+  if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`🧾 结账 +${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); if(has('u04')){ P.freeSmall=true; floatText('💰 下次轻技免费', '#3fe7ff', true, false, 'you'); } }
   if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio*(jam?0.5:1))});
   dealDamage(Math.round(sk.dmg*(jam?0.5:1)), od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
   consumeImmDouble();   // 重技全系带伤害,统一吃掉翻倍(dot 快照也已按翻倍计)
@@ -3002,7 +2998,7 @@ function markEvent(){ telem.eventQGaps.push(telem.globalQ - telem.lastEventQ); t
 function sectionWin(){
   stopLoop(); stopAmbient();
   clearTimeout(R.draftTimer); R.draftTimer=null; R._draftLock=false; R.draftPending=null;
-  const HEAVY_KINDS=['擂鼓','雪崩','掐表','回血','成王败寇','封山','偷秒','回本','连擂','点名','罚站'];
+  const HEAVY_KINDS=['擂鼓','雪崩','时间到','结账','成王败寇','封山','偷秒','回本','连擂','点名','罚站'];
   const heavyKill = E.lastHitKind && HEAVY_KINDS.some(k=>String(E.lastHitKind).startsWith(k));
   P.overloadStacks = 0;   // 节末白攒(SPEC §9 风险端)
   if(heavyKill && R.section < K.SECTIONS){
@@ -3286,7 +3282,7 @@ function updateHUD(){
   rs.style.display = smallEnabled()?'flex':'none'; rs.disabled=!sOk; rs.classList.toggle('ready',sOk);
   document.getElementById('rSmallName').textContent = lsk.name;
   {  // 技能瓦片大图标:觉醒>技能卡>默认
-    const ICO={small:'⚡',big:'🥁',swap:'📄',flurry:'🌊',shield:'☂️',cross:'❌',hand:'🙋',calc:'🪙',avalanche:'🌨',timestop:'⏱',rollcall:'🫵'};
+    const ICO={small:'⚡',big:'🥁',swap:'📄',flurry:'🌊',shield:'🚪',cross:'✂️',hand:'🙋',calc:'🧾',avalanche:'🌨',timestop:'⏰',rollcall:'🫵'};
     const ico=(slot,key)=>{ const up=P.hexes.find(h=>h.cat==='升级'&&h.uSlot===slot); if(up) return up.ico; const sc=ownedSkill(slot); return (sc&&sc.ico)||ICO[key]||'⚔'; };
     const iS=document.getElementById('rSmallIco'), iB=document.getElementById('rBigIco');
     if(iS) iS.textContent=ico('light',lsk.key);
