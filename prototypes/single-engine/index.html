@@ -521,9 +521,15 @@
     #start .tagline{letter-spacing:7px; margin-right:-7px;}
     .sub{font-size:12px; line-height:1.65;}
     #start,#draft,#final{justify-content:flex-start; overflow:auto; padding-top:26px;}
-    .cards{gap:10px;}
-    .card{width:min(340px,90vw); min-height:0; flex-direction:column; padding:13px;}
-    .card .ico{font-size:26px;} .card .name{font-size:16px;}
+    .cards{gap:9px;}
+    .card{width:min(460px,94vw); min-height:0; display:grid; grid-template-columns:46px 1fr; column-gap:12px; row-gap:4px; padding:12px 14px; align-items:start; text-align:left;}
+    .card .ico{grid-column:1; grid-row:1 / span 6; font-size:31px; margin-top:2px;}
+    .card .name{grid-column:2; font-size:17.5px; padding-right:52px;}
+    .card .desc{grid-column:2; font-size:13.5px; line-height:1.6;}
+    .card .delta,.card .syn{grid-column:2; font-size:12px;}
+    .bdstatus{font-size:13px;}
+    .bdsub{font-size:13px;}
+    .qopt{font-size:15px; padding:11px 12px;}
     #battle{padding:8px 10px; gap:7px;}
     .scene{height:104px;}
     .fighter{width:120px;}
@@ -572,7 +578,6 @@
 .secdraft .cards{ margin-top:6px; }
 /* 结算/战报屏:内容超高(过关补给/多行战报)时可滚动,顶对齐防居中裁切 */
 #secres, #final{ overflow-y:auto; justify-content:flex-start; padding-top:3vh; padding-bottom:5vh; }
-.card.r-id{ border-color:#3d4d70; }
 .card.r-awaken{ border-color:#ffcf4d; box-shadow:0 0 18px rgba(255,207,77,.25); }
 .card.r-silver{ background:linear-gradient(rgba(6,9,16,.42),rgba(6,9,16,.66)), url('art/ui-cardbg-silver.png') center/cover !important; }
 .card.r-gold{ background:linear-gradient(rgba(6,9,16,.42),rgba(6,9,16,.66)), url('art/ui-cardbg-gold.png') center/cover !important; animation:goldbreathe 2.6s ease-in-out infinite; }
@@ -614,7 +619,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.19</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.20</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -2194,7 +2199,7 @@ function renderDraftCards(offer, wrap, roundIdx){
   const baseAtk = immediateDamage(), baseHv = heavySkill(), baseLt = lightSkill();
   offer.forEach(h=>{
     const el=document.createElement('div');
-    const frame = roundIdx===0 ? 'r-id' : (h.cat==='升级' ? 'r-awaken' : `r-${h.rar}`);
+    const frame = h.cat==='升级' ? 'r-awaken' : `r-${h.rar}`;
     el.className=`card ${frame} sc-${SCHOOL_CLASS[h.school]||'ty'}`;
     el.title=h.cat;
     let delta='';
@@ -2231,7 +2236,7 @@ function renderDraftCards(offer, wrap, roundIdx){
       syn.push({pri:1, html:`<div class="syn res">🔗 选它=第 2 张${h.school}卡,触发「${RESONANCE[h.school].name}」→ ${RESONANCE[h.school].desc}</div>`});
     const statusTags = syn.sort((a,b)=>a.pri-b.pri).slice(0,2).map(t=>t.html).join('');
     const upBadge = h.cat==='升级' ? '<span class="upmark">↗</span>' : '';
-    const badge = roundIdx===0 ? '' : (h.cat==='升级' ? '<div class="rarbadge awaken">↗ 觉醒</div>' : `<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`);
+    const badge = h.cat==='升级' ? '<div class="rarbadge awaken">↗ 觉醒</div>' : `<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`;
     el.innerHTML=`${badge}
       <div class="ico">${h.ico}</div>
       <div class="name">${h.name}${upBadge}${h.ba?' <span class="bastar">★</span>':''}</div>
