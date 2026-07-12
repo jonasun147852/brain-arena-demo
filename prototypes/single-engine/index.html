@@ -619,7 +619,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.20</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.21</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1252,10 +1252,10 @@ const HEXES = [
   {id:'u07',name:'再闪',ico:'⚔️',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'small', fl:'还没看清第一刀,第二刀到了。',   desc:'一闪觉醒:攻击变为<b>两段</b>,每段 <b>×2</b> 伤害'},
   {id:'u08',name:'连擂',ico:'🔨',school:'手',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'big', fl:'你懵着,我一题一锤地敲。',   desc:'擂鼓觉醒:震慑期间(3 秒),每次答对<b>追加一锤</b>普攻伤害'},
   {id:'s07',idline:'错的划掉,剩下的才叫选项',name:'排除法',ico:'✂️',school:'脑',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'cross', fl:'错的,先死。', desc:'<b>轻技能替换</b>:排除 <b>2</b> 个错误选项(数学题改为提示位数与首位);受助题目奖励<b>减半</b>'},
-  {id:'s08',idline:'不会做?先举手',name:'举手',ico:'🙋',school:'心',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'hand', fl:'老师,这题印错了吧?', desc:'<b>轻技能替换</b>:<b>暂停</b>己方计时 4 秒(奖池同步冻结);期间无法作答,对手充能不受影响'},
+  {id:'s08',idline:'我的表,先停一下',name:'时间暂停',ico:'⏸',school:'心',rar:'silver',cat:'技能',ba:false, skillSlot:'light', skillKey:'hand', fl:'笔停,心不停。', desc:'<b>轻技能替换</b>:<b>暂停</b>己方计时 4 秒(奖池同步冻结);期间无法作答,对手充能不受影响'},
   {id:'s09',idline:'叫到名字,条往回走',name:'点名',ico:'🫵',school:'心',rar:'gold',cat:'技能',ba:false, skillSlot:'heavy', skillKey:'rollcall', fl:'下一个,你来答。', desc:'<b>重技能替换</b>:造成 <b>×3</b> 伤害,并使对手充能<b>倒转</b> 3.5 秒'},
   {id:'u09',name:'点破',ico:'💡',school:'脑',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s07', fl:'答案就在这。', desc:'排除法觉醒:<b>排除全部错误选项</b>;但该题不提供能量,连击不增长'},
-  {id:'u10',name:'拍桌',ico:'🫱',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s08', fl:'谁的桌子响,谁有理。', desc:'举手觉醒:暂停延长至 <b>5</b> 秒,且期间<b>可以作答</b>'},
+  {id:'u10',name:'拍桌',ico:'🫱',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'light', upgradeFor:'s08', fl:'谁的桌子响,谁有理。', desc:'时间暂停觉醒:暂停延长至 <b>5</b> 秒,且期间<b>可以作答</b>'},
   {id:'u11',name:'罚站',ico:'🧍',school:'心',rar:'gold',cat:'升级',ba:false, uSlot:'heavy', upgradeFor:'s09', fl:'答不上来,就站好。', desc:'点名觉醒:充能被倒转至 0 时,<b>定身</b>对手 2 秒,期间受到的伤害提高'},
   // 高成长卡(只进前两抽;拿到自带预热)
   {id:'g01',name:'织衣',ico:'🧥',school:'手',rar:'gold',cat:'成长',ba:false, grow:true, idline:'攻击力持续成长',   fl:'腋下的毛,攒成大衣。', desc:'每答对 <b>2</b> 题,攻击力永久 <b>+1</b>(上限 +10)'},
@@ -2288,7 +2288,7 @@ function reroll(){
   else if(R._secDraft!=null) renderSecDraft(R._secDraft);
 }
 /* ============================== 选牌 ============================== */
-let HAND_FREEZE=null;   // 举手:题目时钟单边冻结(敌人照充)
+let HAND_FREEZE=null;   // 时间暂停:题目时钟单边冻结(敌人照充)
 function handFreeze(ms, canWrite){
   if(HAND_FREEZE || !q) return;
   clearTimeout(qTimer);
@@ -2300,7 +2300,7 @@ function handFreeze(ms, canWrite){
   if(!canWrite) inp.disabled = true;
   const fill=document.getElementById('qTimerFill');
   fill.style.transition='none'; fill.style.width=(remain/total*100)+'%';
-  floatText(canWrite?'🫱 拍桌!表停 5 秒':'🙋 举手!表停 4 秒', '#3fe7ff', true, false, 'you');
+  floatText(canWrite?'🫱 拍桌!表停 5 秒':'⏸ 时间暂停!表停 4 秒', '#3fe7ff', true, false, 'you');
   setTimeout(()=>handUnfreeze(token), ms);
 }
 function handUnfreeze(token){
@@ -2765,7 +2765,7 @@ function lightSkill(){
   if(key==='shield') return {key:'shield', name:has('u03')?'盾击':'举盾', cost, od:has('u03')?'挡 2 刀,每挡反击+回能':'挡住 2 次攻击', dmg:0};
   if(key==='flurry') return {key:'flurry', name:has('u02')?'追浪':'起浪', cost, od:has('u02')?'×2 连击+2,后 2 题追浪':'打一下,连击+2', dmg:immediateDamage()*2};
   if(key==='cross') return {key:'cross', name:has('u09')?'点破':'排除法', cost, od:has('u09')?'只剩答案亮着(这题不给分)':'排除错项/漏答案线索', dmg:0};
-  if(key==='hand')  return {key:'hand', name:has('u10')?'拍桌':'举手', cost, od:has('u10')?'你的表停 5 秒,笔能动':'你的表停 4 秒,笔不能动', dmg:0};
+  if(key==='hand')  return {key:'hand', name:has('u10')?'拍桌':'时间暂停', cost, od:has('u10')?'你的表停 5 秒,笔能动':'你的表停 4 秒,笔不能动', dmg:0};
   if(has('u07'))     return {key:'small', name:'再闪', cost, od:'两刀,每刀 ×2', dmg:immediateDamage()*2+immediateDamageRaw()*2};
   return {key:'small', name:'一闪', cost, od:`攻击 × ${K.SMALL_MULT}`, dmg:immediateDamage()*K.SMALL_MULT};
 }
@@ -2853,7 +2853,7 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
       }
     }
   }
-  else if(sk.key==='hand'){   // 举手:你的表停,敌人的不停
+  else if(sk.key==='hand'){   // 时间暂停:你的表停,敌人的不停
     SFX.res();
     q._hand = true;
     handFreeze(has('u10') ? 5000 : 4000, has('u10'));
@@ -3325,7 +3325,7 @@ function updateHUD(){
   rs.style.display = smallEnabled()?'flex':'none'; rs.disabled=!sOk; rs.classList.toggle('ready',sOk);
   document.getElementById('rSmallName').textContent = lsk.name;
   {  // 技能瓦片大图标:觉醒>技能卡>默认
-    const ICO={small:'⚡',big:'🥁',swap:'📄',flurry:'🌊',shield:'🚪',cross:'✂️',hand:'🙋',calc:'🧾',avalanche:'🌨',timestop:'⏰',rollcall:'🫵'};
+    const ICO={small:'⚡',big:'🥁',swap:'📄',flurry:'🌊',shield:'🚪',cross:'✂️',hand:'⏸',calc:'🧾',avalanche:'🌨',timestop:'⏰',rollcall:'🫵'};
     const ico=(slot,key)=>{ const up=P.hexes.find(h=>h.cat==='升级'&&h.uSlot===slot); if(up) return up.ico; const sc=ownedSkill(slot); return (sc&&sc.ico)||ICO[key]||'⚔'; };
     const iS=document.getElementById('rSmallIco'), iB=document.getElementById('rBigIco');
     if(iS) iS.textContent=ico('light',lsk.key);

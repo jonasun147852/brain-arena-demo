@@ -1,5 +1,5 @@
 {
- "version": "5.18",
+ "version": "5.21",
  "generatedAt": "2026-07-12",
  "total": 48,
  "bySchool": {
@@ -621,16 +621,16 @@
   },
   {
    "id": "s08",
-   "idline": "不会做?先举手",
-   "name": "举手",
-   "ico": "🙋",
+   "idline": "我的表,先停一下",
+   "name": "时间暂停",
+   "ico": "⏸",
    "school": "心",
    "rar": "silver",
    "cat": "技能",
    "ba": false,
    "skillSlot": "light",
    "skillKey": "hand",
-   "fl": "老师,这题印错了吧?",
+   "fl": "笔停,心不停。",
    "desc": "<b>轻技能替换</b>:<b>暂停</b>己方计时 4 秒(奖池同步冻结);期间无法作答,对手充能不受影响",
    "pool": "立派+各轮",
    "lock": "",
@@ -680,7 +680,7 @@
    "uSlot": "light",
    "upgradeFor": "s08",
    "fl": "谁的桌子响,谁有理。",
-   "desc": "举手觉醒:暂停延长至 <b>5</b> 秒,且期间<b>可以作答</b>",
+   "desc": "时间暂停觉醒:暂停延长至 <b>5</b> 秒,且期间<b>可以作答</b>",
    "pool": "觉醒roll(R4/R5)",
    "lock": "",
    "gene": ""
