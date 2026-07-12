@@ -206,8 +206,6 @@
     font-size:13.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:7px; transition:transform .08s, border-color .15s;}
   .qopt:hover{border-color:var(--cyan);}
   .qopt:active{transform:scale(.96);}
-  .qopt .qn{min-width:19px; height:19px; border-radius:3px; transform:rotate(0deg); background:rgba(63,231,255,.85); color:#04060c; font-weight:900; border:none; font-family:'Game',sans-serif;
-    color:var(--cyan); font-size:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .subjrow{display:flex; gap:7px; flex-wrap:wrap; justify-content:center; max-width:92%;}
   .sj{font-size:12.5px; font-weight:800; padding:5px 15px; border-radius:20px; border:1px solid var(--line2); color:var(--dim);
     background:rgba(0,0,0,.25); cursor:pointer; letter-spacing:1px; transition:all .15s;}
@@ -234,6 +232,7 @@
   #pixiRoot canvas{position:absolute; inset:0; width:100%; height:100%;}
   .topbar,.towerwrap,.scene,.hud,.tierchips,.trialbar,.qbox,.releases,#keypad{position:relative; z-index:1;}   /* 只提流内元素;banner/toast/vsplash 等浮层保持各自定位 */
   .fxon .core{opacity:0;}
+  .fxon .pavatar, .fxon .fighter .hpbar, .fxon .hpnum{visibility:hidden;}
   .fxon .chargebar{opacity:0;}
   .fxon .scene{background:transparent; border-color:transparent;}
   .fxon .hud .stat{background:transparent; border-color:transparent;}
@@ -252,8 +251,6 @@
   .rbtn.big .ricon{ box-shadow: inset 0 1px 2px rgba(255,255,255,.16), inset 0 -3px 6px rgba(0,0,0,.55), 0 0 12px rgba(255,207,77,.16);
     background:radial-gradient(circle at 35% 28%, rgba(255,255,255,.20), rgba(255,207,77,.09) 45%, rgba(16,10,4,.6) 75%); }
   .odgem.lit{ background:radial-gradient(circle at 35% 28%, #e9c8ff, #b561ff 55%, #6b2fa0); border-color:#d9b3ff; }
-  .qopt .qn{ background:radial-gradient(circle at 35% 28%, #c6f4ff, rgba(63,231,255,.9) 60%, #1587a8);
-    box-shadow: inset 0 1px 1px rgba(255,255,255,.4), inset 0 -1px 2px rgba(0,0,0,.35); }
   .card{ box-shadow: inset 0 1px 0 rgba(255,255,255,.05), inset 0 -1px 0 rgba(0,0,0,.5); }
   /* ===== 符文机枢 · 位图资产接线(AI 生成,渐进增强) ===== */
   .fxon .qbox{ border:22px solid transparent; border-image:url('art/ui-console.png') 96 fill / 22px stretch; border-radius:0; background:none; backdrop-filter:none; }
@@ -268,24 +265,17 @@
     transform:translate(-50%,-50%); z-index:2; width:auto; height:auto;
     background:none !important; box-shadow:none !important; font-size:25px; margin:0; line-height:1; }
   .rbtn .kbd{ position:absolute !important; left:9px !important; top:7px !important; z-index:3; }
+  .rbtn::before{ content:''; position:absolute; left:44px; top:50%; transform:translate(-50%,-50%); width:46px; height:46px; border-radius:50%;
+    background:radial-gradient(circle at 42% 35%, rgba(18,26,44,.92), rgba(5,8,15,.96) 72%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.16), inset 0 -5px 9px rgba(0,0,0,.65); z-index:1; pointer-events:none; }
+  .rbtn::after{ z-index:0; }
+  .rbtn .ricon{ font-size:28px !important; filter:drop-shadow(0 2px 3px rgba(0,0,0,.85)); }
   .rbtn .rfill{ opacity:.22; }
   .rbtn .cost{ position:static; }
   @media(max-width:560px){ .rbtn .od{ display:none; } .rbtn{ padding-left:88px !important; min-height:78px; } .rbtn::after{ width:70px; height:70px; } .ricon{ left:40px; } }
   .odgem{ width:15px; height:15px; border:none; transform:none; border-radius:0;
     background:url('art/ui-gem-off.png') center/contain no-repeat; box-shadow:none; }
   .odgem.lit{ background:url('art/ui-gem-lit.png') center/contain no-repeat; box-shadow:none; }
-  /* ===== 玩家大血条(余光可感原则) ===== */
-  .php{width:100%; display:flex; align-items:center; gap:8px; position:relative; z-index:1;}
-  .phplab{font-size:13px;}
-  .phpnum{font-family:'Game',sans-serif; font-size:16px; color:#43e08a; min-width:34px; text-align:right; text-shadow:0 0 10px rgba(67,224,138,.5);}
-  .phpbar{flex:1; height:13px; background:#070d18; border:1px solid rgba(255,255,255,.14); border-radius:3px; position:relative; overflow:hidden; box-shadow:inset 0 2px 5px rgba(0,0,0,.7);}
-  .phpfill{position:absolute; inset:0; width:100%; background:linear-gradient(90deg,#1f8a4d,#43e08a 60%,#7dffb8); transition:width .18s ease; box-shadow:0 0 12px rgba(67,224,138,.45); z-index:2;}
-  .phpghost{position:absolute; inset:0; width:100%; background:rgba(255,255,255,.55); transition:width .7s ease .25s; z-index:1;}
-  .php.low .phpfill{background:linear-gradient(90deg,#8a1f2f,#ff5470 60%,#ff8aa0); box-shadow:0 0 14px rgba(255,84,112,.7); animation:hpthrob 0.9s ease-in-out infinite;}
-  .php.low .phpnum{color:#ff5470;}
-  @keyframes hpthrob{0%,100%{filter:brightness(1);}50%{filter:brightness(1.5);}}
-  .php.hit .phpbar{animation:hpshake .3s ease;}
-  @keyframes hpshake{0%,100%{transform:translateX(0);}30%{transform:translateX(-5px);}60%{transform:translateX(4px);}}
   /* ===== 威胁边缘光(敌人出手在即,不看也知道) ===== */
   #threatEdge{position:fixed; inset:0; pointer-events:none; z-index:5; opacity:0; transition:opacity .25s;
     background:linear-gradient(270deg, rgba(255,84,112,.32), transparent 22%);}
@@ -595,7 +585,7 @@
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.15</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.16</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -619,8 +609,8 @@
     </div>
 
     <div class="scene" id="scene">
-      <div class="fighter">
-        <div class="pavatar" id="pAvatar">🧠</div>
+      <div class="fighter" id="youF">
+        <div class="pavatar" id="pAvatar">◆</div>
         <div class="hpbar"><div class="hpfill" id="pHpFill"></div></div>
         <div class="hpnum" id="pHpNum">100 / 100</div>
         <div class="buildrow" id="buildRow"></div>
@@ -656,11 +646,6 @@
       <input class="qinput" id="qInput" inputmode="numeric" autocomplete="off" placeholder="答案">
     </div>
 
-    <div class="php" id="pHpBig">
-      <span class="phplab">❤</span>
-      <div class="phpbar"><div class="phpghost" id="pHpGhost"></div><div class="phpfill" id="pHpBigFill"></div></div>
-      <span class="phpnum" id="pHpBigNum">100</span>
-    </div>
     <div class="releases">
       <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span class="ricon" id="rSmallIco">⚡</span><span id="rSmallName">一闪</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">攻击 × 3</span><span class="castdots" id="cdSmall"></span></button>
       <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span class="ricon" id="rBigIco">🥁</span><span id="rBigName">擂鼓</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">攻击 × 6 + 震慑</span><span class="odpips" id="odPips"></span><span class="castdots" id="cdBig"></span></button>
@@ -1348,7 +1333,7 @@ function stopAmbient(){
 
 /* ============================== 游戏感渲染层:PixiJS 战斗舞台(拉取式读状态,零逻辑侵入;无 PIXI 自动空壳) ============================== */
 const FX = (function(){
-  const stub = {real:false, ensure(){}, hit(){}, strike(){}, rage(){}, shatter(){}};
+  const stub = {real:false, ensure(){}, hit(){}, strike(){}, rage(){}, shatter(){}, pHit(){}};
   if(typeof PIXI==='undefined' || typeof window==='undefined') return stub;
   // 环的性格即角色性格:石=少段厚环慢转 / 影=三细环快转+出手前瞬缩 / 焰=三角锐环+火粒外溢
   const THEMES = [
@@ -1361,6 +1346,7 @@ const FX = (function(){
   let embers=[], floats=[], parts=[], dotTex=null, triTex=null;
   let envC=null, gridG=null, silG=null, glowS=null, runeTs=[], fogS=[], envSec=-1, envW=0, envH=0, rays=[], horizonS=null, bgS=null;
   let anchor={x:260,y:80,r:44}, shake=0, lunge=0, squash=0, t=0, syncT=0, foeAlpha=1;
+  let youC, pShadow, pAura, pR1, pR2, pCore, pHpT, pShards=[], anchorY={x:140,y:80,r:34}, pSquash=0, pFlash=0;
   function C(hex){ return parseInt(String(hex||'#ffffff').replace('#',''),16)||0xffffff; }
   function mkDot(){ const g=new PIXI.Graphics().beginFill(0xffffff).drawCircle(0,0,4).endFill(); return app.renderer.generateTexture(g); }
   function mkTri(){ const g=new PIXI.Graphics().beginFill(0xffffff).drawPolygon([0,-6,5,4,-5,4]).endFill(); return app.renderer.generateTexture(g); }
@@ -1391,6 +1377,15 @@ const FX = (function(){
     glyphT.anchor.set(0.5);
     foeC.addChild(shadowG,aura,rings[0],rings[1],rings[2],orb,chargeG,glyphT);
     layerFoe.addChild(foeC);
+    // 玩家实体:方晶核+反转棱环(锐角斜切语汇,与守门者的同心圆宇宙相对)
+    youC=new PIXI.Container();
+    pShadow=new PIXI.Graphics(); pAura=new PIXI.Graphics();
+    pR1=new PIXI.Graphics(); pR2=new PIXI.Graphics(); pCore=new PIXI.Graphics();
+    pHpT=new PIXI.Text('100',{fontFamily:'Game,Arial Black,Arial,sans-serif',fontSize:25,fontWeight:'900',fill:0x43e08a,stroke:0x05070d,strokeThickness:5});
+    pHpT.anchor.set(0,0.5);
+    youC.addChild(pShadow,pAura,pR1,pR2,pCore,pHpT);
+    for(let i=0;i<4;i++){ const sp=new PIXI.Sprite(triTex); sp.anchor.set(0.5); sp._ph=i*Math.PI/2; youC.addChild(sp); pShards.push(sp); }
+    layerFoe.addChild(youC);
     const b=document.getElementById('battle'); if(b) b.classList.add('fxon');
     app.ticker.add(tick);
   }
@@ -1413,6 +1408,9 @@ const FX = (function(){
     anchor.x = br.left-rr.left+br.width/2;
     anchor.y = br.top-rr.top+Math.min(64, br.height*0.5);
     anchor.r = Math.min(52, Math.max(38, br.width*0.24));
+    const yf=document.getElementById('youF');
+    if(yf && yf.getBoundingClientRect){ const yr=yf.getBoundingClientRect();
+      if(yr.width>0){ anchorY.x=yr.left-rr.left+yr.width/2; anchorY.y=yr.top-rr.top+Math.min(58, yr.height*0.45); anchorY.r=Math.min(38, Math.max(28, yr.width*0.18)); } }
   }
   function theme(){ return THEMES[Math.min(((typeof R!=='undefined'&&R&&R.section)||1)-1,2)]; }
   function mkGlow(){ const g=new PIXI.Graphics();   // 软光斑纹理(径向假光)
@@ -1424,23 +1422,6 @@ const FX = (function(){
     const th=THEMES[Math.min(sec-1,2)];
     envC.removeChildren(); runeTs=[]; fogS=[]; bgS=null;
     if(!glowTex) glowTex=mkGlow();
-    // 内容层:手绘背景(渐进增强——加载成功后剪影层让位)
-    try{
-      const tex=PIXI.Texture.from('art/bg-gate'+Math.min(sec,3)+'.jpg');
-      bgS=new PIXI.Sprite(tex); bgS.anchor.set(0.5); bgS.alpha=1;
-      envC.addChild(bgS);
-      const shade=new PIXI.Graphics();
-      shade.beginFill(0x04060c,0.42).drawRect(0,0,W,H).endFill();
-      shade.beginFill(0x04060c,0.30).drawRect(0,H*0.30,W,H*0.45).endFill(); // 题目/数字动线再压一档
-      envC.addChild(shade);
-      const fit=()=>{ if(!tex.width||!bgS) return;
-        const sc=Math.max(W/tex.width, H/tex.height);
-        bgS.scale.set(sc); bgS.x=W/2; bgS.y=H/2;
-        if(silG) silG.visible=false;
-        if(horizonS) horizonS.visible=false;
-      };
-      if(tex.valid) fit(); else tex.baseTexture.once('loaded', fit);
-    }catch(e){}
     // 地面辉光(敌侧半场)
     glowS=new PIXI.Sprite(glowTex); glowS.anchor.set(0.5);
     glowS.tint=th.hex; glowS.alpha=0.34; glowS.x=W*0.72; glowS.y=H*0.30;
@@ -1497,9 +1478,25 @@ const FX = (function(){
     envC.addChild(horizonS);
     // 透视地格(动态,tick 里重画)
     gridG=new PIXI.Graphics(); envC.addChild(gridG);
+    // 内容层:手绘背景垫底+暗罩(渐进增强);就位后程序化旧景全退场,只留位图+余烬
+    try{
+      const tex=PIXI.Texture.from('art/bg-gate'+Math.min(sec,3)+'.jpg');
+      bgS=new PIXI.Sprite(tex); bgS.anchor.set(0.5); bgS.alpha=1;
+      const shade=new PIXI.Graphics();
+      shade.beginFill(0x04060c,0.42).drawRect(0,0,W,H).endFill();
+      shade.beginFill(0x04060c,0.30).drawRect(0,H*0.30,W,H*0.45).endFill(); // 题目/数字动线再压一档
+      envC.addChildAt(shade,0); envC.addChildAt(bgS,0);
+      const fit=()=>{ if(!tex.width||!bgS) return;
+        const sc=Math.max(W/tex.width, H/tex.height);
+        bgS.scale.set(sc); bgS.x=W/2; bgS.y=H/2;
+        [glowS,silG,horizonS,gridG].forEach(o=>{ if(o) o.visible=false; });
+        runeTs.forEach(o=>o.visible=false); fogS.forEach(o=>o.visible=false); rays.forEach(o=>o.visible=false);
+      };
+      if(tex.valid) fit(); else tex.baseTexture.once('loaded', fit);
+    }catch(e){}
   }
   function drawGrid(W,H,th){
-    if(!gridG) return;
+    if(!gridG || !gridG.visible) return;
     gridG.clear();
     const hz=H*0.52, cx=W*0.5;
     // 纵向汇聚线
@@ -1608,6 +1605,35 @@ const FX = (function(){
     if(pct>0.01){
       chargeG.lineStyle(4.5, cc, 0.95).arc(0,0,r+11,-Math.PI/2,-Math.PI/2+pct*Math.PI*2);
     }
+    {  // 玩家实体:血量驱动色温,受击挤压白闪,低血提速脉冲
+      const hpf=Math.max(0,Math.min(1,P.hp/((typeof K!=='undefined'&&K.PLAYER_HP)||100)));
+      const pcol = hpf>0.6?0x43e08a : hpf>0.3?0xffcf4d : 0xff5470;
+      const low = hpf<=0.3 && P.hp>0;
+      pSquash*=0.82; pFlash*=0.86;
+      youC.x=anchorY.x + (pFlash>0.3?(Math.random()-0.5)*4:0); youC.y=anchorY.y;
+      const pb=1+Math.sin(t*0.045)*0.03+(low?Math.sin(t*0.35)*0.03:0);
+      youC.scale.set(pb*(1+pSquash), pb*(1-pSquash));
+      const pr=anchorY.r;
+      pShadow.clear().beginFill(pcol,0.12).drawEllipse(0,pr+18,pr*1.4,8).endFill();
+      pAura.clear().beginFill(pcol, low?0.16:0.08).drawCircle(0,0,pr+10+Math.sin(t*0.08)*3).endFill();
+      const cc = pFlash>0.2 ? 0xffffff : pcol;
+      const d=pr*0.52;
+      pCore.clear()
+        .beginFill(cc,0.9).drawPolygon([0,-d, d,0, 0,d, -d,0]).endFill()
+        .beginFill(0x05070d,0.9).drawPolygon([0,-d*0.62, d*0.62,0, 0,d*0.62, -d*0.62,0]).endFill()
+        .lineStyle(1.5,cc,0.95).drawPolygon([0,-d, d,0, 0,d, -d,0]);
+      pR1.clear().lineStyle(2.5,pcol,0.7).drawPolygon([0,-pr, pr,0, 0,pr, -pr,0]);
+      pR1.rotation += 0.008 + (low?0.014:0);
+      pR2.clear().lineStyle(1.5,pcol,0.38).drawPolygon([0,-pr*0.78, pr*0.78,0, 0,pr*0.78, -pr*0.78,0]);
+      pR2.rotation -= 0.013;
+      pShards.forEach((sp)=>{ const a2=t*0.02+sp._ph; sp.tint=pcol; sp.alpha=0.75;
+        sp.x=Math.cos(a2)*(pr+7); sp.y=Math.sin(a2)*(pr+7)*0.5; sp.rotation=a2+Math.PI/2; sp.scale.set(0.55); });
+      const hpTxt=String(Math.max(0,P.hp))+(P.shieldCharges>0?' 🛡'+P.shieldCharges:'');
+      if(pHpT.text!==hpTxt) pHpT.text=hpTxt;
+      pHpT.x=pr*0.9+12; pHpT.y=0;
+      if(pHpT.style.fill!==pcol) pHpT.style.fill=pcol;
+      youC.alpha = P.hp<=0 ? 0.35 : 1;
+    }
     // 粒子/伤害字
     for(let i=parts.length-1;i>=0;i--){ const sp=parts[i];
       sp.x+=sp._vx; sp.y+=sp._vy; sp._vy+=sp._g; sp.alpha-=sp._f; sp.rotation+=sp._vr||0;
@@ -1652,6 +1678,7 @@ const FX = (function(){
       } else shake=Math.max(shake, Math.min(5, amount/24));
     },
     strike(){ if(!app) return; lunge=34; shake=Math.max(shake,7); burst(anchor.x-anchor.r-6, anchor.y+6, 0xff5470, 8, 3, 0.1); },
+    pHit(){ if(!app) return; pSquash=Math.min(0.35, pSquash+0.2); pFlash=1; shake=Math.max(shake,6); burst(anchorY.x, anchorY.y, 0xff5470, 10, 3.2, 0.08); },
     rage(){ if(!app) return; shake=Math.max(shake,10); burst(anchor.x, anchor.y, 0xff5470, 26, 5, 0.05); },
     shatter(){ if(!app) return; shake=Math.max(shake,11); const th=theme(); burst(anchor.x, anchor.y, th.hex, 34, 6, 0.12); burst(anchor.x, anchor.y, 0xffffff, 12, 3.4, 0.1); },
   };
@@ -1944,8 +1971,7 @@ function enemyAttack(){
   {  // 受击反馈:红闪 + 血条震动
     const hf=document.getElementById('hurtFlash');
     if(hf && hf.classList){ hf.classList.remove('on'); void (hf.offsetWidth||0); hf.classList.add('on'); }
-    const big=document.getElementById('pHpBig');
-    if(big && big.classList){ big.classList.add('hit'); setTimeout(()=>{ try{big.classList.remove('hit');}catch(e){} }, 320); }
+    FX.pHit();
   }
   const atkDmg = Math.round(E.atk * (E.nextAtkMult||1));
   if(E.nextAtkMult>1){ floatText('×2!', '#ff5470', true, true, 'you'); }
@@ -2421,8 +2447,7 @@ function renderOpts(){
   qo.innerHTML='';
   q.opts.forEach((t,i)=>{
     const b=document.createElement('div'); b.className='qopt';
-    const n=document.createElement('span'); n.className='qn'; n.textContent=i+1;
-    b.appendChild(n); b.appendChild(document.createTextNode(t));
+    b.appendChild(document.createTextNode(t));
     if(q._crossed && q._crossed.includes(i)){ b.classList.add('qx'); qo.appendChild(b); return; }
     b.onclick=()=>{
       const inp=document.getElementById('qInput');
@@ -3202,17 +3227,6 @@ function updateSceneUI(){
   pf.style.width = (P.hp/K.PLAYER_HP*100)+'%';
   pf.className = 'hpfill' + (P.hp<=K.PLAYER_HP*0.3?' low':'');
   document.getElementById('pHpNum').textContent = `${P.hp} / ${K.PLAYER_HP}` + (P.shieldCharges>0?` 🛡×${P.shieldCharges}`:'');
-  {  // 大血条:主条瞬降,幽灵条缓随(格斗游戏损伤残影)
-    const pct=(Math.max(0,P.hp)/K.PLAYER_HP*100)+'%';
-    const big=document.getElementById('pHpBig');
-    if(big && big.style){
-      const f=document.getElementById('pHpBigFill'), g=document.getElementById('pHpGhost'), n=document.getElementById('pHpBigNum');
-      if(f&&f.style) f.style.width=pct;
-      if(g&&g.style) g.style.width=pct;
-      if(n) n.textContent=Math.max(0,P.hp)+(P.shieldCharges>0?' 🛡'+P.shieldCharges:'');
-      big.className='php'+(P.hp>0&&P.hp<=K.PLAYER_HP*0.3?' low':'');
-    }
-  }
   document.getElementById('app').classList.toggle('lowhp', P.hp>0 && P.hp<=K.PLAYER_HP*0.3 && CUR_SCREEN==='battle');
   const tf=document.getElementById('towerFill');
   tf.style.width = (E.hp/E.total*100)+'%';
