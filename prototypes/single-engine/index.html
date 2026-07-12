@@ -585,6 +585,9 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
 .card.r-gold{ background:linear-gradient(rgba(6,9,16,.42),rgba(6,9,16,.66)), url('art/ui-cardbg-gold.png') center/cover !important; animation:goldbreathe 2.6s ease-in-out infinite; }
 .card.r-prism{ background:linear-gradient(rgba(6,9,16,.42),rgba(6,9,16,.66)), url('art/ui-cardbg-prism.png') center/cover !important; }
 @keyframes goldbreathe{0%,100%{box-shadow:0 0 10px rgba(255,207,77,.12);}50%{box-shadow:0 0 22px rgba(255,207,77,.34);}}
+.card.r-id{ border-color:rgba(63,231,255,.55); box-shadow:0 0 22px rgba(63,231,255,.14);
+  background:linear-gradient(rgba(6,9,16,.42),rgba(6,9,16,.66)), url('art/ui-cardbg-silver.png') center/cover !important; }
+.rarbadge.id{ color:var(--cyan); border:1px solid rgba(63,231,255,.5); background:rgba(63,231,255,.08); }
 .card.r-prism{ position:relative; }
 .card.r-prism::before{content:''; position:absolute; inset:-2px; border-radius:inherit; padding:2px; pointer-events:none;
   background:conic-gradient(from 0deg,#ff5470,#ffcf4d,#43e08a,#3fe7ff,#b561ff,#ff5470);
@@ -621,7 +624,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.22</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.23</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -2201,7 +2204,7 @@ function renderDraftCards(offer, wrap, roundIdx){
   const baseAtk = immediateDamage(), baseHv = heavySkill(), baseLt = lightSkill();
   offer.forEach(h=>{
     const el=document.createElement('div');
-    const frame = h.cat==='升级' ? 'r-awaken' : `r-${h.rar}`;
+    const frame = roundIdx===0 ? 'r-id' : (h.cat==='升级' ? 'r-awaken' : `r-${h.rar}`);
     el.className=`card ${frame} sc-${SCHOOL_CLASS[h.school]||'ty'}`;
     el.title=h.cat;
     let delta='';
@@ -2238,7 +2241,8 @@ function renderDraftCards(offer, wrap, roundIdx){
       syn.push({pri:1, html:`<div class="syn res">🔗 选它=第 2 张${h.school}卡,触发「${RESONANCE[h.school].name}」→ ${RESONANCE[h.school].desc}</div>`});
     const statusTags = syn.sort((a,b)=>a.pri-b.pri).slice(0,2).map(t=>t.html).join('');
     const upBadge = h.cat==='升级' ? '<span class="upmark">↗</span>' : '';
-    const badge = h.cat==='升级' ? '<div class="rarbadge awaken">↗ 觉醒</div>' : `<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`;
+    const badge = roundIdx===0 ? '<div class="rarbadge id">🎏 立派</div>'
+      : (h.cat==='升级' ? '<div class="rarbadge awaken">↗ 觉醒</div>' : `<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`);
     el.innerHTML=`${badge}
       <div class="ico">${h.ico}</div>
       <div class="name">${h.name}${upBadge}${h.ba?' <span class="bastar">★</span>':''}</div>
