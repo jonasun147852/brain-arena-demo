@@ -730,7 +730,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.39</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.40</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1681,7 +1681,7 @@ const HEXES = [
   {id:'h25',name:'收卷',ico:'📥',school:'心',rar:'silver',cat:'改写规则',ba:false, fl:'铃没响,卷先没了。', desc:'对手出刀<b>提前 20%</b>,但每刀伤害<b>缩水 40%</b>'},
   {id:'h26',name:'没收',ico:'🧺',school:'心',rar:'silver',cat:'联动',ba:false, fl:'上课玩的,现在归我。', desc:'每次<b>冻结/定身/倒转</b>对手,没收 <b>15</b> 能量'},
   {id:'h27',name:'擦掉',ico:'🧽',school:'脑',rar:'silver',cat:'改写规则',ba:false, fl:'这道不算,重写。', desc:'每关<b>第一次答错</b>:当作没发生(连击/过载都不掉)'},
-  {id:'h28',name:'偷看',ico:'👁',school:'脑',rar:'prism',cat:'引擎',ba:false, fl:'看一眼,不一定是对的那眼。', desc:'每道新题<b>亮出一个答案 0.8 秒</b>;两成概率亮的是<b>错的</b>'},
+  {id:'h28',name:'偷看',ico:'👁',school:'脑',rar:'prism',cat:'引擎',ba:false, fl:'看一眼,不一定是对的那眼。', desc:'新题有<b>一半概率</b>亮出一个答案 0.8 秒;其中<b>35%</b> 是错的'},
   {id:'h29',name:'左右开弓',ico:'👐',school:'手',rar:'silver',cat:'引擎',ba:false, fl:'左手刚落,右手已起。', desc:'<b>交替</b>施放轻/重技能时,该次技能伤害 <b>+30%</b>'},
   {id:'h30',name:'一唱一和',ico:'🎭',school:'心',rar:'gold',cat:'引擎',ba:false, fl:'一个唱,一个和。', desc:'每次<b>交替</b>施放轻/重技能 +1 层节拍(每层全部伤害 <b>+6%</b>,至多 5 层);连点<b>同一个</b>技能则清零'},
   {id:'h31',name:'趁胜追击',ico:'🏇',school:'脑',rar:'prism',cat:'引擎',ba:false, fl:'门开了,别客气。', desc:'重技能<b>命中后 4 秒内</b>:轻技能费用 <b>−20</b>,伤害 <b>+40%</b>'},
@@ -3238,11 +3238,12 @@ function nextQuestion(){
   updateHUD();
 }
 function actualTime(){ return (Date.now()-qStart)/1000; }
-function peekAnswer(){   // 偷看:亮 0.8s,两成看岔
+function peekAnswer(){   // 偷看:半数题触发,亮 0.8s,35% 看岔
   if(!has('h28') || !q || q._peeked) return;
   q._peeked=true;
+  if(Math.random()<0.5) return;   // 一半的题不给看
   try{
-    const wrong = Math.random()<0.2;
+    const wrong = Math.random()<0.35;
     if(q.mc){
       let idx=q.answer-1;
       if(wrong){ const o=[0,1,2,3].filter(i=>i!==idx); idx=o[rnd(0,o.length-1)]; }
