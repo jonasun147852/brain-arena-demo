@@ -730,7 +730,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.40</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.41</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -786,7 +786,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <div class="stat combo"><div class="v" id="sCombo">0</div><div class="k">🔥 连 击</div></div>
       <div class="stat imm"><div class="v" id="sImm">10</div><div class="k">⚔ 攻 击</div></div>
       <div class="stat energy"><div class="v" id="sEnergy">0</div><div class="k">⚡ 能 量</div></div>
-      <div class="stat over"><div class="v" id="sOver">0</div><div class="k">☢ 过 载</div></div>
+      <div class="stat over"><div class="v" id="sOver">0</div><div class="k">☢ 超 载</div></div>
     </div>
     <div class="tierchips" id="tierChips">
       <span class="tc on">单体</span>
@@ -1638,7 +1638,7 @@ const HEXES = [
   {id:'h08',name:'盛开的刀',ico:'💥',school:'手',rar:'gold',cat:'改写规则',ba:false,    fl:'一朵刀,开成一片。',       desc:'溅射伤害提升至 <b>60%</b>;对手处于<b>受控状态</b>时,溅射翻倍'},
   {id:'h09',name:'余烬',ico:'🔥',school:'手',rar:'prism',cat:'转化',ba:false,       fl:'火走了,烫还在。',         desc:'攻击命中时施加<b>燃烧</b>:后续 <b>2</b> 题结算时,对对手造成持续伤害'},
   {id:'h10',name:'只练这一锤',ico:'🔨',school:'手',rar:'silver',cat:'改写规则',ba:true,   fl:'此生,只练这一锤。',       desc:'重技能伤害 <b>×1.5</b>,但<b>失去</b>轻技能'},
-  {id:'h11',name:'深渊的注视',ico:'☢️',school:'脑',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'过载上限提升至 <b>8</b> 层,每层额外 <b>+2</b> 攻击力'},
+  {id:'h11',name:'深渊的注视',ico:'☢️',school:'脑',rar:'gold',cat:'改写规则',ba:false,    fl:'深渊多看你一眼,你多攒一层。',desc:'能量超载上限提升至 <b>8</b> 层,每层额外 <b>+2</b> 攻击力'},
   {id:'h12',name:'赌徒之门',ico:'🎲',school:'脑',rar:'prism',cat:'转化',ba:false,   fl:'门后是什么,开了才知道。', desc:'技能消耗降低 <b>20</b> 能量;但施放时有 <b>20%</b> 概率<b>哑火</b>,效果减半'},
   {id:'h13',name:'回能',ico:'🌀',school:'脑',rar:'gold',cat:'成长',ba:false, grow:true, idline:'回复能量,永久成长',        fl:'它的痛,是你的粮。',       desc:'重技能命中时回复 <b>40</b> 能量,并<b>永久 +2</b> 攻击力'},
   {id:'h14',name:'第五个答案',ico:'🗝️',school:'心',rar:'prism',cat:'引擎',ba:false,      fl:'塔,在第五答开门。',       desc:'每答对 <b>5</b> 题,对对手造成一次<b>额外攻击</b>,并<b>定身</b>对手'},
@@ -1680,7 +1680,7 @@ const HEXES = [
   {id:'h24',name:'引而不发',ico:'🏹',school:'手',rar:'prism',cat:'引擎',ba:false, fl:'弓满月,箭未出。', desc:'距上次施放技能 <b>≥8 秒</b>时,下一次技能伤害 <b>×2</b>'},
   {id:'h25',name:'收卷',ico:'📥',school:'心',rar:'silver',cat:'改写规则',ba:false, fl:'铃没响,卷先没了。', desc:'对手出刀<b>提前 20%</b>,但每刀伤害<b>缩水 40%</b>'},
   {id:'h26',name:'没收',ico:'🧺',school:'心',rar:'silver',cat:'联动',ba:false, fl:'上课玩的,现在归我。', desc:'每次<b>冻结/定身/倒转</b>对手,没收 <b>15</b> 能量'},
-  {id:'h27',name:'擦掉',ico:'🧽',school:'脑',rar:'silver',cat:'改写规则',ba:false, fl:'这道不算,重写。', desc:'每关<b>第一次答错</b>:当作没发生(连击/过载都不掉)'},
+  {id:'h27',name:'擦掉',ico:'🧽',school:'脑',rar:'silver',cat:'改写规则',ba:false, fl:'这道不算,重写。', desc:'每关<b>第一次答错</b>:当作没发生(连击/能量超载都不掉)'},
   {id:'h28',name:'偷看',ico:'👁',school:'脑',rar:'prism',cat:'引擎',ba:false, fl:'看一眼,不一定是对的那眼。', desc:'新题有<b>一半概率</b>亮出一个答案 0.8 秒;其中<b>35%</b> 是错的'},
   {id:'h29',name:'左右开弓',ico:'👐',school:'手',rar:'silver',cat:'引擎',ba:false, fl:'左手刚落,右手已起。', desc:'<b>交替</b>施放轻/重技能时,该次技能伤害 <b>+30%</b>'},
   {id:'h30',name:'一唱一和',ico:'🎭',school:'心',rar:'gold',cat:'引擎',ba:false, fl:'一个唱,一个和。', desc:'每次<b>交替</b>施放轻/重技能 +1 层节拍(每层全部伤害 <b>+6%</b>,至多 5 层);连点<b>同一个</b>技能则清零'},
@@ -1699,7 +1699,7 @@ const RAR_BY_SECTION = ['silver','gold','prism'];
 
 /* ============================== 共鸣(同流派×2 质变联动;团队层标签计数接口的单人预演) ============================== */
 const RESONANCE = {
-  '脑':{name:'留一手', ico:'🧠', desc:'放完重技,过载留一半'},
+  '脑':{name:'留一手', ico:'🧠', desc:'放完重技,能量超载留一半'},
   '手':{name:'一气呵成', ico:'✊', desc:'每第 3 次答对,免费多打一轮'},
   '心':{name:'先发制人', ico:'💗', desc:'答得快,敌人定住 2 秒'},
 };
@@ -1712,7 +1712,7 @@ const BONDS = [
   {id:'b1', name:'山鸣谷应', ico:'⛰', pieces:['h06','h03'], need:3, desc:'连答 3 题:山替你打一刀,敌人定住'},
   {id:'b2', name:'死灰复燃', ico:'🔥', pieces:['h09','h11'], need:4, desc:'连答 4 题:一把大火,还持续烧'},
   {id:'b3', name:'风生水起', ico:'🌊', pieces:['h13','h04'], need:4, desc:'连答 4 题:回 40 能量'},
-  {id:'b4', name:'势如破竹', ico:'🎋', pieces:['h10','h05'], need:3, desc:'连答 3 题:过载多 1 层'},
+  {id:'b4', name:'势如破竹', ico:'🎋', pieces:['h10','h05'], need:3, desc:'连答 3 题:能量超载多 1 层'},
   {id:'b5', name:'如花似雪', ico:'🌸', pieces:['h01','h08'], need:5, desc:'连答 5 题:连砍三刀'},
 ];
 function bondOn(id){ const b=BONDS.find(x=>x.id===id); return b.pieces.every(p=>has(p)); }
@@ -3441,7 +3441,7 @@ function onCorrect(){
   if(P.energy >= bigCost() && P.overloadStacks < overloadMax()){
     P.overloadStacks++; telem.overloadUses++;
     SFX.odUp(P.overloadStacks);
-    floatText(`过载 +1(${P.overloadStacks})`, '#b561ff', true, false, 'you');
+    floatText(`能量超载 +1(${P.overloadStacks})`, '#b561ff', true, false, 'you');
     if(has('h11')) hexFire('h11', `+${2*P.overloadStacks}攻`);
   }
 
@@ -3518,8 +3518,8 @@ function onBreak(reason){
   // 赌局的风险端(SPEC §9:没放出去就断连 = 白攒):过载层崩塌
   if(P.overloadStacks>0 && !gambleSpared && !erased){
     telem.odCrash++;
-    if(telem.lastEvents.length) telem.lastEvents[telem.lastEvents.length-1].txt += `→过载崩塌−${P.overloadStacks}层`;
-    banner(`💥 过载崩塌 −${P.overloadStacks}层`);
+    if(telem.lastEvents.length) telem.lastEvents[telem.lastEvents.length-1].txt += `→超载崩塌−${P.overloadStacks}层`;
+    banner(`💥 能量超载崩塌 −${P.overloadStacks}层`);
     SFX.odCrash();
     P.overloadStacks = 0;
   }
@@ -3743,7 +3743,7 @@ function releaseBig(){   // 重技能槽
   if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio*(jam?0.5:1))});
   let bm = castMult();
   if(has('h29') && alternated('heavy')){ bm*=1.3; hexFire('h29','交替 +30%'); }
-  dealDamage(Math.round(sk.dmg*(jam?0.5:1)*bm), od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
+  dealDamage(Math.round(sk.dmg*(jam?0.5:1)*bm), od>0?`${sk.name}·超载${od}`:sk.name,'#ffcf4d');
   if(has('h31')){ P._pursuitUntil = Date.now()+4000; hexFire('h31','窗口开了:轻技上!'); }
   skillLifesteal();
   castPulse('heavy');
@@ -3876,7 +3876,7 @@ function sectionWin(){
   P.overloadStacks = 0;   // 节末白攒(SPEC §9 风险端)
   if(heavyKill && (ENDLESS || R.section < K.SECTIONS)){
     P.overloadStacks = 1;   // 斩杀余威:重技终结→带 1 层进下一关(唯一穿透)
-    toast('⚔ 斩杀余威:带 1 层过载进下一关');
+    toast('⚔ 斩杀余威:带 1 层能量超载进下一关');
   }
   if(R.qInSection <= K.ENRAGE_AFTER && (ENDLESS || R.section < K.SECTIONS)){
     P.energy = Math.min(K.ENERGY_MAX, P.energy+20);   // 狂暴前破关:+20⚡
@@ -4129,7 +4129,7 @@ function renderTelem(){
   const releaseHealthy = telem.releases.small>0 && telem.releases.big>0;
   document.getElementById('telem').innerHTML = `<h3>§13 验证埋点</h3>
     <div class="ti"><span>① 无空白 · 决策/质变间题数中位数</span><b class="${pass1?'pass':'fail'}">${med.toFixed(1)} ${pass1?'✓ ≤3':'✗ >3'}</b></div>
-    <div class="ti"><span>② 释放分布(小 / 大 / 过载用过 / 过载崩塌)</span><b>${telem.releases.small} / ${telem.releases.big} / ${usedOver?'是':'否'} / ${telem.odCrash}</b></div>
+    <div class="ti"><span>② 释放分布(小 / 大 / 超载用过 / 超载崩塌)</span><b>${telem.releases.small} / ${telem.releases.big} / ${usedOver?'是':'否'} / ${telem.odCrash}</b></div>
     <div class="ti"><span>③ 断连次数 · 断后恢复</span><b>${telem.breaks} 次 · 恢复 ${telem.recoveredAfterBreak}</b></div>
     <div class="ti"><span>④ 总承伤 · 结局 HP</span><b>${telem.dmgTaken} · ${P.hp}</b></div>
     <div class="ti"><span>⑤ 截图冲动(最高一发)</span><b>${telem.maxHit} <span class="dimv">[${telem.maxHitKind} · 连${telem.maxHitCombo} · 过${telem.maxHitOver}]</span></b></div>
@@ -4238,7 +4238,7 @@ function updateHUD(){
   const breach = E && !E.dead && Date.now() < E.breachUntil;
   rb.classList.toggle('breach', !!breach && bOk && !killB);
   rb.classList.toggle('kill', !!killB);
-  document.getElementById('rBigOd').textContent = killB ? `⚔ 斩杀!(${hsk.dmg})` : (breach&&bOk ? '💥 现在!伤害×1.5' : `${hsk.od}${od>0?` (过载${od})`:''}`);
+  document.getElementById('rBigOd').textContent = killB ? `⚔ 斩杀!(${hsk.dmg})` : (breach&&bOk ? '💥 现在!伤害×1.5' : `${hsk.od}${od>0?` (超载${od})`:''}`);
   const pips=document.getElementById('odPips');
   pips.innerHTML = Array.from({length:overloadMax()},(_,i)=>`<span class="odp${i<od?' on':''}"></span>`).join('');
 }
@@ -4423,7 +4423,7 @@ function fireBond(b){
   if(b.id==='b1'){ dealDamage(raw, '山鸣谷应', '#b561ff'); if(E && !E.dead) E.stunnedUntil = Math.max(E.stunnedUntil, Date.now()+2000); }
   if(b.id==='b2'){ dealDamage(Math.round(raw*1.5), '死灰复燃', '#ff9d4d'); P.dotQueue.push({left:2, amount:Math.round(raw*0.5)}); }
   if(b.id==='b3'){ P.energy = Math.min(K.ENERGY_MAX, P.energy+40); floatText('🌊 +40⚡', '#3fe7ff', true, false, 'you'); }
-  if(b.id==='b4'){ if(P.overloadStacks<overloadMax()){ P.overloadStacks++; telem.overloadUses++; SFX.odUp(P.overloadStacks); floatText('🎋 过载+1', '#b561ff', true, false, 'you'); } }
+  if(b.id==='b4'){ if(P.overloadStacks<overloadMax()){ P.overloadStacks++; telem.overloadUses++; SFX.odUp(P.overloadStacks); floatText('🎋 能量超载+1', '#b561ff', true, false, 'you'); } }
   if(b.id==='b5'){ for(let i=0;i<3;i++) dealDamage(Math.round(raw*0.6), '如花似雪', '#3fe7ff', true); }
 }
 function renderStreak(){
