@@ -715,9 +715,12 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="modebtn" data-m="hard" onclick="setMode('hard')">🔥 挑战<span>16岁+</span></button>
     </div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
-    <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
+    <div style="display:flex; gap:9px;">
+      <button class="btn ghost" style="padding:8px 22px; font-size:13px; border-color:rgba(255,207,77,.5); color:var(--gold);" onclick="startRun(true)">♾ 无尽模式</button>
+      <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
+    </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.32</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.33</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -858,7 +861,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" id="sdReroll" onclick="reroll()">🎲 重抽</button>
     </div>
     <div class="nextwarn" id="secresMsg"></div>
-    <button class="btn" id="secresBtn" onclick="nextSection()">下 一 节</button>
+    <button class="btn" id="secresBtn" onclick="nextSection()">下 一 关</button>
   </div>
 
   <!-- FINAL -->
@@ -2115,7 +2118,7 @@ const FX = (function(){
     gridG=new PIXI.Graphics(); envC.addChild(gridG);
     // 内容层:手绘背景垫底+暗罩(渐进增强);就位后程序化旧景全退场,只留位图+余烬
     try{
-      const tex=PIXI.Texture.from('art/bg-gate'+Math.min(sec,3)+'.jpg');
+      const tex=PIXI.Texture.from('art/bg-gate'+((typeof ENDLESS!=='undefined'&&ENDLESS)?((sec-1)%3)+1:Math.min(sec,3))+'.jpg');
       bgS=new PIXI.Sprite(tex); bgS.anchor.set(0.5); bgS.alpha=1;
       const shade=new PIXI.Graphics();
       shade.beginFill(0x04060c,0.42).drawRect(0,0,W,H).endFill();
@@ -2275,6 +2278,7 @@ const FX = (function(){
       if(sp.alpha<=0){ layerFx.removeChild(sp); parts.splice(i,1); } }
     for(let i=floats.length-1;i>=0;i--){ const tx=floats[i];
       tx.x+=tx._vx; tx.y+=tx._vy; tx._vy+=0.05; tx._life--;
+      if(tx.y<26) tx._life=Math.min(tx._life,10);   // 顶到天花板提前谢幕
       if(tx._life<18) tx.alpha=tx._life/18;
       if(tx._pop>0){ tx.scale.set(tx.scale.x+tx._pop); tx._pop-=0.03; }
       if(tx._life<=0){ layerFx.removeChild(tx); floats.splice(i,1); } }
@@ -2290,6 +2294,9 @@ const FX = (function(){
     }
   }
   function dmgText(x,y,str,col,size,crit){
+    const W=app.renderer.width/app.renderer.resolution, H=app.renderer.height/app.renderer.resolution;
+    x=Math.min(Math.max(x, 54), W-54);
+    y=Math.min(Math.max(y, 120), H-60);   // 顶部留足上升行程,不飞出屏
     const tx=new PIXI.Text(str,{fontFamily:'Game,Arial Black,Arial,sans-serif',fontSize:size,fontWeight:'900',fill:col,
       stroke:0x05070d, strokeThickness:Math.max(4,size*0.14), dropShadow:crit, dropShadowBlur:10, dropShadowAlpha:0.5, dropShadowDistance:0, dropShadowColor:col});
     tx.anchor.set(0.5); tx.x=x+(Math.random()-0.5)*26; tx.y=y-10;
@@ -2512,9 +2519,15 @@ function genMath(diff){
 
 /* ============================== 敌人系统 (v2 核心) ============================== */
 function spawnFoe(){
-  const i = Math.min(R.section-1, 2);
+  const endlessN = (ENDLESS && R.section>3) ? R.section-3 : 0;
+  const i = endlessN ? (R.section-1)%3 : Math.min(R.section-1, 2);
   const f = FOES[i];
-  if(R.section===1 || !E){
+  if(endlessN){   // 无尽段:单体血池,打空即破;塔条无刻度
+    const hp = Math.round(1580*Math.pow(1.38, endlessN));
+    E = { total:hp, hp, thresholds:[0,0,0] };
+    document.getElementById('tn1').style.left='-10%';
+    document.getElementById('tn2').style.left='-10%';
+  } else if(R.section===1 || !E){
     // 塔脉血池:一条血贯穿全局,守门者只是它的三段面孔
     const budgets = K.ENEMY_HP;
     const total = budgets.reduce((a,b)=>a+b,0);
@@ -2525,9 +2538,9 @@ function spawnFoe(){
   }
   // 每阶段刷新:守门者面孔 + 攻击参数;血池 E.hp 原样保留(溢出伤害已穿透)
   Object.assign(E, {
-    name:f.name, glyph:f.glyph, color:f.color, lines:f,
-    atk: K.ENEMY_ATK[Math.min(i, K.ENEMY_ATK.length-1)],
-    chargeNeed: K.ENEMY_CHARGE[Math.min(i, K.ENEMY_CHARGE.length-1)] * ((MODES[MODE]||MODES.hard).chargeMul),
+    name: endlessN ? `${f.name}·无尽${endlessN}` : f.name, glyph:f.glyph, color:f.color, lines:f,
+    atk: endlessN ? Math.round(K.ENEMY_ATK[2]*Math.pow(1.16, endlessN)) : K.ENEMY_ATK[Math.min(i, K.ENEMY_ATK.length-1)],
+    chargeNeed: (endlessN ? Math.max(4.2, K.ENEMY_CHARGE[2]*Math.pow(0.955, endlessN)) : K.ENEMY_CHARGE[Math.min(i, K.ENEMY_CHARGE.length-1)]) * ((MODES[MODE]||MODES.hard).chargeMul),
     charge:0, stunnedUntil:0, slowedUntil:0, frozenUntil:0, graceUntil:0, stunCycleGuard:false, reversedUntil:0, reverseRate:1, _rcPunished:false,
     staggeredUntil:0, parryWindow:false, parryUsed:false, nextAtkMult:1, breachUntil:0, breatherUntil:0,
     dead:false, phase2:false, phaseClear:false,
@@ -2685,7 +2698,8 @@ function setPity(n){ PITY=Math.max(0,n); try{ localStorage.setItem('ba_pity', St
   const n=Number(localStorage.getItem('ba_luckN')||0);
   document.getElementById('luckLine').textContent = (n>0?`🌠 鸿运 ×${n} · `:'') + '偶尔,会有一把鸿运当头';
 }catch(e){} })();
-function startRun(){
+function startRun(endless){
+  ENDLESS = !!endless;
   RUNS++; try{ localStorage.setItem('ba_runs', String(RUNS)); }catch(e){}
   // 重开硬复位:上一局的覆盖层/计时器/冻结态一律清干净(修重开卡屏)
   DRAFT_OPEN=false; DRAFT_PAUSE=null; PANEL_OPEN=false; PAUSE=null;
@@ -2811,7 +2825,7 @@ const LUCKY_TIER_W = [null,   // 鸿运局:全程无银,彩收尾留一成金的
 ];
 const DRAFT_NAMES=['开宗立派','排兵布阵','成长末班车','亮刃','决战'];
 const DRAFT_WHEN=['开局','第 30 秒','1 分 15','2 分半','3 分半'];
-function draftRoundTag(idx){ const r = idx>0 && R._offerRar ? RAR_LABEL[R._offerRar] : ''; return `⛽ 补给 ${idx+1}/5 · ${DRAFT_NAMES[Math.min(idx,4)]}${r?' · '+r:''}${R.lucky&&idx>0?' · 🌠鸿运':''}`; }
+function draftRoundTag(idx){ const r = idx>0 && R._offerRar ? RAR_LABEL[R._offerRar] : ''; const nm = idx>4 ? `♾ 无尽补给 ${idx+1}` : `补给 ${idx+1}/${ENDLESS?'∞':'5'} · ${DRAFT_NAMES[Math.min(idx,4)]}`; return `⛽ ${nm}${r?' · '+r:''}${R.lucky&&idx>0?' · 🌠鸿运':''}`; }
 function renderDraftCards(offer, wrap, roundIdx){
   wrap.innerHTML='';
   const baseAtk = immediateDamage(), baseHv = heavySkill(), baseLt = lightSkill();
@@ -3039,7 +3053,7 @@ function beginSection(){
     vsEl.style.background =
       `radial-gradient(ellipse at 50% 40%, ${gc}26, transparent 58%),`+
       `linear-gradient(180deg, rgba(4,6,12,.84), rgba(4,6,12,.78) 45%, #04060c 96%),`+
-      `url('art/bg-gate${Math.min(R.section,3)}.jpg') center/cover no-repeat #04060c`;
+      `url('art/bg-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #04060c`;
   }
   document.getElementById('vsName').textContent = E.name;
   document.getElementById('vsQuote').textContent = `「${E.lines.intro}」`;
@@ -3671,6 +3685,8 @@ function afterAction(isBreak){
   setTimeout(nextQuestion, delay);
 }
 function checkDraftClock(){   // 到点只挂 pending(arm),开屏永远在结算拍
+  if(ENDLESS && R && !R._poolDry && R.draftIdx>=R.draftAt.length)
+    R.draftAt.push((R.draftAt[R.draftAt.length-1]||0)+90000);   // 无尽:强化 90s 一班车
   if(!R || R.draftIdx>=R.draftAt.length || R.draftPending!=null || DRAFT_OPEN) return;
   if(RUNS===1 && R.draftIdx===1 && !R._bubbled && R.draftAt[1]-R.fightMs<3000){ R._bubbled=true; toast('⛽ 补给要到了'); }
   const timeUp = R.fightMs >= R.draftAt[R.draftIdx];
@@ -3698,15 +3714,15 @@ function sectionWin(){
   const HEAVY_KINDS=['擂鼓','雪崩','时间到','重击','成王败寇','封山','偷秒','回本','连擂','点名','罚站'];
   const heavyKill = E.lastHitKind && HEAVY_KINDS.some(k=>String(E.lastHitKind).startsWith(k));
   P.overloadStacks = 0;   // 节末白攒(SPEC §9 风险端)
-  if(heavyKill && R.section < K.SECTIONS){
+  if(heavyKill && (ENDLESS || R.section < K.SECTIONS)){
     P.overloadStacks = 1;   // 斩杀余威:重技终结→带 1 层进下一关(唯一穿透)
     toast('⚔ 斩杀余威:带 1 层过载进下一关');
   }
-  if(R.qInSection <= K.ENRAGE_AFTER && R.section < K.SECTIONS){
+  if(R.qInSection <= K.ENRAGE_AFTER && (ENDLESS || R.section < K.SECTIONS)){
     P.energy = Math.min(K.ENERGY_MAX, P.energy+20);   // 狂暴前破关:+20⚡
   }
   // 快玩家时钟保底:过关瞬间把战斗时钟抬到楼层,欠的牌关末补发
-  if(R.section < K.SECTIONS) R.fightMs = Math.max(R.fightMs, (K.DRAFT_FLOOR||[40000,130000])[R.section-1]||0);
+  if(!ENDLESS && R.section < K.SECTIONS) R.fightMs = Math.max(R.fightMs, (K.DRAFT_FLOOR||[40000,130000])[R.section-1]||0);
   // 天命翻牌(德州公共牌):过关翻一张
   // 池收窄:技能卡出天命池 = 修复 ownedSkill 静默顶掉亲选技能的 bug,不可回退;升级/成长卡也不走天命(h13 豁免,保住羁绊听牌)
   R.destinyDrawn = [];
@@ -3726,7 +3742,7 @@ function sectionWin(){
       });
     }
   }
-  const heal = R.section < K.SECTIONS ? K.HEAL_PER_SECTION : 0;
+  const heal = (ENDLESS || R.section < K.SECTIONS) ? K.HEAL_PER_SECTION : 0;
   const hpBefore = P.hp;
   P.hp = Math.min(K.PLAYER_HP, P.hp + heal);
   R.results.push({ section:R.section, q:R.qInSection, hpLeft:hpBefore, passed:true });
@@ -3738,17 +3754,17 @@ function sectionWin(){
     document.getElementById('secres').style.background =
       `radial-gradient(ellipse at 50% 10%, rgba(255,207,77,.14), transparent 52%),`+
       `linear-gradient(180deg, rgba(4,6,12,.72), rgba(4,6,12,.84) 60%, #04060c),`+
-      `url('art/bg-gate${Math.min(R.section,3)}.jpg') center/cover no-repeat #04060c`;
+      `url('art/bg-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #04060c`;
     document.getElementById('secresQuote').textContent = `${E.glyph}「${E.lines.defeat}」`;
   }
   const row=document.getElementById('secresRow'); row.innerHTML='';
   row.appendChild(seg(`${R.qInSection} 题`, '击破用时', 'win'));
   row.appendChild(seg(hpBefore, '剩余 HP', hpBefore<=30?'lose':''));
   if(heal) row.appendChild(seg('+'+(P.hp-hpBefore), '回复', 'win'));
-  document.getElementById('secresMsg').textContent = R.section < K.SECTIONS
-    ? '下一名守门者更凶:攻击更疼、充能更快。'
+  document.getElementById('secresMsg').textContent = (ENDLESS || R.section < K.SECTIONS)
+    ? (ENDLESS && R.section>=3 ? '♾ 它还会回来,而且更狠。构筑跟不上就会被秒。' : '下一名守门者更凶:攻击更疼、充能更快。')
     : '塔顶到了——去看战报。';
-  document.getElementById('secresBtn').textContent = R.section >= K.SECTIONS ? '查看战报' : '下 一 关';
+  document.getElementById('secresBtn').textContent = (!ENDLESS && R.section >= K.SECTIONS) ? '查看战报' : '下 一 关';
   // 天命翻牌演出(单张或盲注双张,交错翻面)
   const dbox=document.getElementById('destinyBox');
   const drow=document.getElementById('dRow');
@@ -3799,7 +3815,7 @@ function runLose(){
   R.results.push({ section:R.section, q:R.qInSection, hpLeft:0, passed:false, dmgDone:E?E.total-E.hp:0, foeMax:E?E.total:1 });
   setTimeout(()=>finishRun(true), 1250);
 }
-function nextSection(){ if(R._secDraft!=null) return; if(R.section >= K.SECTIONS || (E && E.hp<=0)) finishRun(false); else { R.section++; beginSection(); } }
+function nextSection(){ if(R._secDraft!=null) return; if(!ENDLESS && (R.section >= K.SECTIONS || (E && E.hp<=0))) finishRun(false); else { R.section++; beginSection(); } }
 function seg(v,k,cls){ const d=document.createElement('div'); d.className='resseg '+(cls||''); d.innerHTML=`<div class="big">${v}</div><div class="lab">${k}</div>`; return d; }
 
 function calcScore(){
@@ -3813,6 +3829,12 @@ function calcScore(){
 function gradeOf(score){ return score>=4400?'S' : score>=3300?'A' : score>=2000?'B' : score>=900?'C' : 'D'; }
 
 function finishRun(defeat){
+  if(ENDLESS){
+    try{
+      const best=parseInt(localStorage.getItem('ba_best_endless')||'0',10);
+      if(R.section>best) localStorage.setItem('ba_best_endless', String(R.section));
+    }catch(e){}
+  }
   stopLoop();
   clearTimeout(R.draftTimer); R.draftTimer=null; R._draftLock=false;
   // 觉醒空手局:pity 累进,承诺看得见
@@ -4053,6 +4075,12 @@ function openBattleDraft(){
   R.draftTimer=null;
   if(DRAFT_OPEN) return;
   if(!(CUR_SCREEN==='battle' && E && !E.dead && !E.phaseClear && P.hp>0)){ R._draftLock=false; return; }
+  if(ENDLESS && R.draftPending!=null && R.draftPending>4){   // 无尽班车:池干涸=跳过本班并停班
+    if(!rollOffer(R.draftPending).length){
+      R._poolDry=true; R.draftIdx=R.draftAt.length; R.draftPending=null; R._draftLock=false;
+      toast('🃏 强化池已抽干——接下来看手上的牌了'); return;
+    }
+  }
   if(PANEL_OPEN) closeBuildPanel();
   DRAFT_OPEN=true; DRAFT_PAUSE={at:Date.now()};
   stopLoop();
@@ -4262,6 +4290,7 @@ function readTuner(){
 
 /* 输入:桌面键盘 + 移动端屏上键盘 */
 const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints>0);
+let ENDLESS=false;   // 无尽模式:关数无限,强化 90s 一班车,敌人几何成长
 if(IS_TOUCH){
   document.body.classList.add('touch');
   const inp=document.getElementById('qInput');
