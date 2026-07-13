@@ -717,7 +717,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.31</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.32</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1662,6 +1662,9 @@ const HEXES = [
   {id:'h19',name:'落袋为安',ico:'👝',school:'脑',rar:'gold',cat:'转化',ba:false, fl:'钱到手,才算钱。', desc:'每答对一题,侧袋存入 <b>5</b> 能量(上限 40);施放技能时<b>全额结算</b>;答错则侧袋<b>清空</b>'},
   {id:'h20',name:'先斩后奏',ico:'🧾',school:'手',rar:'prism',cat:'转化',ba:false, fl:'刀已出,账后算。', desc:'施放技能时<b>暂不扣费</b>:下一题答对,只支付<b>七成</b>;答错,支付<b>一倍半</b>'},
   {id:'h21',name:'饮血',ico:'🩸',school:'手',rar:'silver',cat:'引擎',ba:false, fl:'它的血,是你的药。', desc:'技能<b>命中</b>时,回复 <b>6</b> 生命'},
+  {id:'h22',name:'组合拳',ico:'🥊',school:'手',rar:'silver',cat:'引擎',ba:false, fl:'第二拳,跟着第一拳的影子。', desc:'施放技能后 <b>4 秒内</b>再施放,该次技能伤害 <b>×1.4</b>'},
+  {id:'h23',name:'趁热打铁',ico:'🔨',school:'脑',rar:'silver',cat:'引擎',ba:false, fl:'铁还烫,再来一锤。', desc:'施放技能后 <b>4 秒内</b>再施放,返还 <b>20</b> 能量(每 8 秒一次)'},
+  {id:'h24',name:'引而不发',ico:'🏹',school:'手',rar:'prism',cat:'引擎',ba:false, fl:'弓满月,箭未出。', desc:'距上次施放技能 <b>≥8 秒</b>时,下一次技能伤害 <b>×2</b>'},
   // 联动卡(读技能槽行为)
   {id:'x01',name:'顺水推舟',ico:'🛶',school:'脑',rar:'silver',cat:'联动',ba:false, fl:'船是借的,水是自己的。', desc:'施放轻技能后,下一题<b>必定判定为快答</b>,能量按快答结算'},
   {id:'x02',name:'余音绕梁',ico:'🔔',school:'手',rar:'gold',cat:'联动',ba:false,   fl:'钟停了,声音还在。',     desc:'施放重技能后,接下来 <b>3</b> 题答对时<b>追加一次</b>普攻伤害'},
@@ -2338,7 +2341,7 @@ let CUR_SCREEN = 'start';
 let BATTLE_TIMER = null;
 
 function freshRun(){
-  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, streak:0, judge:null, destinyIds:[], _dying:false, _betweenQ:false, _skillSig:'', castCounts:{}, furCoat:0, skillDisc:0, leafSpread:0, drumAtk:0, _drumFaded:false, boatPush:false, echoLeft:0, hotIronUntil:0, freeSmall:false, sidePot:0, pendingBill:null };
+  P = { hp:K.PLAYER_HP, combo:0, energy:0, overloadStacks:0, hexes:[], consecutiveFast:0, nextImmDouble:false, dotQueue:[], chainCount:0, shieldUsed:false, shieldCharges:0, windStacks:0, bloodBonus:0, streak:0, judge:null, destinyIds:[], _dying:false, _betweenQ:false, _skillSig:'', castCounts:{}, furCoat:0, skillDisc:0, leafSpread:0, drumAtk:0, _drumFaded:false, boatPush:false, echoLeft:0, hotIronUntil:0, freeSmall:false, sidePot:0, pendingBill:null, lastCastMs:0, _forgeAt:0 };
   R = { section:0, qInSection:0, results:[], destinyDrawn:[], usedQ:new Set(),
         fightMs:0, draftAt:(K.DRAFT_AT||[0,30000,75000,150000,210000]).slice(), draftIdx:0,
         draftPending:null, _draftPendingSince:0, draftTimer:null, _draftLock:false, _pendingHeal:0,
@@ -3454,7 +3457,8 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
   const jam = has('h12') && !['swap','cross','hand'].includes(sk.key) && Math.random()<0.2;
   if(jam){ telem.jams++; floatText('🎲 卡壳!', '#ff5470', false, false, 'you'); SFX.odCrash(); hexFire('h12','卡壳'); }
   else hexFire('h12','省20⚡');
-  const m = jam ? 0.5 : 1;
+  const dmgCast = !['cross','hand','shield'].includes(sk.key) && (sk.key!=='swap' || has('u01'));
+  const m = (jam ? 0.5 : 1) * (dmgCast ? castMult() : 1);
   if(sk.key==='swap'){
     SFX.small();
     if(has('u01')){   // 砸卷:扔掉的题砸它一下,换来必是简单题
@@ -3508,6 +3512,7 @@ function releaseSmall(){   // 轻技能槽(保留函数名,HTML/键位不变)
   cashPot();
   if(P.castCounts[sk.key]===3 && !slotUpgraded('light')) toast(`↗ ${sk.name} · 觉醒资格达成`);
   if(has('x01')){ P.boatPush=true; hexFire('x01','下一题稳算快答'); }
+  castPulse();
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 function releaseBig(){   // 重技能槽
@@ -3539,6 +3544,7 @@ function releaseBig(){   // 重技能槽
     banner(`👑 押注 ${snap}——答对翻倍!`);
     SFX.odUp(5);
     swapQuestion('hard');
+    castPulse();   // 押注也是施放(倍率不入押注快照,防双吃)
     markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
     return;
   }
@@ -3569,12 +3575,30 @@ function releaseBig(){   // 重技能槽
   }
   if(sk.regen){ P.energy = Math.min(K.ENERGY_MAX, P.energy + sk.regen*(jam?0.5:1)); floatText(`+${Math.round(sk.regen*(jam?0.5:1))}⚡`, '#3fe7ff', true, false, 'you'); if(has('u04')){ P.freeSmall=true; floatText('💰 下次轻技免费', '#3fe7ff', true, false, 'you'); } }
   if(sk.dot) P.dotQueue.push({left:sk.dot.left, amount:Math.round(immediateDamage()*sk.dot.ratio*(jam?0.5:1))});
-  dealDamage(Math.round(sk.dmg*(jam?0.5:1)), od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
+  const bm = castMult();
+  dealDamage(Math.round(sk.dmg*(jam?0.5:1)*bm), od>0?`${sk.name}·过载${od}`:sk.name,'#ffcf4d');
   skillLifesteal();
+  castPulse();
   consumeImmDouble();   // 重技全系带伤害,统一吃掉翻倍(dot 快照也已按翻倍计)
   markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
 }
 
+function castMult(){   // 组合拳(4s 内连放)与引而不发(8s 蓄势)按窗口天然互斥
+  const now=Date.now(), gap=P.lastCastMs ? now-P.lastCastMs : -1;
+  let m=1;
+  if(gap>=0 && gap<=4000 && has('h22')){ m*=1.4; hexFire('h22','×1.4'); }
+  if(gap>=8000 && has('h24')){ m*=2; hexFire('h24','蓄势 ×2'); }
+  return m;
+}
+function castPulse(){   // 每次施放收尾:趁热打铁返能(带 8s 内冷),并盖新时间戳
+  const now=Date.now(), gap=P.lastCastMs ? now-P.lastCastMs : -1;
+  if(has('h23') && gap>=0 && gap<=4000 && now-(P._forgeAt||0)>=8000){
+    P._forgeAt=now;
+    P.energy=Math.min(K.ENERGY_MAX, P.energy+20);
+    hexFire('h23','+20⚡');
+  }
+  P.lastCastMs=now;
+}
 function skillLifesteal(){   // 饮血:技能命中,喝一口(只在真扣血时喊名)
   if(!has('h21') || P.hp<=0) return;
   const before=P.hp;
