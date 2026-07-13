@@ -730,7 +730,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.37</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.38</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -814,7 +814,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="kp" data-k="1">1</button><button class="kp" data-k="2">2</button><button class="kp" data-k="3">3</button>
       <button class="kp" data-k="4">4</button><button class="kp" data-k="5">5</button><button class="kp" data-k="6">6</button>
       <button class="kp" data-k="7">7</button><button class="kp" data-k="8">8</button><button class="kp" data-k="9">9</button>
-      <button class="kp fn" data-k="del">⌫</button><button class="kp" data-k="0">0</button><button class="kp fn" data-k="go">↵</button>
+      <button class="kp" data-k="0" style="grid-column:span 2;">0</button><button class="kp fn" data-k="del">⌫</button>
     </div>
     <div class="banner" id="banner"></div>
     <div class="toast" id="toast"></div>
