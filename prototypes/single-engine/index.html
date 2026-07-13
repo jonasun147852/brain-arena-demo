@@ -646,7 +646,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     <div class="subjrow" id="subjRow"></div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.25</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.26</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1327,43 +1327,161 @@ function bondOn(id){ const b=BONDS.find(x=>x.id===id); return b.pieces.every(p=>
 function activeBonds(){ return BONDS.filter(b=>b.pieces.every(p=>has(p))); }
 function missedBonds(){ return BONDS.filter(b=>{ const n=b.pieces.filter(p=>has(p)).length; return n>0 && n<b.pieces.length; }); }
 
-/* ============================== 音效(WebAudio 合成,零素材) ============================== */
-const AU = { ctx:null, muted:false };
+/* ============================== 音效 v2(WebAudio 合成,零素材)
+   设计语言:五声音阶体系(每关一根音,连击沿音阶爬升)+ 三层合成(噪声瞬态/音体/低频冲击)+ 总线压缩
+   ============================== */
+const AU = { ctx:null, muted:false, master:null, noiseBuf:null };
 try{ AU.muted = localStorage.getItem('ba_mute')==='1'; }catch(e){}
 function au(){
-  if(!AU.ctx){ try{ AU.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+  if(!AU.ctx){
+    try{
+      AU.ctx = new (window.AudioContext||window.webkitAudioContext)();
+      const comp=AU.ctx.createDynamicsCompressor();
+      comp.threshold.value=-18; comp.knee.value=24; comp.ratio.value=5;
+      comp.attack.value=0.003; comp.release.value=0.16;
+      const g=AU.ctx.createGain(); g.gain.value=0.9;
+      g.connect(comp); comp.connect(AU.ctx.destination);
+      AU.master=g;
+    }catch(e){ return null; }
+  }
   return AU.ctx;
 }
+function noiseBuf(c){
+  if(AU.noiseBuf) return AU.noiseBuf;
+  const b=c.createBuffer(1, c.sampleRate, c.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  return AU.noiseBuf=b;
+}
+/* 音阶:小调五声;每关根音上移=威压递增 */
+const PENT=[0,3,5,7,10,12,15,17,19,22,24];
+const GATE_ROOT=[220, 246.94, 277.18];
+function noteAt(step){
+  const sec=(typeof R!=='undefined'&&R&&R.section)||1;
+  const root=GATE_ROOT[Math.min(Math.max(sec,1)-1,2)];
+  return root*Math.pow(2, PENT[Math.max(0,Math.min(step,PENT.length-1))]/12);
+}
+/* 音体:带起音斜坡(去爆点)+可选低通 */
 function beep(o){
   const c=au(); if(!c || AU.muted) return;
   try{
     if(c.state==='suspended') c.resume();
-    const t=c.currentTime + (o.delay||0);
+    const t=c.currentTime + (o.delay||0), dur=o.dur||0.12;
     const osc=c.createOscillator(), g=c.createGain();
     osc.type=o.type||'sine';
     osc.frequency.setValueAtTime(o.f||440, t);
-    if(o.f2) osc.frequency.exponentialRampToValueAtTime(Math.max(20,o.f2), t+(o.dur||0.12));
-    g.gain.setValueAtTime(o.gain||0.13, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t+(o.dur||0.12));
-    osc.connect(g); g.connect(c.destination);
-    osc.start(t); osc.stop(t+(o.dur||0.12)+0.03);
+    if(o.f2) osc.frequency.exponentialRampToValueAtTime(Math.max(20,o.f2), t+dur);
+    if(o.detune) osc.detune.value=o.detune;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(o.gain||0.13, t+(o.attack||0.006));
+    g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+    let head=osc;
+    if(o.lp){ const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(o.lp,t); if(o.lp2) f.frequency.exponentialRampToValueAtTime(o.lp2,t+dur); f.Q.value=o.q||0.8; osc.connect(f); head=f; }
+    head.connect(g); g.connect(AU.master||c.destination);
+    osc.start(t); osc.stop(t+dur+0.05);
   }catch(e){}
 }
+/* 噪声层:瞬态/冲击/碎裂/风声,全靠它 */
+function nz(o){
+  const c=au(); if(!c || AU.muted) return;
+  try{
+    if(c.state==='suspended') c.resume();
+    const t=c.currentTime+(o.delay||0), dur=o.dur||0.12;
+    const src=c.createBufferSource(); src.buffer=noiseBuf(c); src.loop=true;
+    const f=c.createBiquadFilter(); f.type=o.ftype||'lowpass';
+    f.frequency.setValueAtTime(o.f||800, t);
+    if(o.f2) f.frequency.exponentialRampToValueAtTime(Math.max(40,o.f2), t+dur);
+    f.Q.value=o.q||0.9;
+    const g=c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(o.gain||0.1, t+(o.attack||0.004));
+    g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+    src.connect(f); f.connect(g); g.connect(AU.master||c.destination);
+    src.start(t); src.stop(t+dur+0.05);
+  }catch(e){}
+}
+/* 拨弦:瞬态+双层微失谐音体,答题/计数的基本粒子 */
+function pluck(f, o){ o=o||{};
+  beep({f, dur:o.dur||0.14, type:'triangle', gain:o.gain||0.13, delay:o.delay||0, attack:0.003});
+  beep({f:f*1.005, dur:(o.dur||0.14)*0.8, type:'sine', gain:(o.gain||0.13)*0.55, delay:(o.delay||0)+0.004});
+  if(o.bright) nz({f:f*6, f2:f*2, dur:0.03, gain:0.05, ftype:'bandpass', delay:o.delay||0, q:2});
+}
+/* 低频冲击:重量感的来源 */
+function thump(f, o){ o=o||{};
+  beep({f, f2:Math.max(28,f*0.45), dur:o.dur||0.22, type:'sine', gain:o.gain||0.22, delay:o.delay||0, attack:0.004});
+}
 const SFX = {
-  correct(combo){ const f=440*Math.pow(2, Math.min(combo,14)/12);   // 连击音高逐级爬升
-    beep({f, f2:f*1.22, dur:.09, type:'triangle', gain:.14});
-    if(combo>=6) beep({f:f*1.5, dur:.07, type:'sine', gain:.07, delay:.04}); },
-  wrong(){ beep({f:140, f2:65, dur:.32, type:'sawtooth', gain:.18}); },
-  tierUp(){ [523,659,784].forEach((f,i)=>beep({f, dur:.1, type:'triangle', gain:.13, delay:i*0.07})); },
-  foeHit(){ beep({f:95, f2:48, dur:.18, type:'square', gain:.2}); },
-  small(){ beep({f:300, f2:620, dur:.16, type:'sawtooth', gain:.13}); },
-  big(){ beep({f:180, f2:820, dur:.32, type:'sawtooth', gain:.17}); beep({f:70, f2:40, dur:.4, type:'square', gain:.2, delay:.1}); },
-  kill(){ beep({f:660, dur:.1, type:'square', gain:.15}); beep({f:990, dur:.22, type:'square', gain:.15, delay:.1}); },
-  odUp(n){ beep({f:520+70*n, dur:.06, type:'square', gain:.1}); },
-  odCrash(){ beep({f:600, f2:90, dur:.4, type:'sawtooth', gain:.18}); },
-  res(){ [392,494,587,784].forEach((f,i)=>beep({f, dur:.14, type:'triangle', gain:.12, delay:i*0.08})); },
-  win(){ [523,659,784,1047].forEach((f,i)=>beep({f, dur:.16, type:'triangle', gain:.14, delay:i*0.12})); },
-  lose(){ [330,262,196,131].forEach((f,i)=>beep({f, dur:.2, type:'sine', gain:.14, delay:i*0.14})); },
+  correct(combo){   // 心流阶梯:音高沿五声音阶爬,6 连加八度闪,9 连加五度泛光
+    const st=Math.min(combo,10);
+    pluck(noteAt(st), {gain:.15, bright:combo>=3});
+    nz({f:2600, f2:900, dur:.025, gain:.05, ftype:'highpass'});
+    if(combo>=6) pluck(noteAt(st)*2, {gain:.06, delay:.045, dur:.1});
+    if(combo>=9) pluck(noteAt(st)*3, {gain:.04, delay:.08, dur:.09});
+  },
+  wrong(){   // 闷响+小二度下坠:错了,但不刺耳
+    thump(120, {gain:.2, dur:.24});
+    beep({f:noteAt(1)*1.06, f2:noteAt(0)*0.94, dur:.22, type:'sawtooth', gain:.08, lp:700, lp2:220});
+    nz({f:420, f2:120, dur:.16, gain:.08});
+  },
+  small(){   // 轻技:金属拔刀,快而亮
+    nz({f:1200, f2:5200, dur:.09, gain:.1, ftype:'bandpass', q:1.6});
+    pluck(noteAt(7), {gain:.11, dur:.1, bright:true});
+  },
+  big(){   // 重技:低频轰体+金属长鸣
+    thump(85, {gain:.3, dur:.4});
+    nz({f:900, f2:180, dur:.2, gain:.14});
+    beep({f:noteAt(4), dur:.42, type:'square', gain:.07, lp:1400, lp2:500, detune:-8});
+    beep({f:noteAt(4)*1.5, dur:.36, type:'square', gain:.05, lp:1600, lp2:600, detune:9, delay:.02});
+  },
+  foeHit(){   // 敌方出手命中你:中频拳+暗噪
+    thump(110, {gain:.24, dur:.18});
+    nz({f:700, f2:200, dur:.12, gain:.12});
+  },
+  kill(){   // 阶段击破:重击+玻璃碎裂雨
+    thump(70, {gain:.32, dur:.5});
+    nz({f:4200, f2:400, dur:.5, gain:.13, ftype:'bandpass', q:1.2});
+    [8,6,4].forEach((st,i)=>pluck(noteAt(st), {gain:.09, delay:.1+i*.09, dur:.16}));
+  },
+  odUp(n){   // 过载上台阶:沿音阶走,越叠越高
+    pluck(noteAt(4+Math.min(n,6)), {gain:.1, dur:.08, bright:true});
+  },
+  odCrash(){   // 过载崩:警报下坠+轰
+    beep({f:640, f2:85, dur:.4, type:'sawtooth', gain:.13, lp:1800, lp2:300});
+    thump(95, {gain:.24, dur:.3, delay:.05});
+    nz({f:600, f2:100, dur:.3, gain:.1, delay:.06});
+  },
+  res(){   // 羁绊/共鸣/觉醒:钟声琶音(长释放)
+    [0,2,4,7].forEach((st,i)=>{
+      beep({f:noteAt(st)*2, dur:.5, type:'triangle', gain:.1, delay:i*.09, attack:.004});
+      beep({f:noteAt(st)*4, dur:.3, type:'sine', gain:.04, delay:i*.09+.01});
+    });
+  },
+  tierUp(){ [2,4,7].forEach((st,i)=>pluck(noteAt(st)*2, {gain:.11, delay:i*.07, bright:true})); },
+  win(){   // 破关号角:五连升+根五八和弦收
+    [0,2,4,7,9].forEach((st,i)=>pluck(noteAt(st)*2, {gain:.12, delay:i*.1, bright:true}));
+    [0,4,7].forEach(st=>beep({f:noteAt(st)*2, dur:.7, type:'triangle', gain:.08, delay:.55, attack:.01}));
+    thump(65, {gain:.2, delay:.55, dur:.5});
+  },
+  lose(){   // 败:四级下行+长暗涌
+    [7,4,2,0].forEach((st,i)=>beep({f:noteAt(st), dur:.3, type:'sine', gain:.12, delay:i*.16}));
+    nz({f:300, f2:60, dur:1.1, gain:.07, delay:.3});
+    thump(55, {gain:.18, delay:.55, dur:.8});
+  },
+  deal(){   // 发牌:时间冻结的抽气+落牌三连
+    nz({f:3000, f2:300, dur:.4, gain:.07, ftype:'lowpass'});
+    [0,1,2].forEach(i=>nz({f:1800, f2:900, dur:.03, gain:.06, ftype:'bandpass', delay:.16+i*.09, q:2}));
+  },
+  pick(rar){   // 选卡:落锤+按稀有度加铃(银一声/金两声/彩三声)
+    thump(140, {gain:.16, dur:.12});
+    nz({f:1400, f2:500, dur:.06, gain:.08, ftype:'bandpass', q:1.5});
+    const n = rar==='prism'?3 : rar==='gold'?2 : 1;
+    for(let i=0;i<n;i++) pluck(noteAt(4+i*3)*2, {gain:.08, delay:.08+i*.08, dur:.14, bright:true});
+  },
+  gate(){   // 关卡亮相:暗涌起立+巨印落地
+    nz({f:120, f2:900, dur:.9, gain:.05, ftype:'lowpass', attack:.3});
+    thump(60, {gain:.26, dur:.6, delay:.35});
+    nz({f:2400, f2:300, dur:.4, gain:.08, ftype:'bandpass', delay:.35, q:1.4});
+    beep({f:noteAt(0), dur:.8, type:'triangle', gain:.07, delay:.4, attack:.02});
+  },
 };
 function toggleMute(){
   AU.muted=!AU.muted;
@@ -1372,27 +1490,43 @@ function toggleMute(){
   if(AU.muted) stopAmbient(); else if(CUR_SCREEN==='battle') startAmbient();
   refocus();
 }
-/* 环境音:极低音量双振荡铺底,LFO 让它像在呼吸 */
+/* 环境底噪:每关一种呼吸(石窟沉/猎林紧/塔顶怒),换关自动重建 */
+const AMB_CFG=[
+  {f1:55,  f2:55.6, lp:180, lfo:0.10, lfoAmt:60,  air:420,  airG:0.005, g:0.016},
+  {f1:65.4,f2:66.1, lp:240, lfo:0.22, lfoAmt:90,  air:900,  airG:0.006, g:0.015},
+  {f1:49,  f2:49.7, lp:150, lfo:0.34, lfoAmt:110, air:260,  airG:0.009, g:0.02},
+];
 function startAmbient(){
-  const c=au(); if(!c||AU.muted||AU.amb) return;
+  const c=au(); if(!c||AU.muted) return;
+  const sec=(typeof R!=='undefined'&&R&&R.section)||1;
+  if(AU.amb){ if(AU.amb.sec===sec) return; stopAmbient(); }
   try{
     if(c.state==='suspended') c.resume();
-    const g=c.createGain(); g.gain.value=0.016;
-    const o1=c.createOscillator(); o1.type='sawtooth'; o1.frequency.value=55;
-    const o2=c.createOscillator(); o2.type='sawtooth'; o2.frequency.value=55.6;
-    const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=200;
-    const lfo=c.createOscillator(); lfo.frequency.value=0.12;
-    const lg=c.createGain(); lg.gain.value=70;
+    const cfg=AMB_CFG[Math.min(sec-1,2)];
+    const g=c.createGain(); g.gain.value=cfg.g;
+    const o1=c.createOscillator(); o1.type='sawtooth'; o1.frequency.value=cfg.f1;
+    const o2=c.createOscillator(); o2.type='sawtooth'; o2.frequency.value=cfg.f2;
+    const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=cfg.lp;
+    const lfo=c.createOscillator(); lfo.frequency.value=cfg.lfo;
+    const lg=c.createGain(); lg.gain.value=cfg.lfoAmt;
     lfo.connect(lg); lg.connect(f.frequency);
-    o1.connect(f); o2.connect(f); f.connect(g); g.connect(c.destination);
-    o1.start(); o2.start(); lfo.start();
-    AU.amb={o1,o2,lfo,g};
+    o1.connect(f); o2.connect(f); f.connect(g);
+    const nsrc=c.createBufferSource(); nsrc.buffer=noiseBuf(c); nsrc.loop=true;
+    const nf=c.createBiquadFilter(); nf.type='lowpass'; nf.frequency.value=cfg.air;
+    const ng=c.createGain(); ng.gain.value=cfg.airG;
+    nsrc.connect(nf); nf.connect(ng); ng.connect(AU.master||c.destination);
+    g.connect(AU.master||c.destination);
+    o1.start(); o2.start(); lfo.start(); nsrc.start();
+    AU.amb={o1,o2,lfo,g,nsrc,ng,sec};
   }catch(e){}
 }
 function stopAmbient(){
   if(!AU.amb) return;
-  try{ AU.amb.g.gain.linearRampToValueAtTime(0.0001, au().currentTime+0.3);
-    const a=AU.amb; setTimeout(()=>{ try{a.o1.stop();a.o2.stop();a.lfo.stop();}catch(e){} }, 400);
+  try{
+    const c=au(), a=AU.amb;
+    a.g.gain.linearRampToValueAtTime(0.0001, c.currentTime+0.3);
+    if(a.ng) a.ng.gain.linearRampToValueAtTime(0.0001, c.currentTime+0.3);
+    setTimeout(()=>{ try{a.o1.stop();a.o2.stop();a.lfo.stop(); if(a.nsrc)a.nsrc.stop();}catch(e){} }, 400);
   }catch(e){}
   AU.amb=null;
 }
@@ -2297,6 +2431,7 @@ function renderBattleDraft(idx){
   const st=document.getElementById('bdStatus');
   st.innerHTML = `<span>❤️ ${P.hp}</span><span>⚡ ${Math.floor(P.energy)}</span><span>🔥 连击 ${P.combo}</span><span>🗼 ${E?Math.round(E.hp/E.total*100):100}%</span>`
     + `<span>${P.hexes.length ? '已持:'+P.hexes.map(h=>`<span class="bslot r-${h.rar}" title="${h.name}">${h.ico}</span>`).join('') : '构筑:(空)'}</span>`;
+  SFX.deal();
   renderDraftCards(offer, document.getElementById('bdCards'), idx);
   const rb=document.getElementById('bdReroll');
   rb.disabled = rerollLeft<=0; rb.textContent = rerollLeft>0 ? (R.lucky ? `🎲 重抽(鸿运局有 ${rerollLeft} 次)` : '🎲 重抽(全局仅 1 次)') : '已用完重抽';
@@ -2351,6 +2486,7 @@ function handUnfreeze(token){
 }
 let DRAFT_SHIELD_AT=0;   // 开屏点击护盾:发牌屏弹出瞬间,玩家连点答题的手还没停
 function pickHexFromDraft(h){   // UI 唯一入口:双击/迟到/开屏惯性点击直接吞掉
+  try{ SFX.pick(h.rar); }catch(e){}
   if(!DRAFT_OPEN && R._secDraft==null) return;
   if(Date.now() - DRAFT_SHIELD_AT < 400) return;
   pickHex(h);
@@ -2456,6 +2592,7 @@ function beginSection(){
   document.getElementById('vsQuote').textContent = `「${E.lines.intro}」`;
   document.getElementById('vsLoad').textContent = (P._loadBanner||'') + (morphed?`  ⚔ ${sig}`:'');
   P._loadBanner=null;
+  SFX.gate();
   const vs=document.getElementById('vsplash');
   vs.classList.remove('play'); void vs.offsetWidth; vs.classList.add('play');
   vsStarter = ()=>{
