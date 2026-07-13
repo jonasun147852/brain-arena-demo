@@ -431,7 +431,8 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
   /* build bar(你的海克斯常驻位) */
-  .buildrow{display:flex; gap:4px; margin-top:2px; min-height:22px; justify-content:center;}
+  .buildrow{display:flex; gap:4px; margin-top:2px; min-height:22px; justify-content:center; flex-wrap:wrap; row-gap:3px; max-width:150px; margin-left:auto; margin-right:auto;}
+  .bslot.more{color:var(--dim); font-size:10px; font-weight:800; border-style:dashed;}
   .bslot{width:22px; height:22px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; background:rgba(0,0,0,.4); border:1px solid var(--line2);}
   .bslot.r-gold{border-color:var(--gold); box-shadow:0 0 8px rgba(255,207,77,.25);}
   .bslot.r-prism{border-color:var(--purple); box-shadow:0 0 8px rgba(181,97,255,.35);}
@@ -628,6 +629,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
 .bdfoot{ flex-shrink:0; padding-top:8px; display:flex; flex-direction:column; gap:6px; align-items:center; border-top:1px solid rgba(90,106,138,.25); margin-top:8px; }
 .bdstatus{ font-size:12px; color:#cfd8ec; display:flex; gap:14px; flex-wrap:wrap; justify-content:center; align-items:center; }
 .bdstatus .bslot{ font-size:14px; }
+.bheld{ display:flex; align-items:center; gap:3px; flex-wrap:wrap; justify-content:center; max-width:min(86vw,300px); }
 .bdhead{ display:flex; flex-direction:column; gap:4px; margin-bottom:8px; align-items:center; flex-shrink:0; }
 .bdsub{ color:#7e8db0; font-size:12px; letter-spacing:1px; }
 .grouptag{ font-size:11px; letter-spacing:2px; color:#ffcf4d; margin-bottom:2px; }
@@ -715,7 +717,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.30</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.31</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -2878,7 +2880,7 @@ function renderBattleDraft(idx){
   document.getElementById('bdSub').textContent = idx===0 ? '从这里开始,你在立流派' : (idx===2 ? '成长卡最后一轮' : '');
   const st=document.getElementById('bdStatus');
   st.innerHTML = `<span>❤️ ${P.hp}</span><span>⚡ ${Math.floor(P.energy)}</span><span>🔥 连击 ${P.combo}</span><span>🗼 ${E?Math.round(E.hp/E.total*100):100}%</span>`
-    + `<span>${P.hexes.length ? '已持:'+P.hexes.map(h=>`<span class="bslot r-${h.rar}" title="${h.name}">${h.ico}</span>`).join('') : '构筑:(空)'}</span>`;
+    + `<span class="bheld">${P.hexes.length ? '已持:'+(P.hexes.length>8?`<span class="bslot more">+${P.hexes.length-8}</span>`:'')+P.hexes.slice(-8).map(h=>`<span class="bslot r-${h.rar}" title="${h.name}">${h.ico}</span>`).join('') : '构筑:(空)'}</span>`;
   SFX.deal();
   renderDraftCards(offer, document.getElementById('bdCards'), idx);
   const rb=document.getElementById('bdReroll');
@@ -4147,9 +4149,12 @@ function renderBuildPanel(){
 }
 function renderBuild(){
   const row=document.getElementById('buildRow'); row.innerHTML='';
-  P.hexes.forEach(h=>{ const s=document.createElement('span'); s.className='bslot r-'+h.rar; s.id='bs_'+h.id; s.textContent=h.ico; row.appendChild(s); });
-  activeResonances().forEach(sc=>{ const r=RESONANCE[sc]; const c=document.createElement('span'); c.className='reschip'; c.textContent=`${r.ico}${r.name}`; c.title=r.desc; row.appendChild(c); });
-  activeBonds().forEach(b=>{ const c=document.createElement('span'); c.className='reschip bondchip'; c.textContent=`${b.ico}${b.name}`; c.title=b.desc; row.appendChild(c); });
+  // 只露最近 5 张,其余折叠成 +N(全量看 ⓘ 面板);hexFire 闪光只对露出的卡生效,可接受
+  const shown = P.hexes.slice(-5), hidden = P.hexes.length - shown.length;
+  if(hidden>0){ const m=document.createElement('span'); m.className='bslot more'; m.textContent='+'+hidden; row.appendChild(m); }
+  shown.forEach(h=>{ const s=document.createElement('span'); s.className='bslot r-'+h.rar; s.id='bs_'+h.id; s.textContent=h.ico; row.appendChild(s); });
+  activeResonances().forEach(sc=>{ const r=RESONANCE[sc]; const c=document.createElement('span'); c.className='reschip'; c.textContent=r.ico; c.title=`${r.name}:${r.desc}`; row.appendChild(c); });
+  activeBonds().forEach(b=>{ const c=document.createElement('span'); c.className='reschip bondchip'; c.textContent=b.ico; c.title=`${b.name}:${b.desc}`; row.appendChild(c); });
   const info=document.createElement('span'); info.className='binfo'; info.textContent='ⓘ'; row.appendChild(info);
   row.onclick = openBuildPanel;
 }
