@@ -714,13 +714,14 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="modebtn" data-m="mid" onclick="setMode('mid')">⚔️ 中等<span>10-16岁</span></button>
       <button class="modebtn" data-m="hard" onclick="setMode('hard')">🔥 挑战<span>16岁+</span></button>
     </div>
+    <button id="resumeBtn" class="btn ghost hidden" style="padding:9px 26px; font-size:14px; border-color:rgba(67,224,138,.5); color:var(--green);" onclick="resumeRun()">▶ 继续上一局</button>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <div style="display:flex; gap:9px;">
       <button class="btn ghost" style="padding:8px 22px; font-size:13px; border-color:rgba(255,207,77,.5); color:var(--gold);" onclick="startRun(true)">♾ 无尽模式</button>
       <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.34</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.35</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1779,7 +1780,8 @@ function pluck(f, o){ o=o||{};
 }
 /* 低频冲击:重量感的来源 */
 function thump(f, o){ o=o||{};
-  beep({f, f2:Math.max(28,f*0.45), dur:o.dur||0.22, type:'sine', gain:o.gain||0.22, delay:o.delay||0, attack:0.004});
+  const lf=loF(f);
+  beep({f:lf, f2:Math.max(loF(28),lf*0.45), dur:o.dur||0.22, type:'sine', gain:o.gain||0.22, delay:o.delay||0, attack:0.004});
 }
 const SFX = {
   correct(combo){   // 心流阶梯:音高沿五声音阶爬,6 连加八度闪,9 连加五度泛光
@@ -1870,6 +1872,8 @@ function toggleMute(){
 /* ============ 音乐引擎 v3:步进音序器(研究依据见 design/research/音频节奏设计-心理学依据.md)
    120 BPM 四踩底(认知任务最优带)+ 连击垂直分层(L0底/L1镲/L2琶音/L3满编)+ 大招闪避 ============ */
 const MUS_BPM=[120,126,134];
+const AU_MOB = (typeof window!=='undefined') && (('ontouchstart' in window) || ((navigator&&navigator.maxTouchPoints)||0)>0);
+function loF(f){ return AU_MOB ? f*2 : f; }   // 手机档:低频上移八度,保住鼓和贝斯
 function musicBus(){
   const c=au(); if(!c) return null;
   if(!AU.musicG){ AU.musicG=c.createGain(); AU.musicG.gain.value=0.13; AU.musicG.connect(AU.master||c.destination); }
@@ -1886,7 +1890,7 @@ function duckMusic(amt){   // 打击瞬间音乐让位(sidechain 感)
 }
 function mKick(t){ const c=AU.ctx;
   const o=c.createOscillator(), g=c.createGain();
-  o.type='sine'; o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(45,t+0.09);
+  o.type='sine'; o.frequency.setValueAtTime(loF(150),t); o.frequency.exponentialRampToValueAtTime(loF(45),t+0.09);
   g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.5,t+0.004); g.gain.exponentialRampToValueAtTime(0.001,t+0.16);
   o.connect(g); g.connect(AU.musicG); o.start(t); o.stop(t+0.2);
   const src=c.createBufferSource(); src.buffer=noiseBuf(c); src.loop=true;
@@ -1909,7 +1913,7 @@ function mSnare(t){ const c=AU.ctx;
 }
 function mBass(t,f0,dur){ const c=AU.ctx;
   const o=c.createOscillator(), g=c.createGain(), f=c.createBiquadFilter();
-  o.type='square'; o.frequency.value=f0; f.type='lowpass'; f.frequency.value=320; f.Q.value=1.1;
+  o.type='square'; o.frequency.value=loF(f0); f.type='lowpass'; f.frequency.value=AU_MOB?560:320; f.Q.value=1.1;
   g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.16,t+0.008); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
   o.connect(f); f.connect(g); g.connect(AU.musicG); o.start(t); o.stop(t+dur+0.05);
 }
@@ -2698,8 +2702,49 @@ function setPity(n){ PITY=Math.max(0,n); try{ localStorage.setItem('ba_pity', St
   const n=Number(localStorage.getItem('ba_luckN')||0);
   document.getElementById('luckLine').textContent = (n>0?`🌠 鸿运 ×${n} · `:'') + '偶尔,会有一把鸿运当头';
 }catch(e){} })();
+function saveRun(){   // 断线续局:安全点快照(新题起点/选卡后/过关)
+  if(CUR_SCREEN!=='battle' && CUR_SCREEN!=='secres') return;
+  if(!P || !R || !E || P.hp<=0 || E.dead) return;
+  try{
+    const snap={ ver:2, mode:MODE, endless:ENDLESS, at:Date.now(),
+      R:{ section:R.section, qInSection:R.qInSection, fightMs:R.fightMs, draftIdx:R.draftIdx, draftAt:R.draftAt,
+          usedQ:[...R.usedQ], lucky:R.lucky, _poolDry:!!R._poolDry, _tierByRound:R._tierByRound, results:R.results },
+      P:{ ...P, hexes:P.hexes.map(h=>h.id), judge:null },
+      E:{ hp:E.hp, total:E.total, thresholds:E.thresholds, phase2:!!E.phase2 },
+      T:{ ...telem },
+    };
+    localStorage.setItem('ba_save', JSON.stringify(snap));
+  }catch(e){}
+}
+function clearSave(){ try{ localStorage.removeItem('ba_save'); }catch(e){} const b=document.getElementById('resumeBtn'); if(b) b.classList.add('hidden'); }
+function resumeRun(){
+  let snap=null;
+  try{ snap=JSON.parse(localStorage.getItem('ba_save')||'null'); }catch(e){}
+  if(!snap || snap.ver!==2){ clearSave(); return startRun(); }
+  try{
+    MODE=snap.mode||'hard'; ENDLESS=!!snap.endless;
+    DRAFT_OPEN=false; DRAFT_PAUSE=null; PANEL_OPEN=false; PAUSE=null;
+    document.getElementById('bDraft').classList.add('hidden');
+    document.getElementById('bPanel').classList.add('hidden');
+    clearTimeout(qTimer); stopLoop();
+    readTuner(); freshRun();
+    R.lucky=!!snap.R.lucky; rerollLeft=0;   // 续局不再给重抽,防反复刷
+    R.section=snap.R.section;
+    Object.assign(P, snap.P, { hexes:(snap.P.hexes||[]).map(id=>HEXES.find(h=>h.id===id)).filter(Boolean), judge:null });
+    Object.assign(telem, snap.T||{}, { startTime:Date.now() });
+    show('battle'); FX.ensure();
+    beginSection();
+    Object.assign(R, { qInSection:snap.R.qInSection, fightMs:snap.R.fightMs, draftIdx:snap.R.draftIdx,
+      draftAt:snap.R.draftAt, usedQ:new Set(snap.R.usedQ||[]), _poolDry:!!snap.R._poolDry,
+      _tierByRound:snap.R._tierByRound||{}, results:snap.R.results||[] });
+    if(E && snap.E){ Object.assign(E, { hp:snap.E.hp, total:snap.E.total, thresholds:snap.E.thresholds||E.thresholds, phase2:!!snap.E.phase2 }); E.phaseStartHp=E.hp; }
+    renderBuild(); updateHUD(); updateSceneUI();
+    toast('▶ 已从上次断点继续');
+  }catch(e){ clearSave(); startRun(); }
+}
 function startRun(endless){
   ENDLESS = !!endless;
+  clearSave();
   RUNS++; try{ localStorage.setItem('ba_runs', String(RUNS)); }catch(e){}
   // 重开硬复位:上一局的覆盖层/计时器/冻结态一律清干净(修重开卡屏)
   DRAFT_OPEN=false; DRAFT_PAUSE=null; PANEL_OPEN=false; PAUSE=null;
@@ -3100,6 +3145,7 @@ let vsStarter=null, vsTimer=null;
 function stopLoop(){ if(BATTLE_TIMER){ clearInterval(BATTLE_TIMER); BATTLE_TIMER=null; } }
 
 function nextQuestion(){
+  saveRun();
   if(CUR_SCREEN!=='battle' || !E || E.dead || E.phaseClear || P.hp<=0) return;
   if(PANEL_OPEN){ setTimeout(nextQuestion, 350); return; }   // 面板开着不出题(轮询,面板关后≤350ms出题)
   if(DRAFT_OPEN || R._draftLock) return;   // 发牌中不出题:closeBattleDraft 会亲自续上
@@ -3826,6 +3872,7 @@ function sectionWin(){
     }
   }
   show('secres');
+  saveRun();
 }
 function runLose(){
   if(P._dying) return;
@@ -3877,6 +3924,16 @@ function finishRun(defeat){
       else if(Math.random() < (K.LUCKY_P||0.06)) localStorage.setItem('ba_luck','1');
     }
   }catch(e){}
+  try{   // 测试遥测:自动上报到常驻服务(失败静默,不挡战报)
+    const rep={ v:(document.querySelector('#start div[style*="bottom"]')||{textContent:'?'}).textContent||'?',
+      mode:MODE, endless:ENDLESS, defeat:!!defeat, section:R.section, score:calcScore(), hp:P.hp,
+      correct:telem.correct, maxCombo:telem.maxCombo, maxHit:telem.maxHit, dmgTaken:telem.dmgTaken,
+      jams:telem.jams, breaks:telem.breaks, hexes:P.hexes.map(h=>h.id), picks:telem.draftPicks,
+      durS:Math.round((Date.now()-telem.startTime)/1000), fightS:Math.round(R.fightMs/1000),
+      lucky:R.lucky, runs:RUNS, ua:(navigator.userAgent||'').slice(0,90) };
+    fetch('https://socialarb.tail6880a0.ts.net/game/log', {method:'POST', body:JSON.stringify(rep), keepalive:true, mode:'cors', headers:{'content-type':'text/plain'}}).catch(()=>{});
+  }catch(e){}
+  clearSave();
   if(defeat) SFX.lose(); else SFX.win();
   const won = R.results.filter(r=>r.passed).length;
   document.getElementById('finalTitle').textContent = defeat
@@ -4345,6 +4402,7 @@ window.addEventListener('keydown', e=>{
 });
 // VS 演出轻触跳过
 setMode(MODE);   // 高亮存档难度
+try{ if(localStorage.getItem('ba_save')) document.getElementById('resumeBtn').classList.remove('hidden'); }catch(e){}
 try{ if(!localStorage.getItem('ba_howto_seen')) openHowto(); }catch(e){}
 document.getElementById('vsplash').addEventListener('click', ()=>{
   if(!vsStarter) return;
