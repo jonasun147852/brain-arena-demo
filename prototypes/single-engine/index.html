@@ -33,6 +33,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     animation:fade .35s ease;}
   @keyframes fade{from{opacity:0; transform:translateY(6px);}to{opacity:1; transform:none;}}
   .hidden{display:none !important;}
+  html,body{-webkit-text-size-adjust:100%; text-size-adjust:100%;}
   h1{font-size:38px; font-weight:900; letter-spacing:5px; text-align:center;
     background:linear-gradient(100deg,var(--cyan),#7ea0ff 45%,var(--purple)); -webkit-background-clip:text; background-clip:text; color:transparent;
     filter:drop-shadow(0 4px 26px rgba(63,231,255,.35));}
@@ -142,7 +143,8 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .card.blindbet .name{color:var(--gold);}
 
   /* battle */
-  #battle{justify-content:flex-start; padding:14px 18px; gap:8px;}
+  #battle{justify-content:flex-start; padding:14px 18px; gap:8px; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding-bottom:calc(14px + env(safe-area-inset-bottom));}
   .topbar{width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12px; color:var(--dim);}
   .topbar .sec{color:var(--text); font-weight:800; font-size:14px; letter-spacing:1px; display:flex; align-items:center; gap:7px;}
   .topbar .sec::before{content:""; width:8px; height:8px; border-radius:50%; background:var(--cyan); box-shadow:0 0 10px var(--cyan);}
@@ -231,7 +233,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .tc.dbl{color:var(--gold); border-color:var(--gold); background:rgba(255,207,77,.12); animation:pulse 1s infinite;}
   @keyframes pulse{0%,100%{box-shadow:0 0 0 rgba(255,207,77,0);}50%{box-shadow:0 0 16px rgba(255,207,77,.6);}}
 
-  .qbox{width:100%; flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:11px;
+  .qbox{width:100%; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:11px;
     background:linear-gradient(180deg,rgba(16,26,48,.7),rgba(8,14,28,.7)); border:1px solid var(--line2); border-radius:14px; padding:12px;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
   .qmeta{display:flex; gap:8px; align-items:center;}
@@ -277,6 +279,19 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .fxon .scene{background:transparent; border-color:transparent;}
   .fxon .hud .stat{background:transparent; border-color:transparent;}
   .fxon .hud .stat .v{text-shadow:0 0 16px currentColor, 0 2px 0 rgba(0,0,0,.85);}
+  /* 连击火焰分级:数字先热(c1 金光)、后燃(c2 火苗)、再爆(c3 红焰);只烧计数器,屏幕不乱 */
+  .stat.combo{position:relative;}
+  .stat.combo.c1 .v{color:#ffcf4d; text-shadow:0 0 14px rgba(255,207,77,.7), 0 2px 0 rgba(0,0,0,.85);}
+  .stat.combo.c2 .v{color:#ff9f43; animation:flame2 .9s ease-in-out infinite;}
+  .stat.combo.c3 .v{color:#ff5470; animation:flame3 .55s ease-in-out infinite;}
+  .stat.combo.c2::after,.stat.combo.c3::after{content:'🔥'; position:absolute; top:-9px; right:-2px; font-size:13px;
+    animation:flick .5s ease-in-out infinite alternate; pointer-events:none;}
+  .stat.combo.c3::after{font-size:17px; filter:drop-shadow(0 0 8px rgba(255,84,112,.9));}
+  @keyframes flame2{0%,100%{text-shadow:0 0 10px rgba(255,159,67,.8), 0 -5px 12px rgba(255,84,112,.4), 0 2px 0 rgba(0,0,0,.85);}
+    50%{text-shadow:0 0 20px rgba(255,159,67,1), 0 -9px 20px rgba(255,84,112,.8), 0 2px 0 rgba(0,0,0,.85);}}
+  @keyframes flame3{0%,100%{text-shadow:0 0 14px rgba(255,84,112,.9), 0 -7px 16px rgba(255,159,67,.6), 0 2px 0 rgba(0,0,0,.85); transform:scale(1);}
+    50%{text-shadow:0 0 26px rgba(255,84,112,1), 0 -12px 26px rgba(255,159,67,1), 0 2px 0 rgba(0,0,0,.85); transform:scale(1.06);}}
+  @keyframes flick{from{transform:translateY(0) scale(1); opacity:.85;}to{transform:translateY(-3px) scale(1.2); opacity:1;}}
   .fxon .qbox{background:linear-gradient(180deg, rgba(10,16,30,.62), rgba(8,13,24,.86)); border-color:transparent; border-top:1px solid rgba(63,231,255,.28); backdrop-filter:blur(3px);}
   .fxon .rbtn{border-radius:8px;}
   .ricon{font-size:24px; line-height:1.05; filter:drop-shadow(0 0 6px rgba(63,231,255,.35));}
@@ -563,7 +578,16 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     #start .tagline{letter-spacing:7px; margin-right:-7px;}
     .sub{font-size:12px; line-height:1.65;}
     #start,#draft,#final,#secres{justify-content:flex-start; overflow:auto; padding-top:26px;}
-    .vicglyph{font-size:84px;} .victitle{font-size:34px; letter-spacing:10px; margin-right:-10px;}
+    #secres{gap:8px; padding-top:14px;}
+    .vicwrap{min-height:62px; margin:-2px 0;}
+    .vicglyph{font-size:58px;} .victitle{font-size:29px; letter-spacing:8px; margin-right:-8px;}
+    .epitaph{font-size:12.5px;}
+    #secres .resseg{padding:2px 12px;} #secres .resseg .big{font-size:18px;}
+    .dcard{width:98px; height:124px;} .dback{font-size:32px;}
+    .dface .ddesc{font-size:9px; line-height:1.3;}
+    .dnote{font-size:12px;}
+    #secres .card{padding:9px 12px;} #secres .card .name{font-size:16px;} #secres .card .desc{font-size:12.5px;}
+    .secdraft .cards{gap:7px;}
     .cards{gap:9px;}
     .card{width:min(460px,94vw); min-height:0; display:grid; grid-template-columns:46px 1fr; column-gap:12px; row-gap:4px; padding:12px 14px; align-items:start; text-align:left;}
     .card .ico{grid-column:1; grid-row:1 / span 6; font-size:31px; margin-top:2px;}
@@ -641,6 +665,26 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
 .qopt.qx{ opacity:.32; text-decoration:line-through; pointer-events:none; }
 .qhint{ color:#ffcf4d; font-size:12px; margin-left:6px; }
 .rarbadge.awaken{ color:#ffcf4d; border-color:rgba(255,207,77,.5); }
+  /* ===== 矮屏压缩档:壳浏览器(微信等)视口矮,整体紧凑一档,保证不重叠不滚动 ===== */
+  @media (max-height:800px){
+    #battle{gap:5px; padding:8px 10px calc(8px + env(safe-area-inset-bottom));}
+    .scene{height:86px;} .fighter{width:118px;}
+    .stat{padding:4px 5px;} .stat .v{font-size:15px;} .stat .k{font-size:8px;}
+    .tierchips{min-height:15px;} .tc{font-size:9.5px; padding:1px 7px;}
+    .qbox{gap:6px; padding:8px;}
+    .fxon .qbox{border-width:13px; border-image:url('art/ui-console.png') 96 fill / 13px stretch;}
+    .qprompt.qp-l{font-size:23px;} .qprompt.qp-m{font-size:18px;} .qprompt.qp-s{font-size:15px;}
+    .qopt{padding:8px 10px; font-size:13px;}
+    .qinput{font-size:18px; padding:4px; width:140px;}
+    .qmeta{transform:scale(.92);}
+    .kp{padding:8px 0; font-size:17px;}
+    .rbtn{min-height:60px !important; padding:5px 6px 5px 74px !important;}
+    .rbtn::after{width:54px !important; height:54px !important;}
+    .rbtn::before{width:36px !important; height:36px !important; left:35px !important;}
+    .rbtn .ricon{left:35px !important; font-size:21px !important;}
+    .rbtn .od{display:none;}
+    .towerwrap{transform:scale(.98);}
+  }
 </style>
 </head>
 <body>
@@ -671,7 +715,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.28</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.29</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1858,7 +1902,7 @@ function stopAmbient(){
 
 /* ============================== 游戏感渲染层:PixiJS 战斗舞台(拉取式读状态,零逻辑侵入;无 PIXI 自动空壳) ============================== */
 const FX = (function(){
-  const stub = {real:false, ensure(){}, hit(){}, strike(){}, rage(){}, shatter(){}, pHit(){}};
+  const stub = {real:false, ensure(){}, hit(){}, strike(){}, rage(){}, shatter(){}, pHit(){}, comboUp(){}};
   if(typeof PIXI==='undefined' || typeof window==='undefined') return stub;
   // 环的性格即角色性格:石=少段厚环慢转 / 影=三细环快转+出手前瞬缩 / 焰=三角锐环+火粒外溢
   const THEMES = [
@@ -1932,10 +1976,10 @@ const FX = (function(){
     if(br.width===0) return;
     anchor.x = br.left-rr.left+br.width/2;
     anchor.y = br.top-rr.top+Math.min(64, br.height*0.5);
-    anchor.r = Math.min(52, Math.max(38, br.width*0.24));
+    anchor.r = Math.min(52, Math.max(26, Math.min(br.width*0.24, br.height*0.42)));   // 矮场景按高度封顶,别压 HUD
     const yf=document.getElementById('youF');
     if(yf && yf.getBoundingClientRect){ const yr=yf.getBoundingClientRect();
-      if(yr.width>0){ anchorY.x=yr.left-rr.left+yr.width/2; anchorY.y=yr.top-rr.top+Math.min(58, yr.height*0.45); anchorY.r=Math.min(38, Math.max(28, yr.width*0.18)); } }
+      if(yr.width>0){ anchorY.x=yr.left-rr.left+yr.width/2; anchorY.y=yr.top-rr.top+Math.min(58, yr.height*0.45); anchorY.r=Math.min(38, Math.max(22, Math.min(yr.width*0.18, yr.height*0.36))); } }
   }
   function theme(){ return THEMES[Math.min(((typeof R!=='undefined'&&R&&R.section)||1)-1,2)]; }
   function mkGlow(){ const g=new PIXI.Graphics();   // 软光斑纹理(径向假光)
@@ -2204,6 +2248,15 @@ const FX = (function(){
     },
     strike(){ if(!app) return; lunge=34; shake=Math.max(shake,7); burst(anchor.x-anchor.r-6, anchor.y+6, 0xff5470, 8, 3, 0.1); },
     pHit(){ if(!app) return; pSquash=Math.min(0.35, pSquash+0.2); pFlash=1; shake=Math.max(shake,6); burst(anchorY.x, anchorY.y, 0xff5470, 10, 3.2, 0.08); },
+    comboUp(t){   // 连击升阶:火星从计数器喷起(负重力=上升火)
+      if(!app) return;
+      try{
+        const el=document.querySelector('.stat.combo'), rt=document.getElementById('pixiRoot');
+        if(!el||!rt) return;
+        const br=el.getBoundingClientRect(), rr=rt.getBoundingClientRect();
+        burst(br.left-rr.left+br.width/2, br.top-rr.top+10, t>=3?0xff5470:0xffcf4d, 8+4*t, 2.6, -0.03);
+      }catch(e){}
+    },
     rage(){ if(!app) return; shake=Math.max(shake,10); burst(anchor.x, anchor.y, 0xff5470, 26, 5, 0.05); },
     shatter(){ if(!app) return; shake=Math.max(shake,11); const th=theme(); burst(anchor.x, anchor.y, th.hex, 34, 6, 0.12); burst(anchor.x, anchor.y, 0xffffff, 12, 3.4, 0.1); },
   };
@@ -3109,6 +3162,7 @@ function onCorrect(){
   // 共鸣·时间凝滞:快答冻结敌人充能
   if(fast && hasRes('心') && E && !E.dead){ E.frozenUntil = Date.now()+2000; }
   const beforeTier = comboTier(P.combo-1);
+  if(comboTier(P.combo) > beforeTier) FX.comboUp(comboTier(P.combo));
   let dmg = immediateDamage();
   if(blade) dmg = Math.round(dmg * (has('h15') ? 1.5 : 1.25));   // 千钧区:全民+25%,h15+50%
   if(parried && has('h17')) dmg = Math.round(dmg*1.5);           // 趁火打劫:拨挡那一刀×1.5
@@ -3624,10 +3678,10 @@ function sectionWin(){
         const note=document.getElementById('dNote');
         if(d.newBond){ SFX.res(); note.textContent = `⛓ 羁绊结成 · ${d.newBond.ico}${d.newBond.name}!`; }
         else if(d.newRes){ SFX.res(); note.textContent = `🔗 共鸣觉醒 · ${d.newRes.name}!`; }
-        else { SFX.tierUp(); if(i===0) note.textContent = `🂠 天命 · 第 ${P.destinyIds.length} 翻`; }
+        else { SFX.tierUp(); if(i===0) note.textContent = `🎁 奖励强化 · 第 ${P.destinyIds.length} 翻`; }
       }, 750 + i*700);
     });
-    document.getElementById('dNote').textContent = '🂠 天命…';
+    document.getElementById('dNote').textContent = '🎁 奖励强化…';
   } else dbox.classList.add('hidden');
   R._secDraft = null;
   document.getElementById('secDraft').classList.add('hidden');
@@ -3817,6 +3871,9 @@ function updateSceneUI(){
 }
 function updateHUD(){
   const sc=document.getElementById('sCombo');
+  { const cst=document.querySelector ? document.querySelector('.stat.combo') : null;
+    if(cst){ const ct=comboTier(P.combo); const want='stat combo'+(ct>0?' c'+ct:'');
+      if(cst.className!==want) cst.className=want; } }
   sc.textContent = P.combo;
   const tier=comboTier(P.combo);
   ['t1','t2','t3'].forEach(t=>sc.classList.remove(t));
@@ -3992,7 +4049,7 @@ function renderBuildPanel(){
   let html='';
   html += '<div class="bsec">海克斯 ('+P.hexes.length+')</div>';
   P.hexes.forEach(h=>{
-    const dest = (P.destinyIds||[]).includes(h.id) ? ' · 🂠天命' : '';
+    const dest = (P.destinyIds||[]).includes(h.id) ? ' · 🎁奖励' : '';
     html += `<div class="bcard sc-${SCHOOL_CLASS[h.school]||''}" style="border-left-color:var(--${h.school==='脑'?'blue':h.school==='手'?'red':'green'})">
       <div class="bico">${h.ico}</div><div class="bmain">
       <div><span class="bname">${h.name}</span><span class="bmeta">${SCHOOL_LABEL[h.school]||h.school} · ${RAR_LABEL[h.rar]}${dest}</span></div>
