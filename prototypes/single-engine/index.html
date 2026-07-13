@@ -720,7 +720,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.33</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.34</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -2709,6 +2709,7 @@ function startRun(endless){
   document.getElementById('bDraft').classList.remove('lucky');
   document.getElementById('secDraft').classList.remove('lucky');
   readTuner(); freshRun();
+  if(ENDLESS) R.draftAt=[0,30000];   // 无尽:开宗立派+30s 教学窗;之后每关打完发一班(sectionWin)
   // 鸿运局:进场即消费(中途刷新=烧掉,堵存档挂)
   try{ R.lucky = localStorage.getItem('ba_luck')==='1'; if(R.lucky) localStorage.removeItem('ba_luck'); }catch(e){ R.lucky=false; }
   rerollLeft = R.lucky ? 2 : 1;
@@ -2793,7 +2794,7 @@ function rollOffer(roundIdx){
       if(roundIdx<=2 && missedBonds().some(b=>b.pieces.includes(h.id))) w*=1.3;
       return w;
     };
-    const n = roundIdx<=2 ? 4 : 3;
+    const n = (roundIdx<=2 || ENDLESS) ? 4 : 3;
     picks.push(...weightedDraw(pool.filter(h=>h.rar===tier && !picks.includes(h)), n-picks.length, wf));
     R._offerRar = tier;
   }
@@ -2978,21 +2979,39 @@ function pickBanner(h, r){
   if(h.cat==='升级') return `↗ 觉醒 · ${h.ico}${h.name}!`;
   return `${h.ico} ${h.name} · 已装载`;
 }
+function grantBonusHex(){   // 🎁 奖励强化:天命池随机入手(无尽:第2班后+5倍数关)
+  const pool = HEXES.filter(h=>!has(h.id) && !gambleLocked(h) && h.cat!=='技能' && h.cat!=='升级' && (!h.grow || h.id==='h13'));
+  if(!pool.length) return null;
+  const bondsBefore=activeBonds().map(b=>b.id), resBefore=activeResonances().length;
+  const dh=pool[rnd(0,pool.length-1)];
+  P.destinyIds.push(dh.id); P.hexes.push(dh);
+  const nb=activeBonds().find(b=>!bondsBefore.includes(b.id));
+  const nr=activeResonances().length>resBefore ? RESONANCE[dh.school] : null;
+  toast(`🎁 奖励强化:${dh.ico}${dh.name}`);
+  if(nb||nr){ SFX.res(); setTimeout(()=>{ if(CUR_SCREEN==='battle'||CUR_SCREEN==='secres') toast(nb?`⛓ 羁绊结成 · ${nb.ico}${nb.name}!`:`🔗 共鸣觉醒 · ${nr.name}!`); }, 1400); }
+  else SFX.tierUp();
+  renderBuild();
+  return dh;
+}
 function pickHex(h){
   const r = applyHexPick(h);
   if(DRAFT_OPEN){   // 战斗内定时发牌
     const idx = R.draftPending;
     R.draftPending = null; R.draftIdx++;
+    if(ENDLESS && idx===1) setTimeout(grantBonusHex, 900);   // 第 2 班选完:赠一张
     telem.draftPicks.push({idx, id:h.id, atMs:Math.round(R.fightMs)});
     if(r.newBond || r.newRes || h.cat==='升级') SFX.res();
     closeBattleDraft();
     banner(idx===0 && h.cat==='技能' ? `🎏 立派 · ${h.name}!` : pickBanner(h,r));
-    toast(R.draftIdx < R.draftAt.length ? `⛽ 下一批海克斯 · ${DRAFT_WHEN[R.draftIdx]}` : '这是最后一批。接下来,全看你自己。');
+    toast(ENDLESS ? (R.draftIdx<2 ? `⛽ 下一批海克斯 · ${DRAFT_WHEN[R.draftIdx]}` : '⛽ 每关打完,发下一批')
+      : (R.draftIdx < R.draftAt.length ? `⛽ 下一批海克斯 · ${DRAFT_WHEN[R.draftIdx]}` : '这是最后一批。接下来,全看你自己。'));
     renderBuild();
     return;
   }
   if(R._secDraft!=null){   // 过关补给(结算屏内补发)
+    const wasIdx = R._secDraft;
     R._secDraft = null; R.draftIdx++;
+    if(ENDLESS && wasIdx===1) setTimeout(grantBonusHex, 900);   // 30s 班欠到关末选完也算第 2 班
     telem.draftPicks.push({idx:R.draftIdx-1, id:h.id, atMs:Math.round(R.fightMs), sec:true});
     document.getElementById('secDraft').classList.add('hidden');
     document.getElementById('secresBtn').style.display='';
@@ -3685,8 +3704,6 @@ function afterAction(isBreak){
   setTimeout(nextQuestion, delay);
 }
 function checkDraftClock(){   // 到点只挂 pending(arm),开屏永远在结算拍
-  if(ENDLESS && R && !R._poolDry && R.draftIdx>=R.draftAt.length)
-    R.draftAt.push((R.draftAt[R.draftAt.length-1]||0)+90000);   // 无尽:强化 90s 一班车
   if(!R || R.draftIdx>=R.draftAt.length || R.draftPending!=null || DRAFT_OPEN) return;
   if(RUNS===1 && R.draftIdx===1 && !R._bubbled && R.draftAt[1]-R.fightMs<3000){ R._bubbled=true; toast('⛽ 补给要到了'); }
   const timeUp = R.fightMs >= R.draftAt[R.draftIdx];
@@ -3726,7 +3743,7 @@ function sectionWin(){
   // 天命翻牌(德州公共牌):过关翻一张
   // 池收窄:技能卡出天命池 = 修复 ownedSkill 静默顶掉亲选技能的 bug,不可回退;升级/成长卡也不走天命(h13 豁免,保住羁绊听牌)
   R.destinyDrawn = [];
-  if(R.section < K.SECTIONS){
+  if(ENDLESS ? (R.section%5===0) : (R.section < K.SECTIONS)){
     for(let i=0;i<1;i++){
         const pool = HEXES.filter(h=>!has(h.id) && !gambleLocked(h) && h.cat!=='技能' && h.cat!=='升级' && (!h.grow || h.id==='h13'));
       if(!pool.length) break;
@@ -3789,7 +3806,17 @@ function sectionWin(){
   R._secDraft = null;
   document.getElementById('secDraft').classList.add('hidden');
   document.getElementById('secresBtn').style.display='';
-  if(R.section < K.SECTIONS){
+  if(ENDLESS){
+    // 无尽:每关打完发且只发一班——把下一班搬到现在(30s 班没到点就当提前),不补不叠
+    if(!R._poolDry){
+      if(rollOffer(R.draftIdx).length){
+        if(R.draftIdx < R.draftAt.length) R.draftAt[R.draftIdx] = Math.min(R.draftAt[R.draftIdx], R.fightMs);
+        else R.draftAt.push(R.fightMs);
+        R._secDraft = R.draftIdx;
+        renderSecDraft(R._secDraft);
+      } else { R._poolDry = true; toast('🃏 强化池已抽干——接下来看手上的牌了'); }
+    }
+  } else if(R.section < K.SECTIONS){
     let owed = 0;
     while(R.draftIdx+owed < R.draftAt.length && R.fightMs >= R.draftAt[R.draftIdx+owed]) owed++;
     if(owed > 0){
@@ -4075,12 +4102,6 @@ function openBattleDraft(){
   R.draftTimer=null;
   if(DRAFT_OPEN) return;
   if(!(CUR_SCREEN==='battle' && E && !E.dead && !E.phaseClear && P.hp>0)){ R._draftLock=false; return; }
-  if(ENDLESS && R.draftPending!=null && R.draftPending>4){   // 无尽班车:池干涸=跳过本班并停班
-    if(!rollOffer(R.draftPending).length){
-      R._poolDry=true; R.draftIdx=R.draftAt.length; R.draftPending=null; R._draftLock=false;
-      toast('🃏 强化池已抽干——接下来看手上的牌了'); return;
-    }
-  }
   if(PANEL_OPEN) closeBuildPanel();
   DRAFT_OPEN=true; DRAFT_PAUSE={at:Date.now()};
   stopLoop();
