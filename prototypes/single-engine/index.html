@@ -715,7 +715,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.29</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.30</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -1859,45 +1859,106 @@ function toggleMute(){
   if(AU.muted) stopAmbient(); else if(CUR_SCREEN==='battle') startAmbient();
   refocus();
 }
-/* 环境底噪:每关一种呼吸(石窟沉/猎林紧/塔顶怒),换关自动重建 */
-const AMB_CFG=[
-  {f1:55,  f2:55.6, lp:180, lfo:0.10, lfoAmt:60,  air:420,  airG:0.005, g:0.016},
-  {f1:65.4,f2:66.1, lp:240, lfo:0.22, lfoAmt:90,  air:900,  airG:0.006, g:0.015},
-  {f1:49,  f2:49.7, lp:150, lfo:0.34, lfoAmt:110, air:260,  airG:0.009, g:0.02},
-];
+/* ============ 音乐引擎 v3:步进音序器(研究依据见 design/research/音频节奏设计-心理学依据.md)
+   120 BPM 四踩底(认知任务最优带)+ 连击垂直分层(L0底/L1镲/L2琶音/L3满编)+ 大招闪避 ============ */
+const MUS_BPM=[120,126,134];
+function musicBus(){
+  const c=au(); if(!c) return null;
+  if(!AU.musicG){ AU.musicG=c.createGain(); AU.musicG.gain.value=0.13; AU.musicG.connect(AU.master||c.destination); }
+  return AU.musicG;
+}
+function duckMusic(amt){   // 打击瞬间音乐让位(sidechain 感)
+  const c=au(); if(!c||!AU.musicG) return;
+  try{
+    const g=AU.musicG.gain;
+    g.cancelScheduledValues(c.currentTime);
+    g.setValueAtTime(0.13*(amt||0.35), c.currentTime);
+    g.setTargetAtTime(0.13, c.currentTime+0.05, 0.11);
+  }catch(e){}
+}
+function mKick(t){ const c=AU.ctx;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type='sine'; o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(45,t+0.09);
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.5,t+0.004); g.gain.exponentialRampToValueAtTime(0.001,t+0.16);
+  o.connect(g); g.connect(AU.musicG); o.start(t); o.stop(t+0.2);
+  const src=c.createBufferSource(); src.buffer=noiseBuf(c); src.loop=true;
+  const f=c.createBiquadFilter(); f.type='highpass'; f.frequency.value=2000;
+  const ng=c.createGain(); ng.gain.setValueAtTime(0.08,t); ng.gain.exponentialRampToValueAtTime(0.001,t+0.02);
+  src.connect(f); f.connect(ng); ng.connect(AU.musicG); src.start(t); src.stop(t+0.04);
+}
+function mHat(t,open){ const c=AU.ctx;
+  const src=c.createBufferSource(); src.buffer=noiseBuf(c); src.loop=true;
+  const f=c.createBiquadFilter(); f.type='highpass'; f.frequency.value=6200;
+  const g=c.createGain(); const d=open?0.09:0.03;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(open?0.09:0.11,t+0.002); g.gain.exponentialRampToValueAtTime(0.001,t+d);
+  src.connect(f); f.connect(g); g.connect(AU.musicG); src.start(t); src.stop(t+d+0.03);
+}
+function mSnare(t){ const c=AU.ctx;
+  const src=c.createBufferSource(); src.buffer=noiseBuf(c); src.loop=true;
+  const f=c.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1800; f.Q.value=0.8;
+  const g=c.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.18,t+0.003); g.gain.exponentialRampToValueAtTime(0.001,t+0.12);
+  src.connect(f); f.connect(g); g.connect(AU.musicG); src.start(t); src.stop(t+0.16);
+}
+function mBass(t,f0,dur){ const c=AU.ctx;
+  const o=c.createOscillator(), g=c.createGain(), f=c.createBiquadFilter();
+  o.type='square'; o.frequency.value=f0; f.type='lowpass'; f.frequency.value=320; f.Q.value=1.1;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.16,t+0.008); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.connect(f); f.connect(g); g.connect(AU.musicG); o.start(t); o.stop(t+dur+0.05);
+}
+function mArp(t,f0,oct){ const c=AU.ctx;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type='triangle'; o.frequency.value=f0*(oct||1);
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.07,t+0.006); g.gain.exponentialRampToValueAtTime(0.001,t+0.22);
+  o.connect(g); g.connect(AU.musicG); o.start(t); o.stop(t+0.28);
+}
+// 句库(16步):四踩鼓/切分贝斯(度数)/两小节琶音短语
+const MUS_KICK=[0,4,8,12];
+const MUS_BASS={0:0,3:0,6:7,8:0,11:12,14:7};   // 步:半音offset(根/五/八)
+const MUS_ARP=[[0,3,5,7, 10,7,5,3],[0,5,7,10, 12,10,7,5]];   // 两小节各8音(反拍)
 function startAmbient(){
   const c=au(); if(!c||AU.muted) return;
   const sec=(typeof R!=='undefined'&&R&&R.section)||1;
-  if(AU.amb){ if(AU.amb.sec===sec) return; stopAmbient(); }
+  if(AU.seq){ if(AU.seq.sec===sec) return; stopAmbient(); }
+  if(!musicBus()) return;
   try{
     if(c.state==='suspended') c.resume();
-    const cfg=AMB_CFG[Math.min(sec-1,2)];
-    const g=c.createGain(); g.gain.value=cfg.g;
-    const o1=c.createOscillator(); o1.type='sawtooth'; o1.frequency.value=cfg.f1;
-    const o2=c.createOscillator(); o2.type='sawtooth'; o2.frequency.value=cfg.f2;
-    const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=cfg.lp;
-    const lfo=c.createOscillator(); lfo.frequency.value=cfg.lfo;
-    const lg=c.createGain(); lg.gain.value=cfg.lfoAmt;
-    lfo.connect(lg); lg.connect(f.frequency);
-    o1.connect(f); o2.connect(f); f.connect(g);
-    const nsrc=c.createBufferSource(); nsrc.buffer=noiseBuf(c); nsrc.loop=true;
-    const nf=c.createBiquadFilter(); nf.type='lowpass'; nf.frequency.value=cfg.air;
-    const ng=c.createGain(); ng.gain.value=cfg.airG;
-    nsrc.connect(nf); nf.connect(ng); ng.connect(AU.master||c.destination);
-    g.connect(AU.master||c.destination);
-    o1.start(); o2.start(); lfo.start(); nsrc.start();
-    AU.amb={o1,o2,lfo,g,nsrc,ng,sec};
+    const bpm=MUS_BPM[Math.min(sec-1,2)];
+    const stepDur=60/bpm/4;   // 16 分音符
+    const root=GATE_ROOT[Math.min(sec-1,2)]/4;   // 低两个八度当贝斯根音
+    const seq={sec, step:0, bar:0, next:c.currentTime+0.06, stepDur, root, timer:null};
+    seq.timer=setInterval(()=>{
+      try{
+        if(!AU.ctx||AU.muted){ return; }
+        while(seq.next < AU.ctx.currentTime+0.14){
+          const t=seq.next, st=seq.step%16;
+          const frozen = (typeof DRAFT_OPEN!=='undefined'&&DRAFT_OPEN) || (typeof PANEL_OPEN!=='undefined'&&PANEL_OPEN);
+          const tier = (typeof P!=='undefined'&&P&&typeof comboTier==='function') ? comboTier(P.combo) : 0;
+          const rage = (typeof E!=='undefined'&&E&&E.phase2);
+          if(frozen){   // 时间冻结:抽走节拍只留半音量贝斯脉冲(仪式感)
+            if(st===0||st===8) mBass(t, seq.root, seq.stepDur*3);
+          } else {
+            if(MUS_KICK.includes(st)) mKick(t);
+            if(st in MUS_BASS) mBass(t, seq.root*Math.pow(2,MUS_BASS[st]/12), seq.stepDur*1.8);
+            if(tier>=1 && (st===2||st===6||st===10||st===14)) mHat(t,false);
+            if(tier>=3 && st%2===1) mHat(t,false);
+            if(tier>=2 && st%2===0){   // 琶音:反拍旋律,两小节短语
+              const ph=MUS_ARP[seq.bar%2][(st/2)|0];
+              if(ph!=null) mArp(t, seq.root*4*Math.pow(2,ph/12), tier>=3?2:1);
+            }
+            if(rage){ if(st===4||st===12) mSnare(t); if(st%4===2) mHat(t,true); }
+          }
+          seq.next += seq.stepDur; seq.step++;
+          if(seq.step%16===0) seq.bar++;
+        }
+      }catch(e){}
+    }, 25);
+    AU.seq=seq;
   }catch(e){}
 }
 function stopAmbient(){
-  if(!AU.amb) return;
-  try{
-    const c=au(), a=AU.amb;
-    a.g.gain.linearRampToValueAtTime(0.0001, c.currentTime+0.3);
-    if(a.ng) a.ng.gain.linearRampToValueAtTime(0.0001, c.currentTime+0.3);
-    setTimeout(()=>{ try{a.o1.stop();a.o2.stop();a.lfo.stop(); if(a.nsrc)a.nsrc.stop();}catch(e){} }, 400);
-  }catch(e){}
-  AU.amb=null;
+  if(!AU.seq) return;
+  try{ clearInterval(AU.seq.timer); }catch(e){}
+  AU.seq=null;
 }
 
 /* ============================== 游戏感渲染层:PixiJS 战斗舞台(拉取式读状态,零逻辑侵入;无 PIXI 自动空壳) ============================== */
@@ -2566,7 +2627,7 @@ function enemyAttack(){
   P.hp = Math.max(0, P.hp - atkDmg);
   telem.dmgTaken += atkDmg;
   telem.atkCount = (telem.atkCount||0)+1;
-  SFX.foeHit();
+  SFX.foeHit(); duckMusic(0.45);
   floatText(`−${atkDmg}`, '#ff5470', false, P.hp<=0, 'you');
   if(Math.random()<0.4) floatText(`「${E.lines.taunts[rnd(0,E.lines.taunts.length-1)]}」`, '#ff8aa0', true, false, 'foe');
   const av=document.getElementById('pAvatar'); av.classList.remove('hurt'); void av.offsetWidth; av.classList.add('hurt');
@@ -3479,7 +3540,7 @@ function releaseBig(){   // 重技能槽
     markEvent(); bumpStats(); updateHUD(); updateSceneUI(); refocus();
     return;
   }
-  SFX.big();
+  SFX.big(); duckMusic(0.3);
   hexFire('h10','×1.5');
   // 赌徒之门:大招也可能卡壳——高潮前的心跳
   const jam = has('h12') && Math.random()<0.2;
@@ -3557,13 +3618,13 @@ function dealDamage(amount, kind, color, secondary, raw){
   }
   updateSceneUI();
   if(E.hp<=0 && !E.dead){
-    E.dead=true; SFX.kill(); flashFx(); FX.shatter();
+    E.dead=true; SFX.kill(); duckMusic(0.25); flashFx(); FX.shatter();
     document.getElementById('core').classList.add('shatter');
     for(let i=0;i<6;i++) floatText('✦','#fff',true,false,'foe');
     clearTimeout(qTimer); setTimeout(sectionWin, 800);
   } else if(!E.phaseClear && E.hp <= thr){
     // 阶段击破:守门者倒下,血池不回,下一位接管
-    E.phaseClear=true; SFX.kill(); flashFx(); FX.shatter();
+    E.phaseClear=true; SFX.kill(); duckMusic(0.25); flashFx(); FX.shatter();
     document.getElementById('core').classList.add('shatter');
     for(let i=0;i<6;i++) floatText('✦','#fff',true,false,'foe');
     clearTimeout(qTimer); setTimeout(sectionWin, 800);
