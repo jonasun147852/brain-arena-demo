@@ -48,6 +48,25 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .btn:disabled{opacity:.35; cursor:not-allowed; transform:none; box-shadow:none; filter:grayscale(.7);}
   .btn.ghost{background:transparent; border:1px solid var(--line2); color:var(--silver); box-shadow:none; padding:11px 26px; font-size:14px; letter-spacing:1px;}
   .btn.ghost:hover{border-color:var(--cyan); color:var(--cyan);}
+  /* ===== 难度三选(按年龄段) ===== */
+  .moderow{display:flex; gap:9px; justify-content:center; flex-wrap:wrap;}
+  .modebtn{display:flex; flex-direction:column; align-items:center; gap:2px; padding:9px 22px; border-radius:11px;
+    background:rgba(4,6,12,.6); border:1px solid var(--line2); color:var(--silver); font-size:14.5px; font-weight:800;
+    letter-spacing:1px; backdrop-filter:blur(2px); transition:border-color .15s, box-shadow .15s, color .15s;}
+  .modebtn span{font-size:10.5px; color:var(--dim); font-weight:600; letter-spacing:.5px;}
+  .modebtn.on{border-color:var(--gold); color:var(--gold); box-shadow:0 0 18px rgba(255,207,77,.25), inset 0 0 14px rgba(255,207,77,.07);}
+  .modebtn.on span{color:var(--gold); opacity:.8;}
+  /* ===== 玩法介绍 ===== */
+  .howto{position:fixed; inset:0; z-index:70; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(rgba(2,4,10,.78),rgba(2,4,10,.9)), url('art/ui-drafttable.jpg') center/cover; backdrop-filter:blur(2px);}
+  .htwrap{width:min(94vw,560px); display:flex; flex-direction:column; align-items:center; gap:16px; padding:20px;}
+  .htsteps{display:flex; flex-direction:column; gap:12px; width:100%;}
+  .htstep{display:flex; gap:14px; align-items:flex-start; background:linear-gradient(180deg,rgba(13,19,36,.85),rgba(8,13,26,.9));
+    border:1px solid var(--line2); border-radius:13px; padding:13px 16px; text-align:left;}
+  .hti{font-size:26px; flex-shrink:0; margin-top:1px;}
+  .htt{font-size:13.5px; color:var(--silver); line-height:1.65;}
+  .htt b{color:#fff; font-size:14.5px;}
+  @media(max-width:720px){ .htt{font-size:13px;} .modebtn{padding:8px 14px; font-size:13.5px;} }
   /* ===== 开局主页面:键画打底,暗部渐变保字(圣经:暗部70%/禁hero图构图=居中花字直给) ===== */
   #start{ background:
       radial-gradient(ellipse at 50% 36%, rgba(4,6,12,.18) 0%, rgba(4,6,12,.06) 46%, rgba(4,6,12,.6) 100%),
@@ -644,12 +663,32 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     <div class="sub">三名守门者,共守一条塔脉。<b>答对即出刀——你死,或塔倾。</b></div>
     <div class="sub" id="luckLine" style="font-size:12px; opacity:.75;"></div>
     <div class="subjrow" id="subjRow"></div>
+    <div class="moderow">
+      <button class="modebtn" data-m="easy" onclick="setMode('easy')">🌱 简单<span>4-10岁</span></button>
+      <button class="modebtn" data-m="mid" onclick="setMode('mid')">⚔️ 中等<span>10-16岁</span></button>
+      <button class="modebtn" data-m="hard" onclick="setMode('hard')">🔥 挑战<span>16岁+</span></button>
+    </div>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
+    <button class="btn ghost" style="padding:8px 22px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.26</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#5a6a8a; letter-spacing:1px;">v5.27</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
+
+  <!-- 玩法介绍(首次自动弹出;可从主页面再开) -->
+  <div class="howto hidden" id="howto">
+    <div class="htwrap">
+      <span class="tag">❓ 怎 么 玩</span>
+      <div class="htsteps">
+        <div class="htstep"><div class="hti">✏️</div><div class="htt"><b>答题就是出刀</b><br>答对砍守门者一刀,答得越快伤害越高;答错要挨它一下。</div></div>
+        <div class="htstep"><div class="hti">🔥</div><div class="htt"><b>连击是命脉</b><br>连续答对,刀越来越重;答错连击清零。</div></div>
+        <div class="htstep"><div class="hti">⚡</div><div class="htt"><b>能量放技能</b><br>答题攒能量,按 <b>1</b> / <b>2</b>(或点下方按钮)放轻技·重技。</div></div>
+        <div class="htstep"><div class="hti">🃏</div><div class="htt"><b>发牌选强化</b><br>战斗中会停表发牌——选一张把自己越养越强,击破三关就赢。</div></div>
+      </div>
+      <button class="btn cta" style="padding:13px 46px;" onclick="closeHowto()">明 白 了</button>
+    </div>
+  </div>
 
   <!-- BATTLE -->
   <div id="battle" class="screen hidden">
@@ -838,6 +877,29 @@ const DEFAULTS = {
 };
 let K = {...DEFAULTS};
 const DIFF_MIX = [ [0.7,0.3,0.0], [0.3,0.5,0.2], [0.1,0.4,0.5] ];
+/* 难度模式=年龄段题库分配(Jonasun 2026-07-12:简单4-10/中等10-16/挑战16+) */
+const MODES = {
+  easy:{label:'简单', age:'4-10岁',  ico:'🌱', timeMul:1.6,  chargeMul:1.45},
+  mid: {label:'中等', age:'10-16岁', ico:'⚔️', timeMul:1.25, chargeMul:1.15},
+  hard:{label:'挑战', age:'16岁+',   ico:'🔥', timeMul:1,    chargeMul:1},
+};
+const MODE_MIX = {   // 各关 [易,中,难] 抽取权重;段内仍有星级差=能量差
+  easy:[[1,0,0],[1,0,0],[1,0,0]],
+  mid: [[0.30,0.65,0.05],[0.20,0.65,0.15],[0.10,0.60,0.30]],
+  hard:[[0.15,0.55,0.30],[0.10,0.45,0.45],[0.05,0.35,0.60]],
+};
+let MODE='hard';
+try{ const mv=localStorage.getItem('ba_mode'); if(MODES[mv]) MODE=mv; }catch(e){}
+function modeCapDiff(d){   // 强制难度(砸卷/审判题)也不越段:简单档封顶中等
+  if(MODE==='easy' && d==='hard') return 'medium';
+  return d;
+}
+function setMode(m){
+  if(!MODES[m]) return;
+  MODE=m;
+  try{ localStorage.setItem('ba_mode', m); }catch(e){}
+  document.querySelectorAll('.modebtn').forEach(b=>b.classList.toggle('on', b.dataset.m===m));
+}
 const BENCH = {
   calc:{easy:4, medium:6, hard:9},
   seq: {easy:5, medium:7, hard:10},
@@ -1483,6 +1545,11 @@ const SFX = {
     beep({f:noteAt(0), dur:.8, type:'triangle', gain:.07, delay:.4, attack:.02});
   },
 };
+function openHowto(){ document.getElementById('howto').classList.remove('hidden'); }
+function closeHowto(){
+  document.getElementById('howto').classList.add('hidden');
+  try{ localStorage.setItem('ba_howto_seen','1'); }catch(e){}
+}
 function toggleMute(){
   AU.muted=!AU.muted;
   try{ localStorage.setItem('ba_mute', AU.muted?'1':'0'); }catch(e){}
@@ -1987,16 +2054,16 @@ function smallCost(){ const sc=ownedSkill('light'); return skillCost('light', sc
 function bigCost(){ const sc=ownedSkill('heavy'); return skillCost('heavy', sc?sc.skillKey:'big'); }
 function bigMult(){ return has('h10') ? 9 : K.BIG_MULT; }
 function smallEnabled(){ return !has('h10'); }
-function benchmark(type,diff){ let b=BENCH[type][diff]; if(diff==='hard' && has('h05')) b*=1.5; return b; }
+function benchmark(type,diff){ let b=BENCH[type][diff]*((MODES[MODE]||MODES.hard).timeMul); if(diff==='hard' && has('h05')) b*=1.5; return b; }
 
 /* ============================== 题目系统 (§4) ============================== */
 function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
 function pick(arr){ return arr[rnd(0,arr.length-1)]; }
 
 function genQuestion(section, forceDiff){
-  const mix = DIFF_MIX[Math.min(section,DIFF_MIX.length-1)];
+  const mix = (MODE_MIX[MODE]||MODE_MIX.hard)[Math.min(Math.max(section,1)-1,2)];
   const r = Math.random();
-  const diff = forceDiff || (r<mix[0] ? 'easy' : r<mix[0]+mix[1] ? 'medium' : 'hard');
+  const diff = forceDiff ? modeCapDiff(forceDiff) : (r<mix[0] ? 'easy' : r<mix[0]+mix[1] ? 'medium' : 'hard');
   const subj = pick(activeSubjects());
   if(subj !== 'math'){
     const mc = genBankQuestion(subj, diff);
@@ -2022,6 +2089,15 @@ function genBankQuestion(subj, diff){
   };
 }
 function genMath(diff){
+  if(MODE==='easy'){   // 4-10:20 以内加减 / 表内乘法 / 步进数列
+    const kind=pick(['add','sub','mul','seq']);
+    let prompt, answer;
+    if(kind==='add'){ const a=rnd(3,15),b=rnd(2,Math.min(20-a,9)+3); prompt=`${a} + ${b}`; answer=a+b; }
+    else if(kind==='sub'){ const a=rnd(6,20),b=rnd(2,a-1); prompt=`${a} − ${b}`; answer=a-b; }
+    else if(kind==='mul'){ const a=rnd(2,9),b=rnd(2,9); prompt=`${a} × ${b}`; answer=a*b; }
+    else { const st=rnd(1,6), d=rnd(2,5); prompt=[st,st+d,st+2*d,st+3*d].join(',  ')+',  ?'; answer=st+4*d; }
+    return { prompt, answer, difficulty:'easy', type: kind==='seq'?'seq':'calc', benchmark: benchmark(kind==='seq'?'seq':'calc','easy') };
+  }
   const type = pick(TYPES);
   let prompt, answer;
 
@@ -2074,7 +2150,7 @@ function spawnFoe(){
   Object.assign(E, {
     name:f.name, glyph:f.glyph, color:f.color, lines:f,
     atk: K.ENEMY_ATK[Math.min(i, K.ENEMY_ATK.length-1)],
-    chargeNeed: K.ENEMY_CHARGE[Math.min(i, K.ENEMY_CHARGE.length-1)],
+    chargeNeed: K.ENEMY_CHARGE[Math.min(i, K.ENEMY_CHARGE.length-1)] * ((MODES[MODE]||MODES.hard).chargeMul),
     charge:0, stunnedUntil:0, slowedUntil:0, frozenUntil:0, graceUntil:0, stunCycleGuard:false, reversedUntil:0, reverseRate:1, _rcPunished:false,
     staggeredUntil:0, parryWindow:false, parryUsed:false, nextAtkMult:1, breachUntil:0, breatherUntil:0,
     dead:false, phase2:false, phaseClear:false,
@@ -3813,6 +3889,8 @@ window.addEventListener('keydown', e=>{
   if(e.key==='2') releaseBig();
 });
 // VS 演出轻触跳过
+setMode(MODE);   // 高亮存档难度
+try{ if(!localStorage.getItem('ba_howto_seen')) openHowto(); }catch(e){}
 document.getElementById('vsplash').addEventListener('click', ()=>{
   if(!vsStarter) return;
   clearTimeout(vsTimer);
