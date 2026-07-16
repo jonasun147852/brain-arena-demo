@@ -3,67 +3,93 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>亮擂 vs 暗色现状 · A/B 拍板页</title>
+<title>五版定稿 · 工作室拍板页</title>
 <style>
   *{margin:0; padding:0; box-sizing:border-box;}
   body{background:#0e1420; color:#e8edf6; font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif; padding:18px 14px 60px;}
   h1{font-size:20px; text-align:center; letter-spacing:2px; margin:8px 0 4px;}
   .sub{text-align:center; color:#8a97b0; font-size:12px; margin-bottom:18px; line-height:1.7;}
+  .sub b{color:#ffcf4d;}
   .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:900px; margin:0 auto;}
   @media(max-width:700px){ .grid{grid-template-columns:1fr;} }
   .cell{background:#161e30; border:1px solid #2a3550; border-radius:14px; overflow:hidden;}
-  .cell h2{font-size:14px; padding:10px 12px; letter-spacing:1px; border-bottom:1px solid #2a3550;}
-  .cell.dark h2{color:#8fb8ff;} .cell.bright h2{color:#ffcf4d;}
-  .cell img{width:100%; display:block;}
-  .cell .imgwrap{background:#0a0f1a; display:flex; align-items:center; justify-content:center; min-height:200px;}
-  .cell.bright .imgwrap{background:#dfe9ec;}
-  .note{font-size:11.5px; color:#8a97b0; padding:9px 12px; line-height:1.6;}
+  .cell h2{font-size:15px; padding:10px 12px; letter-spacing:1px; border-bottom:1px solid #2a3550; color:#ffcf4d;}
+  .cell h2 small{color:#8a97b0; font-weight:400; font-size:11px; margin-left:6px;}
+  .cell img{width:100%; display:block; background:#dfe9ec;}
+  .note{font-size:11.5px; color:#8a97b0; padding:9px 12px; line-height:1.7;}
+  .note b{color:#cdd8ea;}
   .sec{max-width:900px; margin:26px auto 10px; font-size:15px; font-weight:800; letter-spacing:1px; color:#ffcf4d;}
-  .check{max-width:900px; margin:10px auto; background:#161e30; border:1px solid #2a3550; border-radius:14px; padding:14px 16px; font-size:13.5px; line-height:2.1;}
-  .check b{color:#ffcf4d;}
+  .panel{max-width:900px; margin:10px auto; background:#161e30; border:1px solid #2a3550; border-radius:14px; padding:14px 16px; font-size:13px; line-height:2.0;}
+  .panel b{color:#ffcf4d;}
+  table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  th,td{padding:7px 8px; border-bottom:1px solid #2a3550; text-align:left; line-height:1.6;}
+  th{color:#8a97b0; font-weight:600; font-size:11px;}
+  td b{color:#ffcf4d;}
+  .score{color:#7fd68a; white-space:nowrap;}
   iframe{width:100%; height:520px; border:0; display:block; background:#04060c;}
-  .tip{max-width:900px; margin:8px auto 0; text-align:center; font-size:11px; color:#5a6a8a;}
+  .tip{max-width:900px; margin:8px auto 0; text-align:center; font-size:11px; color:#5a6a8a; line-height:1.8;}
 </style>
 </head>
 <body>
-  <h1>⚔ 亮擂 vs 暗色现状</h1>
-  <div class="sub">A/B 拍板页 · 概念图为 AI 生成的方向稿(文字乱码忽略,看的是色彩/形体/氛围)<br>评判标准就四个词:<b>游戏感 · 紧张感 · 不过分 · 不软</b></div>
+  <h1>🏛 五版定稿 · 工作室拍板页</h1>
+  <div class="sub">40-agent 三层工作室:规划(产品) → 设计×3/心理学×3/玩法×2 并行 → 队长互审+仲裁成 18 条法典 → 5 版合成 → 上瘾第一性原理+产品年龄适配<b>双审</b>(打回重修+复审) → 引擎复核 → 定稿<br>五维验收:年龄段覆盖 · 上瘾演出承载 · 买量第一眼 · 审核合规 · 可读性</div>
 
-  <div class="sec">① 战斗界面</div>
+  <div class="sec">① 最终排名</div>
+  <div class="panel">
+    <table>
+      <tr><th>版本</th><th>总分</th><th>一句话</th></tr>
+      <tr><td><b>金榜擂</b>(国潮)</td><td class="score">8.8</td><td>唯一首轮过上瘾审;25-45「有文化」+10-16「潮」双档命中,脸谱即天然买量脸</td></tr>
+      <tr><td><b>亮擂</b>(全年龄主打)</td><td class="score">8.7</td><td>对照组基准:单皮肤四档全覆盖,其余版本都要回答「比它好在哪」</td></tr>
+      <tr><td><b>暖阳擂</b>(40+暖亮)</td><td class="score">8.5</td><td>40+ 主打盘教科书命中,「实机即素材」直投信息流</td></tr>
+      <tr><td>深蓝厅(科技竞技)</td><td class="score">8.2</td><td>与亮擂缩略图同质,合并留强<b>不渲染</b>;留作教育轨弹药</td></tr>
+      <tr><td>熄灯擂(暗色上限)</td><td class="score">7.8</td><td>验收中<b>自降为亮擂的 16+ 解锁皮肤包</b>,不占默认皮/icon/买量</td></tr>
+    </table>
+  </div>
+
+  <div class="sec">② 送渲染四版(概念方向稿,文字乱码忽略,看色彩/形体/氛围)</div>
   <div class="grid">
-    <div class="cell dark">
-      <h2>A · 暗色现状(可玩实况)</h2>
+    <div class="cell">
+      <h2>金榜擂 <small>上瘾 7.5→8.5 · 产品 6.5→8.5</small></h2>
+      <img src="art/concept-v-jinbang-guochao.jpg" alt="金榜擂">
+      <div class="note"><b>门神监考、篆印为符、线香计时</b>——宣纸暖底半国风,竞技感长在信息层不长在题材;主打 25-45(含 40+ 女性盘),副打 10-16。</div>
+    </div>
+    <div class="cell">
+      <h2>亮擂 <small>上瘾 6.5→8.5 · 产品 7.5→8.5</small></h2>
+      <img src="art/concept-v-liangle-mainstream-bright.jpg" alt="亮擂">
+      <div class="note"><b>亮电竞棚,一个像素不调暗的硬核紧张感</b>;轴心 16-40 核心盘,单皮肤+全局缩放覆盖四档。赌感三承载位(断言印/金榜时刻/锦囊三选)补齐。</div>
+    </div>
+    <div class="cell">
+      <h2>暖阳擂 <small>上瘾 6→8.5 · 产品 8(五版最高单分)→8.5</small></h2>
+      <img src="art/concept-v-nuanyang-mass-warm.jpg" alt="暖阳擂">
+      <div class="note"><b>奶油暖底、大字报级题干、消除块级大颗粒</b>;主打三线 40+ 女性大盘。「亮的是底色,不软的是输赢」:损失拍三分档+敌方充能弧常驻可见。</div>
+    </div>
+    <div class="cell">
+      <h2>熄灯擂 <small>上瘾 6.5→8.5 · 产品 6→8.5 · 皮肤包</small></h2>
+      <img src="art/concept-v-xideng-dark-finals.jpg" alt="熄灯擂">
+      <div class="note"><b>决赛夜:关顶灯开追光</b>。只换底层+光照,资产零暗贴图;16+ 实名+里程碑双门解锁,暗底对比红利全留成年构筑盘局内,一切对外出口仍是亮版。</div>
+    </div>
+  </div>
+
+  <div class="sec">③ 实机对照(现状 v5.43,可玩)</div>
+  <div class="grid">
+    <div class="cell" style="grid-column:1/-1;">
+      <h2>暗色现状 <small>近黑深蓝底+霓虹符文+半写实立绘——两轮研究+本轮验收均判不可直接上正式版</small></h2>
       <iframe src="index.html" title="现状"></iframe>
-      <div class="note">现状 v5.43 实机。近黑深蓝底 + 霓虹符文 + 半写实立绘。</div>
-    </div>
-    <div class="cell bright">
-      <h2>B · 亮擂概念(方向稿)</h2>
-      <div class="imgwrap"><img src="art/concept-liangl-battle.jpg" alt="亮擂战斗概念"></div>
-      <div class="note">亮舞台满饱和演员:浅青灰底 + 厚描边 + 双色分层;紧张感走打击链/红蓝拉锯/倒计时,不走暗色。</div>
     </div>
   </div>
 
-  <div class="sec">② 守门者 · 磐石Σ</div>
-  <div class="grid">
-    <div class="cell dark">
-      <h2>A · 现状立绘(半写实厚涂)</h2>
-      <div class="imgwrap"><img src="art/foe-sigma.png" alt="现状磐石"></div>
-      <div class="note">审核风险项:写实阴森向;小尺寸下剪影发糊。</div>
-    </div>
-    <div class="cell bright">
-      <h2>B · 亮擂形态(成人原型 Q 版化)</h2>
-      <div class="imgwrap"><img src="art/concept-liangl-sigma.png" alt="亮擂磐石"></div>
-      <div class="note">2.5 头身 + 几何体块剪影 + 厚描边双色 + 监考官式威压表情——"杀气"来自原型与剪影,不来自暗色。</div>
-    </div>
+  <div class="sec">④ 引擎复核结论</div>
+  <div class="panel">
+    <b>Cocos Creator 3.8 LTS(锁 3.8.7/3.8.8)维持定案,不翻案。</b>五版演出全走 Balatro 峰值型(单发大数字/同屏≤3/粒子只做拖尾),性能不是变量;真正的差异点在滤镜/材质类效果——恰是纯 Pixi+adapter 在安卓小游戏端的死穴(stencil 异常致 Filter/Mask 残废),否决更硬。3v3 走微信官方帧同步服务。<b>最大工程缺口:微信端音频链</b>(升半音/侧链需 wx.createWebAudioContext 或预烘焙),迁移第 2 步先验证再开工。第二名 LayaAir 3.3(16.5/25)差距不缩小。
   </div>
 
-  <div class="sec">③ 拍板清单</div>
-  <div class="check">
-    <b>1. 方向:</b>A 暗色保留 / B 转亮擂 / 先做 B 的可玩 demo 再定<br>
-    <b>2. 世界观:</b>符文奥术提亮保留 / 换综艺竞技棚<br>
-    <b>3. 软萌吉祥物层:</b>正式版就做 / 后补<br>
-    <b>4. 国潮浓度:</b>不要 / 点缀(纹样) / 整体国风(要的话我出三档守门者概念)
+  <div class="sec">⑤ 拍板清单</div>
+  <div class="panel">
+    <b>1. 主打版本:</b>金榜擂 / 亮擂 / 暖阳擂(可组合:游戏内主皮 + 买量素材皮分离)<br>
+    <b>2. 熄灯擂 16+ 解锁皮肤包:</b>做 / 不做<br>
+    <b>3. 金榜擂国潮浓度:</b>再淡一档 / 就这档(半国风) / 更浓(整体国风)<br>
+    <b>4. 深蓝厅:</b>留作教育轨/家长渠道弹药 / 弃
   </div>
-  <div class="tip">概念图仅定方向,实装时按四维配方(8-12 色板/描边规格/双色分层/演出链)系统化重制。</div>
+  <div class="tip">完整评审记录(18 条设计法典 / 年龄段画像 / 五版档案与验收轨迹 / 引擎矩阵)在仓库 design/research/工作室五版定稿-评审记录.md<br>概念图仅定方向,实装按法典+四维配方系统化重制。</div>
 </body>
 </html>
