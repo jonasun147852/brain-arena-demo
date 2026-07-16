@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>亮擂 vs 暗色现状 · A/B 拍板页</title>
+<style>
+  *{margin:0; padding:0; box-sizing:border-box;}
+  body{background:#0e1420; color:#e8edf6; font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif; padding:18px 14px 60px;}
+  h1{font-size:20px; text-align:center; letter-spacing:2px; margin:8px 0 4px;}
+  .sub{text-align:center; color:#8a97b0; font-size:12px; margin-bottom:18px; line-height:1.7;}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:900px; margin:0 auto;}
+  @media(max-width:700px){ .grid{grid-template-columns:1fr;} }
+  .cell{background:#161e30; border:1px solid #2a3550; border-radius:14px; overflow:hidden;}
+  .cell h2{font-size:14px; padding:10px 12px; letter-spacing:1px; border-bottom:1px solid #2a3550;}
+  .cell.dark h2{color:#8fb8ff;} .cell.bright h2{color:#ffcf4d;}
+  .cell img{width:100%; display:block;}
+  .cell .imgwrap{background:#0a0f1a; display:flex; align-items:center; justify-content:center; min-height:200px;}
+  .cell.bright .imgwrap{background:#dfe9ec;}
+  .note{font-size:11.5px; color:#8a97b0; padding:9px 12px; line-height:1.6;}
+  .sec{max-width:900px; margin:26px auto 10px; font-size:15px; font-weight:800; letter-spacing:1px; color:#ffcf4d;}
+  .check{max-width:900px; margin:10px auto; background:#161e30; border:1px solid #2a3550; border-radius:14px; padding:14px 16px; font-size:13.5px; line-height:2.1;}
+  .check b{color:#ffcf4d;}
+  iframe{width:100%; height:520px; border:0; display:block; background:#04060c;}
+  .tip{max-width:900px; margin:8px auto 0; text-align:center; font-size:11px; color:#5a6a8a;}
+</style>
+</head>
+<body>
+  <h1>⚔ 亮擂 vs 暗色现状</h1>
+  <div class="sub">A/B 拍板页 · 概念图为 AI 生成的方向稿(文字乱码忽略,看的是色彩/形体/氛围)<br>评判标准就四个词:<b>游戏感 · 紧张感 · 不过分 · 不软</b></div>
+
+  <div class="sec">① 战斗界面</div>
+  <div class="grid">
+    <div class="cell dark">
+      <h2>A · 暗色现状(可玩实况)</h2>
+      <iframe src="index.html" title="现状"></iframe>
+      <div class="note">现状 v5.43 实机。近黑深蓝底 + 霓虹符文 + 半写实立绘。</div>
+    </div>
+    <div class="cell bright">
+      <h2>B · 亮擂概念(方向稿)</h2>
+      <div class="imgwrap"><img src="art/concept-liangl-battle.jpg" alt="亮擂战斗概念"></div>
+      <div class="note">亮舞台满饱和演员:浅青灰底 + 厚描边 + 双色分层;紧张感走打击链/红蓝拉锯/倒计时,不走暗色。</div>
+    </div>
+  </div>
+
+  <div class="sec">② 守门者 · 磐石Σ</div>
+  <div class="grid">
+    <div class="cell dark">
+      <h2>A · 现状立绘(半写实厚涂)</h2>
+      <div class="imgwrap"><img src="art/foe-sigma.png" alt="现状磐石"></div>
+      <div class="note">审核风险项:写实阴森向;小尺寸下剪影发糊。</div>
+    </div>
+    <div class="cell bright">
+      <h2>B · 亮擂形态(成人原型 Q 版化)</h2>
+      <div class="imgwrap"><img src="art/concept-liangl-sigma.png" alt="亮擂磐石"></div>
+      <div class="note">2.5 头身 + 几何体块剪影 + 厚描边双色 + 监考官式威压表情——"杀气"来自原型与剪影,不来自暗色。</div>
+    </div>
+  </div>
+
+  <div class="sec">③ 拍板清单</div>
+  <div class="check">
+    <b>1. 方向:</b>A 暗色保留 / B 转亮擂 / 先做 B 的可玩 demo 再定<br>
+    <b>2. 世界观:</b>符文奥术提亮保留 / 换综艺竞技棚<br>
+    <b>3. 软萌吉祥物层:</b>正式版就做 / 后补<br>
+    <b>4. 国潮浓度:</b>不要 / 点缀(纹样) / 整体国风(要的话我出三档守门者概念)
+  </div>
+  <div class="tip">概念图仅定方向,实装时按四维配方(8-12 色板/描边规格/双色分层/演出链)系统化重制。</div>
+</body>
+</html>
