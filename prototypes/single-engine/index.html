@@ -179,7 +179,13 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .core.stunned{filter:grayscale(.8) brightness(.7);}
   .core.winding{animation:wind .5s infinite;}
   @keyframes wind{0%,100%{box-shadow:0 0 30px color-mix(in srgb, var(--enemy) 60%, transparent);}50%{box-shadow:0 0 44px var(--red);}}
-  .vs{font-size:17px; font-weight:900; color:var(--gold); text-shadow:0 0 16px rgba(201,151,30,.5);}
+  .jbanner{position:absolute; top:4px; bottom:4px; display:flex; align-items:center; justify-content:center; width:30px;
+    writing-mode:vertical-lr; letter-spacing:6px; font-size:15px; font-weight:900; color:#1e2430;
+    background:linear-gradient(180deg,#fbf5e4,#f0e4c6); border:2px solid #a33326; border-radius:4px;
+    box-shadow:inset 0 0 0 1px rgba(163,51,38,.25), 0 3px 8px rgba(96,80,48,.3); z-index:0; pointer-events:none;}
+  .jbanner.l{left:9%;} .jbanner.r{right:9%;}
+  @media(max-width:620px){ .jbanner{display:none;} }
+  .vs{font-size:18px; font-weight:900; color:#c9971e; text-shadow:0 1px 0 #7a5c10, 0 -1px 0 rgba(255,252,240,.8), 0 0 16px rgba(201,151,30,.55); letter-spacing:1px;}
   /* 塔脉血池:贯穿全局的一条血,构筑成长的舞台 */
   .towerwrap{width:100%; display:flex; align-items:center; gap:9px;}
   .towerbar{flex:1; height:18px; background:#ded2b3; border:1px solid rgba(30,36,48,.25); border-radius:4px; overflow:hidden; position:relative; box-shadow:inset 0 2px 6px rgba(96,80,48,.35);}
@@ -237,16 +243,18 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     background:linear-gradient(180deg,rgba(16,26,48,.7),rgba(8,14,28,.7)); border:1px solid var(--line2); border-radius:14px; padding:12px;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
   .qmeta{display:flex; gap:8px; align-items:center;}
-  .qtype{font-size:11px; font-weight:800; letter-spacing:1.5px; padding:3px 11px; border-radius:18px; color:var(--text); background:rgba(30,36,48,.05); border:1px solid var(--line2);}
+  .qtype{font-size:11px; font-weight:900; letter-spacing:2px; padding:3px 10px; border-radius:4px; color:#fdf9ee; background:#b23a2a; border:1px solid #8e2b1e;
+    box-shadow:inset 0 0 0 1px rgba(255,252,240,.35), 0 1px 3px rgba(96,80,48,.3); transform:rotate(-2deg);}
   .qdiff{font-size:11px; font-weight:800; letter-spacing:2px;}
   .qdiff.easy{color:var(--green);} .qdiff.medium{color:var(--gold);} .qdiff.hard{color:var(--red);}
   .qprompt{font-weight:900; letter-spacing:2px; text-align:center; line-height:1.1; text-shadow:0 2px 16px rgba(14,124,156,.18);}
   .qprompt.qp-l{font-size:40px;} .qprompt.qp-m{font-size:30px;} .qprompt.qp-s{font-size:23px;}
   .qprompt.qp-mc{font-size:19px; letter-spacing:.5px; line-height:1.45; max-width:94%;}
   .qopts{width:92%; display:grid; grid-template-columns:1fr 1fr; gap:7px;}
-  .qopt{padding:9px 10px; border-radius:6px; background:linear-gradient(90deg, rgba(14,124,156,.08), rgba(14,124,156,.015) 60%); border:1px solid rgba(14,124,156,.22); border-left:3px solid rgba(14,124,156,.6); position:relative; overflow:hidden;
-    font-size:13.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:7px; transition:transform .08s, border-color .15s;}
-  .qopt:hover{border-color:var(--cyan);}
+  .qopt{padding:10px 12px; border-radius:8px; background:linear-gradient(180deg,#2f77c2,#2560a6); border:2px solid #1e2430; border-left:2px solid #1e2430; position:relative; overflow:hidden; color:#fdf9ee;
+    font-size:13.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:7px; transition:transform .08s, border-color .15s, filter .15s;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(20,40,70,.5), 0 2px 5px rgba(96,80,48,.25);}
+  .qopt:hover{filter:brightness(1.1); border-color:#c9971e;}
   .qopt:active{transform:scale(.96);}
   .subjrow{display:flex; gap:7px; flex-wrap:wrap; justify-content:center; max-width:92%;}
   .sj{font-size:12.5px; font-weight:800; padding:5px 15px; border-radius:20px; border:1px solid var(--line2); color:var(--dim);
@@ -257,8 +265,11 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .qbox.good{border-color:var(--green); box-shadow:0 0 26px rgba(47,158,99,.22), inset 0 1px 0 rgba(255,255,255,.04);}
   .qbox.bad{border-color:var(--red); box-shadow:0 0 26px rgba(192,57,43,.22), inset 0 1px 0 rgba(255,255,255,.04);}
   .qbox.parry{border-color:#ffb347 !important; box-shadow:0 0 26px rgba(255,179,71,.35), inset 0 1px 0 rgba(255,255,255,.04) !important; animation:pulse .6s infinite;}
-  .qtimer{width:72%; height:7px; background:#ded2b3; border-radius:5px; overflow:hidden; position:relative; border:1px solid var(--line);}
-  .qtimerfill{height:100%; background:linear-gradient(90deg,var(--cyan),var(--blue)); width:100%; transition:width .1s linear;}
+  .qtimer{width:72%; height:9px; background:#efe6cf; border-radius:5px; overflow:visible; position:relative; border:1px solid var(--line);}
+  .qtimerfill{height:100%; background:linear-gradient(180deg,#cdb083,#b3925f); border-radius:4px; width:100%; transition:width .1s linear;}
+  .qtimerfill::after{content:''; position:absolute; right:-4px; top:50%; transform:translate(0,-50%); width:9px; height:9px; border-radius:50%;
+    background:radial-gradient(circle at 40% 35%, #ffd27a, #e0552a 65%); box-shadow:0 0 9px 2px rgba(224,85,42,.65); animation:emberpulse 1s ease-in-out infinite;}
+  @keyframes emberpulse{0%,100%{box-shadow:0 0 7px 2px rgba(224,85,42,.55);}50%{box-shadow:0 0 13px 4px rgba(255,140,60,.8);}}
   .qtimer .bench{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--green); box-shadow:0 0 8px var(--green);}
   .qzone{position:absolute; left:0; top:0; bottom:0; width:25%; background:linear-gradient(90deg, rgba(192,57,43,.4), rgba(192,57,43,.12)); z-index:0;}
   .qtimerfill{position:relative; z-index:1;}
@@ -738,7 +749,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.44</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.45</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -780,6 +791,8 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     </div>
 
     <div class="scene" id="scene">
+      <div class="jbanner l" aria-hidden="true">肃静</div>
+      <div class="jbanner r" aria-hidden="true">回避</div>
       <div class="fighter" id="youF">
         <div class="pavatar" id="pAvatar">◆</div>
         <div class="hpbar"><div class="hpfill" id="pHpFill"></div></div>
@@ -3213,7 +3226,7 @@ function beginSection(){
     vsEl.style.setProperty('--enemy', gc);
     vsEl.style.background =
       `radial-gradient(ellipse at 50% 40%, ${gc}26, transparent 58%),`+
-      `linear-gradient(180deg, rgba(242,235,217,.8), rgba(242,235,217,.72) 45%, #e8dfc8 96%),`+
+      `linear-gradient(180deg, rgba(242,235,217,.62), rgba(242,235,217,.5) 45%, #e8dfc8 96%),`+
       `url('art/jb-bg-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #e8dfc8`;
   }
   document.getElementById('vsName').textContent = E.name;
