@@ -59,7 +59,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .modebtn.on span{color:var(--gold); opacity:.8;}
   /* ===== 玩法介绍 ===== */
   .howto{position:fixed; inset:0; z-index:70; display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(rgba(242,235,217,.92),rgba(236,228,208,.97)); backdrop-filter:blur(2px);}
+    background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-drafttable.jpg') center/cover; backdrop-filter:blur(2px);}
   .htwrap{width:min(94vw,560px); display:flex; flex-direction:column; align-items:center; gap:16px; padding:20px;}
   .htsteps{display:flex; flex-direction:column; gap:12px; width:100%;}
   .htstep{display:flex; gap:14px; align-items:flex-start; background:linear-gradient(180deg,rgba(250,246,234,.92),rgba(241,233,212,.95));
@@ -319,7 +319,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .odgem.lit{ background:radial-gradient(circle at 35% 28%, #e9c8ff, #7d4fc0 55%, #6b2fa0); border-color:#d9b3ff; }
   .card{ box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(96,80,48,.25); }
   /* ===== 符文机枢 · 位图资产接线(AI 生成,渐进增强) ===== */
-  .fxon .qbox{ border:2px solid #b0a077; border-radius:14px; background:linear-gradient(180deg,#fbf7ec,#f4eedd); box-shadow:0 8px 26px rgba(96,80,48,.22), inset 0 0 0 1px rgba(30,36,48,.12); }
+  .fxon .qbox{ border:22px solid transparent; border-image:url('art/jb-ui-console.png') 133 183 168 183 fill / 22px stretch; border-radius:0; background:linear-gradient(180deg,#fbf7ec,#f4eedd); backdrop-filter:none; box-shadow:0 8px 26px rgba(96,80,48,.22); }
   /* 技能条目:水晶按钮居左,文字信息右侧金属板——画面与文字分区,不再互相踩 */
   .rbtn{ position:relative; min-height:86px; padding:8px 10px 8px 96px !important;
     background:linear-gradient(180deg,#fbf7ec,#f1e9d4) !important; border:1px solid #b0a077 !important;
@@ -630,7 +630,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     .tagline{font-size:12px; letter-spacing:4px;}
   }
 /* ===== v5 定时发牌 ===== */
-.bdraft{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; background:linear-gradient(rgba(242,235,217,.9),rgba(236,228,208,.96)); backdrop-filter:blur(2px); }
+.bdraft{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-drafttable.jpg') center/cover; backdrop-filter:blur(2px); }
 .bdraft.hidden{ display:none; }
 .bdwrap{ width:min(96vw,920px); max-height:94vh; display:flex; flex-direction:column; text-align:center; padding:12px 14px; }
 .bdscroll{ overflow-y:auto; flex:1 1 auto; min-height:0; padding:2px; }
@@ -656,12 +656,12 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
 /* 结算/战报屏:内容超高(过关补给/多行战报)时可滚动,顶对齐防居中裁切 */
 #secres, #final{ overflow-y:auto; justify-content:flex-start; padding-top:3vh; padding-bottom:5vh; }
 .card.r-awaken{ border-color:#c9971e; box-shadow:0 0 18px rgba(201,151,30,.25); }
-.card.r-silver{ background:linear-gradient(180deg,#faf6ea,#f1e9d4) !important; }
-.card.r-gold{ background:linear-gradient(180deg,#fbf4dc,#f3e6c2) !important; animation:goldbreathe 2.6s ease-in-out infinite; }
-.card.r-prism{ background:linear-gradient(180deg,#f7f1ec,#ede4f2) !important; }
+.card.r-silver{ background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-silver.png') center/cover !important; }
+.card.r-gold{ background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-gold.png') center/cover !important; animation:goldbreathe 2.6s ease-in-out infinite; }
+.card.r-prism{ background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-prism.png') center/cover !important; }
 @keyframes goldbreathe{0%,100%{box-shadow:0 0 10px rgba(201,151,30,.12);}50%{box-shadow:0 0 22px rgba(201,151,30,.34);}}
 .card.r-id{ border-color:rgba(14,124,156,.55); box-shadow:0 0 22px rgba(14,124,156,.14);
-  background:linear-gradient(180deg,#f6f2e6,#ecf0ee) !important; }
+  background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-silver.png') center/cover !important; }
 .rarbadge.id{ color:var(--cyan); border:1px solid rgba(14,124,156,.5); background:rgba(14,124,156,.08); }
 .card.r-prism{ position:relative; }
 .card.r-prism::before{content:''; position:absolute; inset:-2px; border-radius:inherit; padding:2px; pointer-events:none;
@@ -700,7 +700,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     .stat{padding:4px 5px;} .stat .v{font-size:15px;} .stat .k{font-size:8px;}
     .tierchips{min-height:15px;} .tc{font-size:9.5px; padding:1px 7px;}
     .qbox{gap:6px; padding:8px;}
-    .fxon .qbox{border-width:2px;}
+    .fxon .qbox{border-width:13px; border-image:url('art/jb-ui-console.png') 133 183 168 183 fill / 13px stretch;}
     .qprompt.qp-l{font-size:23px;} .qprompt.qp-m{font-size:18px;} .qprompt.qp-s{font-size:15px;}
     .qopt{padding:8px 10px; font-size:13px;}
     .qinput{font-size:18px; padding:4px; width:140px;}
