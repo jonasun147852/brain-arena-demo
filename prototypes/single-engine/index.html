@@ -163,7 +163,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     .buildrow::before{content:'墨 宝'; font-size:10px; font-weight:900; letter-spacing:5px; color:#8a6f1e;
       border-bottom:1px solid rgba(163,51,38,.3); padding-bottom:3px; margin-bottom:2px; width:100%;}
   }
-  .scene{width:100%; height:150px; position:relative; display:flex; align-items:center; justify-content:space-around; overflow:hidden;
+  .scene{width:100%; flex:1 1 100px; min-height:100px; position:relative; display:flex; align-items:center; justify-content:space-around; overflow:hidden;
     background:radial-gradient(420px 160px at 72% 55%, color-mix(in srgb, var(--enemy) 18%, transparent), transparent 72%),
                radial-gradient(300px 140px at 22% 55%, rgba(14,124,156,.1), transparent 72%);
     border:1px solid var(--line); border-radius:14px; --enemy:var(--cyan);}
@@ -199,6 +199,9 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .vs{font-size:18px; font-weight:900; color:#c9971e; text-shadow:0 1px 0 #7a5c10, 0 -1px 0 rgba(255,252,240,.8), 0 0 16px rgba(201,151,30,.55); letter-spacing:1px;}
   /* 塔脉血池:贯穿全局的一条血,构筑成长的舞台 */
   .towerwrap{width:100%; display:flex; align-items:center; gap:7px;}
+  .davatar{width:32px; height:32px; border-radius:9px; overflow:hidden; border:2px solid #1e2430; background:#dfeaf5;
+    box-shadow:0 1px 3px rgba(96,80,48,.35); flex-shrink:0;}
+  .davatar img{width:100%; height:100%; object-fit:cover; display:block;}
   .dpill{font-size:11px; font-weight:900; letter-spacing:1px; padding:3px 9px; border-radius:5px; color:#fdf9ee; white-space:nowrap;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 1px 3px rgba(96,80,48,.3);}
   .dpill.dyou{background:linear-gradient(180deg,#2f77c2,#2560a6); border:1px solid #1e2430;}
@@ -258,8 +261,8 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .tc.dbl{color:var(--gold); border-color:var(--gold); background:rgba(201,151,30,.12); animation:pulse 1s infinite;}
   @keyframes pulse{0%,100%{box-shadow:0 0 0 rgba(201,151,30,0);}50%{box-shadow:0 0 16px rgba(201,151,30,.6);}}
 
-  .qbox{width:100%; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:11px;
-    background:linear-gradient(180deg,rgba(16,26,48,.7),rgba(8,14,28,.7)); border:1px solid var(--line2); border-radius:14px; padding:12px;
+  .qbox{width:100%; flex:0 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:11px;
+    background:linear-gradient(180deg,#fbf7ec,#f4eedd); border:1px solid var(--line2); border-radius:14px; padding:12px;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
   .qmeta{display:flex; gap:8px; align-items:center;}
   .qtype{font-size:11px; font-weight:900; letter-spacing:2px; padding:3px 10px; border-radius:4px; color:#fdf9ee; background:#b23a2a; border:1px solid #8e2b1e;
@@ -269,7 +272,11 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .qprompt{font-weight:900; letter-spacing:2px; text-align:center; line-height:1.1; text-shadow:0 2px 16px rgba(14,124,156,.18);}
   .qprompt.qp-l{font-size:40px;} .qprompt.qp-m{font-size:30px;} .qprompt.qp-s{font-size:23px;}
   .qprompt.qp-mc{font-size:19px; letter-spacing:.5px; line-height:1.45; max-width:94%;}
-  .qopts{width:92%; display:grid; grid-template-columns:1fr 1fr; gap:7px;}
+  .qopts{width:92%; max-width:580px; display:grid; grid-template-columns:1fr; gap:8px; counter-reset:optn;}
+  .qopt::before{counter-increment:optn; content:counter(optn, upper-alpha); flex-shrink:0;
+    width:23px; height:23px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(180deg,#e7b93c,#c9971e); color:#1e2430; font-weight:900; font-size:12.5px;
+    border-radius:5px; border:1px solid #1e2430; box-shadow:inset 0 1px 0 rgba(255,255,255,.45);}
   .qopt{padding:10px 12px; border-radius:8px; background:linear-gradient(180deg,#2f77c2,#2560a6); border:2px solid #1e2430; border-left:2px solid #1e2430; position:relative; overflow:hidden; color:#fdf9ee;
     font-size:13.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:7px; transition:transform .08s, border-color .15s, filter .15s;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(20,40,70,.5), 0 2px 5px rgba(96,80,48,.25);}
@@ -322,7 +329,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   @keyframes flame3{0%,100%{text-shadow:0 0 14px rgba(192,57,43,.9), 0 -7px 16px rgba(255,159,67,.6), 0 2px 0 rgba(0,0,0,.85); transform:scale(1);}
     50%{text-shadow:0 0 26px rgba(192,57,43,1), 0 -12px 26px rgba(255,159,67,1), 0 2px 0 rgba(0,0,0,.85); transform:scale(1.06);}}
   @keyframes flick{from{transform:translateY(0) scale(1); opacity:.85;}to{transform:translateY(-3px) scale(1.2); opacity:1;}}
-  .fxon .qbox{background:linear-gradient(180deg, rgba(10,16,30,.62), rgba(8,13,24,.86)); border-color:transparent; border-top:1px solid rgba(14,124,156,.28); backdrop-filter:blur(3px);}
+  .fxon .qbox{border-color:transparent;}
   .fxon .rbtn{border-radius:8px;}
   .ricon{font-size:24px; line-height:1.05; filter:drop-shadow(0 0 6px rgba(14,124,156,.35));}
   /* ===== 符文机枢 · 程序化材质近似(圣经 §7.5;位图资产到位前的预览) ===== */
@@ -626,7 +633,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     .bdsub{font-size:13px;}
     .qopt{font-size:15px; padding:11px 12px;}
     #battle{padding:8px 10px; gap:7px;}
-    .scene{height:104px;}
+    .scene{min-height:96px;}
     .fighter{width:120px;}
     .pavatar,.core{width:46px; height:46px;} .pavatar{font-size:21px;} .core .glyph{font-size:18px;}
     .hpbar,.chargebar{width:92px;}
@@ -715,7 +722,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   /* ===== 矮屏压缩档:壳浏览器(微信等)视口矮,整体紧凑一档,保证不重叠不滚动 ===== */
   @media (max-height:800px){
     #battle{gap:5px; padding:8px 10px calc(8px + env(safe-area-inset-bottom));}
-    .scene{height:86px;} .fighter{width:118px;}
+    .scene{min-height:78px;} .fighter{width:118px;}
     .stat{padding:4px 5px;} .stat .v{font-size:15px;} .stat .k{font-size:8px;}
     .tierchips{min-height:15px;} .tc{font-size:9.5px; padding:1px 7px;}
     .qbox{gap:6px; padding:8px;}
@@ -768,7 +775,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.47</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.48</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -800,6 +807,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     </div>
 
     <div class="towerwrap">
+      <span class="davatar"><img src="art/jb-avatar-you.png" alt="" onerror="this.parentNode.style.display='none'"></span>
       <span class="dpill dyou">你</span>
       <div class="phpwrap"><div class="hpbar"><div class="hpfill" id="pHpFill"></div></div><div class="hpnum" id="pHpNum">100 / 100</div></div>
       <span class="vsmid">VS</span>
@@ -2103,6 +2111,8 @@ const FX = (function(){
     try{ document.fonts && document.fonts.load('16px Game'); }catch(e){}
     if(app){ requestAnimationFrame(()=>{ resize(); syncAnchor(); }); }
   }
+  // 视口变化(转屏/软键盘/缩放)时画布必须跟着走,否则锚点漂移立绘出画
+  window.addEventListener('resize', ()=>{ if(app) requestAnimationFrame(()=>{ resize(); syncAnchor(); }); });
   function resize(){
     const el=document.getElementById('pixiRoot');
     if(!app||!el) return;
@@ -2277,7 +2287,7 @@ const FX = (function(){
       if(fi!==foeImgSec && foeSprite){
         foeImgSec=fi; foeImgOk=false; foeSprite.visible=false;
         try{
-          const tex=PIXI.Texture.from('art/jb-foe-'+['sigma','omega','delta'][fi]+'.png');
+          const tex=PIXI.Texture.from('art/jb2-foe-'+['sigma','omega','delta'][fi]+'.png');
           foeSprite.texture=tex;
           const fit=()=>{ if(!tex.width||!foeSprite) return;
             foeImgOk=true; foeSprite.visible=true;
