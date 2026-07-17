@@ -152,7 +152,18 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .qpill{font-size:11.5px; color:var(--silver); background:rgba(30,36,48,.07); border:1px solid var(--line); padding:5px 12px; border-radius:20px;}
 
   /* arena */
-  .scene{width:100%; height:118px; position:relative; display:flex; align-items:center; justify-content:space-around; overflow:hidden;
+  #foeF{position:absolute; left:50%; top:0; height:100%; transform:translateX(-50%); width:230px; z-index:1;}
+  #youF{position:absolute; left:1.5%; top:4px; width:100px; z-index:2;}
+  .scene .vs{display:none;}
+  @media(min-width:720px){
+    #youF{align-items:flex-start;}
+    .buildrow{flex-direction:column; align-items:flex-start; max-width:112px;
+      background:linear-gradient(180deg,#fbf5e4,#f0e4c6); border:1px solid #a2946e; border-radius:6px;
+      padding:6px 8px 7px; box-shadow:0 3px 8px rgba(96,80,48,.22);}
+    .buildrow::before{content:'墨 宝'; font-size:10px; font-weight:900; letter-spacing:5px; color:#8a6f1e;
+      border-bottom:1px solid rgba(163,51,38,.3); padding-bottom:3px; margin-bottom:2px; width:100%;}
+  }
+  .scene{width:100%; height:150px; position:relative; display:flex; align-items:center; justify-content:space-around; overflow:hidden;
     background:radial-gradient(420px 160px at 72% 55%, color-mix(in srgb, var(--enemy) 18%, transparent), transparent 72%),
                radial-gradient(300px 140px at 22% 55%, rgba(14,124,156,.1), transparent 72%);
     border:1px solid var(--line); border-radius:14px; --enemy:var(--cyan);}
@@ -187,8 +198,16 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   @media(max-width:620px){ .jbanner{display:none;} }
   .vs{font-size:18px; font-weight:900; color:#c9971e; text-shadow:0 1px 0 #7a5c10, 0 -1px 0 rgba(255,252,240,.8), 0 0 16px rgba(201,151,30,.55); letter-spacing:1px;}
   /* 塔脉血池:贯穿全局的一条血,构筑成长的舞台 */
-  .towerwrap{width:100%; display:flex; align-items:center; gap:9px;}
-  .towerbar{flex:1; height:18px; background:#ded2b3; border:1px solid rgba(30,36,48,.25); border-radius:4px; overflow:hidden; position:relative; box-shadow:inset 0 2px 6px rgba(96,80,48,.35);}
+  .towerwrap{width:100%; display:flex; align-items:center; gap:7px;}
+  .dpill{font-size:11px; font-weight:900; letter-spacing:1px; padding:3px 9px; border-radius:5px; color:#fdf9ee; white-space:nowrap;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 1px 3px rgba(96,80,48,.3);}
+  .dpill.dyou{background:linear-gradient(180deg,#2f77c2,#2560a6); border:1px solid #1e2430;}
+  .dpill.dfoe{background:linear-gradient(180deg,#c74a38,#a33326); border:1px solid #1e2430;}
+  .vsmid{font-size:15px; font-weight:900; color:#c9971e; text-shadow:0 1px 0 #7a5c10, 0 -1px 0 rgba(255,252,240,.8);}
+  .towerwrap .phpwrap{flex:1; display:flex; flex-direction:column; gap:1px; min-width:0;}
+  .towerwrap .hpbar{width:100%; height:14px; background:#efe6cf; border:1px solid rgba(30,36,48,.25); border-radius:4px; overflow:hidden; box-shadow:inset 0 2px 5px rgba(96,80,48,.3);}
+  .towerwrap .hpnum{font-size:9px; color:var(--dim); letter-spacing:.5px; line-height:1.2; text-align:left;}
+  .towerbar{flex:1.5; transform:scaleX(-1); height:16px; background:#ded2b3; border:1px solid rgba(30,36,48,.25); border-radius:4px; overflow:hidden; position:relative; box-shadow:inset 0 2px 6px rgba(96,80,48,.35);}
   .towerbar::before{content:''; position:absolute; inset:0; z-index:2; pointer-events:none;
     background:repeating-linear-gradient(90deg, transparent 0, transparent calc(10% - 1px), rgba(30,36,48,.35) calc(10% - 1px), rgba(30,36,48,.35) 10%);}
   .towerfill{height:100%; width:100%; background:linear-gradient(90deg,#7a2038,var(--red) 40%,var(--gold)); transition:width .35s cubic-bezier(.2,.8,.2,1); box-shadow:0 0 14px rgba(192,57,43,.4);}
@@ -202,7 +221,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .tnotch{position:absolute; top:-2px; bottom:-2px; width:2px; background:rgba(30,36,48,.45); box-shadow:0 0 6px rgba(30,36,48,.3);}
   .towernum{font-family:'Game',sans-serif; font-size:13px; color:var(--gold); min-width:46px; text-align:right; text-shadow:0 0 10px rgba(201,151,30,.4);}
   .hpbar{width:110px; height:7px; background:#ded2b3; border:1px solid var(--line); border-radius:4px; overflow:hidden;}
-  .hpfill{height:100%; background:linear-gradient(90deg,#2fae6d,#2f9e63); width:100%; transition:width .2s;}
+  .hpfill{height:100%; background:linear-gradient(90deg,#39b7c9,#2f6bb5); width:100%; transition:width .2s;}
   .hpfill.low{background:linear-gradient(90deg,#c22f4a,var(--red));}
   .chargebar{width:110px; height:5px; background:#ded2b3; border:1px solid var(--line); border-radius:4px; overflow:hidden;}
   .chargefill{height:100%; background:linear-gradient(90deg,#7a2038,var(--red)); width:0%;}
@@ -228,7 +247,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   @keyframes vbump{0%{transform:skewX(8deg) scale(1);}40%{transform:skewX(8deg) scale(1.35);}100%{transform:skewX(8deg) scale(1);}}
   .stat .k{font-size:9.5px; color:var(--dim); letter-spacing:1.5px; margin-top:2px;}
   .stat.combo .v{color:var(--cyan);} .stat.energy .v{color:var(--gold);} .stat.over .v{color:var(--purple);} .stat.imm .v{color:var(--green);}
-  .stat.combo{border-left-color:var(--cyan);} .stat.imm{border-left-color:var(--green);} .stat.energy{border-left-color:var(--gold);} .stat.over{border-left-color:var(--purple);}
+  .stat.combo{border-left-color:var(--cyan);} .stat.combo.c2,.stat.combo.c3{border-color:#e0552a; box-shadow:0 0 12px rgba(224,85,42,.35);} .stat.imm{border-left-color:var(--green);} .stat.energy{border-left-color:var(--gold);} .stat.over{border-left-color:var(--purple);}
   .energybar{height:6px; background:#ded2b3; border-radius:4px; margin-top:5px; overflow:hidden; position:relative;}
   .energyfill{height:100%; background:linear-gradient(90deg,var(--gold),var(--red)); width:0%; transition:width .25s; box-shadow:0 0 10px rgba(201,151,30,.6);}
   .energybar .gmark{position:absolute; top:-1px; bottom:-1px; width:2px; background:rgba(30,36,48,.40);}
@@ -285,7 +304,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   #pixiRoot canvas{position:absolute; inset:0; width:100%; height:100%;}
   .topbar,.towerwrap,.scene,.hud,.tierchips,.trialbar,.qbox,.releases,#keypad{position:relative; z-index:1;}   /* 只提流内元素;banner/toast/vsplash 等浮层保持各自定位 */
   .fxon .core{opacity:0;}
-  .fxon .pavatar, .fxon .fighter .hpbar, .fxon .hpnum{visibility:hidden;}
+  .fxon .pavatar{visibility:hidden;}
   .fxon .chargebar{opacity:0;}
   .fxon .scene{background:transparent; border-color:transparent;}
   .fxon .hud .stat{background:transparent; border-color:transparent;}
@@ -332,8 +351,8 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     background:none !important; box-shadow:none !important; font-size:25px; margin:0; line-height:1; }
   .rbtn .kbd{ position:absolute !important; left:9px !important; top:7px !important; z-index:3; }
   .rbtn::before{ content:''; position:absolute; left:44px; top:50%; transform:translate(-50%,-50%); width:46px; height:46px; border-radius:50%;
-    background:radial-gradient(circle at 42% 35%, #fdf9ee, #e6dcc2 72%);
-    box-shadow:inset 0 0 0 2px rgba(30,36,48,.30), inset 0 -5px 9px rgba(96,80,48,.28); z-index:1; pointer-events:none; }
+    border-radius:11px; background:radial-gradient(circle at 42% 35%, #eaf4fb, #bcd7ee 72%);
+    box-shadow:inset 0 0 0 2px #2a5fa3, inset 0 -5px 9px rgba(47,107,181,.3); z-index:1; pointer-events:none; }
   .rbtn::after{ z-index:0; }
   .rbtn .ricon{ font-size:28px !important; filter:drop-shadow(0 1px 2px rgba(30,36,48,.35)); }
   .rbtn .rfill{ opacity:.22; }
@@ -749,7 +768,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.45</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.46</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -781,7 +800,11 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     </div>
 
     <div class="towerwrap">
+      <span class="dpill dyou">你</span>
+      <div class="phpwrap"><div class="hpbar"><div class="hpfill" id="pHpFill"></div></div><div class="hpnum" id="pHpNum">100 / 100</div></div>
+      <span class="vsmid">VS</span>
       <div class="towerbar"><div class="towerghost" id="towerGhost"></div><div class="towerfill" id="towerFill"></div><div class="tnotch" id="tn1"></div><div class="tnotch" id="tn2"></div></div>
+      <span class="dpill dfoe" id="dFoePill">守门者</span>
       <div class="towernum" id="towerNum">1060</div>
       <div class="draftpips" id="draftPips"></div>
     </div>
@@ -795,8 +818,6 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <div class="jbanner r" aria-hidden="true">回避</div>
       <div class="fighter" id="youF">
         <div class="pavatar" id="pAvatar">◆</div>
-        <div class="hpbar"><div class="hpfill" id="pHpFill"></div></div>
-        <div class="hpnum" id="pHpNum">100 / 100</div>
         <div class="buildrow" id="buildRow"></div>
       </div>
       <div class="vs">VS</div>
@@ -2094,8 +2115,8 @@ const FX = (function(){
     const br=f.getBoundingClientRect(), rr=rt.getBoundingClientRect();
     if(br.width===0) return;
     anchor.x = br.left-rr.left+br.width/2;
-    anchor.y = br.top-rr.top+Math.min(64, br.height*0.5);
-    anchor.r = Math.min(52, Math.max(26, Math.min(br.width*0.24, br.height*0.42)));   // 矮场景按高度封顶,别压 HUD
+    anchor.y = br.top-rr.top+Math.min(88, br.height*0.5);
+    anchor.r = Math.min(76, Math.max(26, Math.min(br.width*0.3, br.height*0.42)));   // 矮场景按高度封顶,别压 HUD
     const yf=document.getElementById('youF');
     if(yf && yf.getBoundingClientRect){ const yr=yf.getBoundingClientRect();
       if(yr.width>0){ anchorY.x=yr.left-rr.left+yr.width/2; anchorY.y=yr.top-rr.top+Math.min(58, yr.height*0.45); anchorY.r=Math.min(38, Math.max(22, Math.min(yr.width*0.18, yr.height*0.36))); } }
