@@ -768,7 +768,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.46</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.47</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -2189,7 +2189,7 @@ const FX = (function(){
     gridG=new PIXI.Graphics(); envC.addChild(gridG);
     // 内容层:手绘背景垫底+暗罩(渐进增强);就位后程序化旧景全退场,只留位图+余烬
     try{
-      const tex=PIXI.Texture.from('art/jb-bg-gate'+((typeof ENDLESS!=='undefined'&&ENDLESS)?((sec-1)%3)+1:Math.min(sec,3))+'.jpg');
+      const tex=PIXI.Texture.from('art/jb-yamen-gate'+((typeof ENDLESS!=='undefined'&&ENDLESS)?((sec-1)%3)+1:Math.min(sec,3))+'.jpg');
       bgS=new PIXI.Sprite(tex); bgS.anchor.set(0.5); bgS.alpha=1;
       const shade=new PIXI.Graphics();
       shade.beginFill(0xf6f0e2,0.42).drawRect(0,0,W,H).endFill();
@@ -3248,7 +3248,7 @@ function beginSection(){
     vsEl.style.background =
       `radial-gradient(ellipse at 50% 40%, ${gc}26, transparent 58%),`+
       `linear-gradient(180deg, rgba(242,235,217,.62), rgba(242,235,217,.5) 45%, #e8dfc8 96%),`+
-      `url('art/jb-bg-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #e8dfc8`;
+      `url('art/jb-yamen-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #e8dfc8`;
   }
   document.getElementById('vsName').textContent = E.name;
   document.getElementById('vsQuote').textContent = `「${E.lines.intro}」`;
@@ -3992,7 +3992,7 @@ function sectionWin(){
     document.getElementById('secres').style.background =
       `radial-gradient(ellipse at 50% 10%, rgba(201,151,30,.14), transparent 52%),`+
       `linear-gradient(180deg, rgba(242,235,217,.72), rgba(242,235,217,.84) 60%, #e8dfc8),`+
-      `url('art/jb-bg-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #e8dfc8`;
+      `url('art/jb-yamen-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #e8dfc8`;
     document.getElementById('secresQuote').textContent = `${E.glyph}「${E.lines.defeat}」`;
   }
   const row=document.getElementById('secresRow'); row.innerHTML='';
@@ -4116,7 +4116,7 @@ function finishRun(defeat){
     document.getElementById('final').style.background =
       `radial-gradient(ellipse at 50% 8%, ${wash}, transparent 55%),`+
       `linear-gradient(180deg, rgba(242,235,217,.76), rgba(242,235,217,.88) 60%, #e8dfc8),`+
-      `url('art/jb-bg-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #e8dfc8`;
+      `url('art/jb-yamen-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #e8dfc8`;
   }
   document.getElementById('finalTitle').textContent = VERSUS
     ? (defeat ? `💀 竞速失利 · 对面先破塔(你方打了 ${Math.round((E?E.total-E.hp:0)/(E?E.total:1)*100)}%)` : `🏆 竞速胜利 · ${VERSUS.mode} 先破一步`)
