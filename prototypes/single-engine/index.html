@@ -567,6 +567,13 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     background:rgba(4,6,12,.55); text-shadow:0 1px 4px rgba(0,0,0,.9);}
   .vsplash.play{pointer-events:auto; cursor:pointer;}
   .vskip{position:absolute; bottom:18px; font-size:11px; color:var(--dim); letter-spacing:2px; opacity:.7;}
+  .chalbanner{font-size:14px; font-weight:800; color:#b23a2a; background:linear-gradient(180deg,#fbf5e4,#f6ecd2);
+    border:2px solid #b23a2a; border-radius:12px; padding:12px 22px; text-align:center; line-height:1.6;
+    box-shadow:0 4px 14px rgba(96,80,48,.25);}
+  .shareov{position:fixed; inset:0; z-index:90; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
+    background:rgba(42,35,24,.55); backdrop-filter:blur(3px);}
+  .shareov img{max-width:min(78vw,420px); max-height:76vh; border-radius:10px; box-shadow:0 18px 60px rgba(0,0,0,.45);}
+  .sharehint{font-size:12.5px; color:#fdf9ee; letter-spacing:1px; text-shadow:0 1px 4px rgba(0,0,0,.6);}
   .bestline{font-size:12.5px; color:var(--gold); letter-spacing:1px; border:1px solid rgba(201,151,30,.3); padding:4px 16px; border-radius:20px; background:rgba(201,151,30,.06);}
 
   /* 连击喝彩分级(鬼泣式) */
@@ -771,6 +778,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="modebtn" data-m="mid" onclick="setMode('mid')">📜 乡试<span>学有所成</span></button>
       <button class="modebtn" data-m="hard" onclick="setMode('hard')">🏮 殿试<span>问鼎文魁</span></button>
     </div>
+    <div class="chalbanner hidden" id="chalBanner"></div>
     <button id="resumeBtn" class="btn ghost hidden" style="padding:9px 26px; font-size:14px; border-color:rgba(47,158,99,.5); color:var(--green);" onclick="resumeRun()">▶ 继续上一局</button>
     <button class="btn cta" onclick="startRun()">⚔ 挑 战 开 始</button>
     <div style="display:flex; gap:9px; flex-wrap:wrap; justify-content:center;">
@@ -780,7 +788,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.51</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.52</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -937,6 +945,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   <div id="final" class="screen hidden">
     <h1 id="finalTitle" style="font-size:26px; letter-spacing:3px;">放 榜</h1>
     <div class="highlight hidden" id="highlightLine"></div>
+    <div class="highlight hidden" id="chalLine"></div>
     <div class="deathline hidden" id="deathLine"></div>
     <div class="sub hidden" id="finalNotes"></div>
     <div class="gradewrap">
@@ -952,10 +961,18 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     <div class="hexlist" id="finalHexes"></div>
     <div class="missedbonds" id="missedBonds"></div>
     <button class="btn" onclick="startRun()">⚔ 再 来 一 局</button>
+    <div style="display:flex; gap:9px;">
+      <button class="btn ghost" onclick="openShareCard()">📜 战报卡</button>
+      <button class="btn ghost" id="chalCopyBtn" onclick="copyChalLink(this)">⚔ 复制挑战链接</button>
+    </div>
     <button class="btn ghost" style="padding:8px 20px; font-size:12px;" onclick="location.reload()">回标题</button>
     <button class="btn ghost devbtn hidden" id="devBtn" style="padding:7px 18px; font-size:12px;" onclick="document.getElementById('telem').classList.toggle('hidden')">开发数据 §13</button>
     <script>if(location.search.includes('dev')) setTimeout(()=>{const b=document.getElementById('devBtn'); if(b) b.classList.remove('hidden');},0);</script>
     <div class="telem hidden" id="telem"></div>
+  </div>
+  <div class="shareov hidden" id="shareOverlay" onclick="this.classList.add('hidden')">
+    <img id="shareImg" alt="战报卡">
+    <div class="sharehint">长按图片保存/转发 · 点空白处关闭</div>
   </div>
 
 </div>
@@ -3160,19 +3177,26 @@ function smallEnabled(){ return !has('h10'); }
 function benchmark(type,diff){ let b=BENCH[type][diff]*((MODES[MODE]||MODES.hard).timeMul); if(diff==='hard' && has('h05')) b*=1.5; return b; }
 
 /* ============================== 题目系统 (§4) ============================== */
-function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+// ── 命运骰(kill-list #5):每局种子化,Q流出题/D流发牌;挑战局用同一种子=同运对决 ──
+let RNG=null, RNG_Q=null, RNG_D=null;
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function rand(){ return RNG ? RNG() : Math.random(); }
+function rnd(a,b){ return Math.floor(rand()*(b-a+1))+a; }
 function pick(arr){ return arr[rnd(0,arr.length-1)]; }
 
 function genQuestion(section, forceDiff){
-  const mix = (MODE_MIX[MODE]||MODE_MIX.hard)[Math.min(Math.max(section,1)-1,2)];
-  const r = Math.random();
-  const diff = forceDiff ? modeCapDiff(forceDiff) : (r<mix[0] ? 'easy' : r<mix[0]+mix[1] ? 'medium' : 'hard');
-  const subj = pick(activeSubjects());
-  if(subj !== 'math'){
-    const mc = genBankQuestion(subj, diff);
-    if(mc) return mc;   // 该科题量耗尽则回落数学
-  }
-  return genMath(diff);
+  RNG = RNG_Q;   // 出题走 Q 流(种子化)
+  try{
+    const mix = (MODE_MIX[MODE]||MODE_MIX.hard)[Math.min(Math.max(section,1)-1,2)];
+    const r = rand();
+    const diff = forceDiff ? modeCapDiff(forceDiff) : (r<mix[0] ? 'easy' : r<mix[0]+mix[1] ? 'medium' : 'hard');
+    const subj = pick(activeSubjects());
+    if(subj !== 'math'){
+      const mc = genBankQuestion(subj, diff);
+      if(mc) return mc;   // 该科题量耗尽则回落数学
+    }
+    return genMath(diff);
+  } finally { RNG = null; }
 }
 function genBankQuestion(subj, diff){
   const bank = BANK[subj];
@@ -3442,6 +3466,11 @@ function addQuestionTime(ms){   // 偷秒:给当前题加时,计时条与超时�
 
 /* ============================== 局流程 ============================== */
 let RUNS=0; try{ RUNS = Number(localStorage.getItem('ba_runs')||0); }catch(e){}
+// 挑战链接:?ch=<seed36>&m=<mode>&s=<score>(kill-list #5 同运对决)
+let CHAL=null, PENDING_CHAL=false;
+try{ const u=new URLSearchParams(location.search); const c=u.get('ch');
+  if(c) CHAL={ seed:(parseInt(c,36)||0)>>>0, m:u.get('m')||'mid', s:Number(u.get('s')||0) };
+}catch(e){}
 // 跨局出题去重(kill-list #2):LRU 容量≈全库 80%,近程不重复;池干时才允许回流
 let SEENQ=[]; try{ SEENQ = JSON.parse(localStorage.getItem('ba_seenq')||'[]'); }catch(e){}
 const SEENQ_SET = new Set(SEENQ);
@@ -3461,7 +3490,7 @@ function saveRun(){   // 断线续局:安全点快照(新题起点/选卡后/过
   try{
     const snap={ ver:2, mode:MODE, endless:ENDLESS, at:Date.now(),
       R:{ section:R.section, qInSection:R.qInSection, fightMs:R.fightMs, draftIdx:R.draftIdx, draftAt:R.draftAt,
-          usedQ:[...R.usedQ], lucky:R.lucky, _poolDry:!!R._poolDry, _tierByRound:R._tierByRound, results:R.results },
+          seed:R.seed, chal:R.chal||null, usedQ:[...R.usedQ], lucky:R.lucky, _poolDry:!!R._poolDry, _tierByRound:R._tierByRound, results:R.results },
       P:{ ...P, hexes:P.hexes.map(h=>h.id), judge:null },
       E:{ hp:E.hp, total:E.total, thresholds:E.thresholds, phase2:!!E.phase2 },
       T:{ ...telem },
@@ -3488,7 +3517,7 @@ function resumeRun(){
     show('battle'); FX.ensure();
     beginSection();
     Object.assign(R, { qInSection:snap.R.qInSection, fightMs:snap.R.fightMs, draftIdx:snap.R.draftIdx,
-      draftAt:snap.R.draftAt, usedQ:new Set(snap.R.usedQ||[]), _poolDry:!!snap.R._poolDry,
+      seed:snap.R.seed>>>0, chal:snap.R.chal||null, draftAt:snap.R.draftAt, usedQ:new Set(snap.R.usedQ||[]), _poolDry:!!snap.R._poolDry,
       _tierByRound:snap.R._tierByRound||{}, results:snap.R.results||[] });
     if(E && snap.E){ Object.assign(E, { hp:snap.E.hp, total:snap.E.total, thresholds:snap.E.thresholds||E.thresholds, phase2:!!snap.E.phase2 }); E.phaseStartHp=E.hp; }
     renderBuild(); updateHUD(); updateSceneUI();
@@ -3508,12 +3537,17 @@ function startRun(mode){
   document.getElementById('bDraft').classList.remove('lucky');
   document.getElementById('secDraft').classList.remove('lucky');
   readTuner(); freshRun();
+  // 播命运骰:挑战局用对方种子,常规局随机
+  if(PENDING_CHAL && CHAL){ R.seed=CHAL.seed>>>0; R.chal=CHAL; PENDING_CHAL=false; }
+  else R.seed=(Math.random()*0xffffffff)>>>0;
+  RNG_Q=mulberry32(R.seed); RNG_D=mulberry32((R.seed^0x9E3779B9)>>>0);
   if(ENDLESS) R.draftAt=[0,30000];   // 无尽:开宗立派+30s 教学窗;之后每关打完发一班(sectionWin)
   if(mode==='vs1' || mode==='vs3'){   // 竞速对战:短局三班牌,bot 强度跟难度档
     VERSUS = { mode: mode==='vs1'?'1v1':'3v3', over:false, foeProgress:0, lastSpecial:0,
       tier: BOT_TIERS[MODE]||BOT_TIERS.hard,
       mates: mode==='vs3' ? [mkBot('小心','心'), mkBot('大脑','脑')] : [],
       foes: mode==='vs3' ? [mkBot('石头脑袋','手'), mkBot('闪电手','脑'), mkBot('夜猫子','心')] : [mkBot('影答者','手')] };
+  RNG_Q=mulberry32(R.seed||((Math.random()*0xffffffff)>>>0)); RNG_D=mulberry32(((R.seed||0)^0x9E3779B9)>>>0);   // 续局重播命运骰(流位置不保,后续可分叉)
     R.draftAt=[0,30000,75000];
   }
   try{ const w=document.getElementById('vsWrap'); if(w) w.classList.toggle('hidden', !VERSUS); }catch(e){}
@@ -3559,6 +3593,7 @@ function weightedDraw(pool, n, wfn){
   return picks;
 }
 function rollOffer(roundIdx){
+  RNG = RNG_D;   // 发牌走 D 流(种子化)
   let picks=[];
   R._offerRar = null;
   if(roundIdx===0){   // 开宗立派:2 技能(1轻1重)+ 2 成长,尽量异系
@@ -3618,6 +3653,7 @@ function rollOffer(roundIdx){
   if(picks.some(h=>h.cat==='升级')){ R._upSeen=true; setPity(0); }   // 出现过即清(拿不拿都算)
   R._offer = picks;
   lastOfferIds = picks.map(x=>x.id);
+  RNG = null;
   return picks;
 }
 /* ============================== 发牌渲染(战斗覆盖层 + 过关补给共用) ============================== */
@@ -4712,6 +4748,12 @@ function calcScore(){
 function gradeOf(score){ return score>=4400?'S' : score>=3300?'A' : score>=2000?'B' : score>=900?'C' : 'D'; }
 
 function finishRun(defeat){
+  try{ const L=JSON.parse(localStorage.getItem('ba_life')||'{}');   // 生涯账本(kill-list #3)
+    L.runs=(L.runs||0)+1; L.correct=(L.correct||0)+(telem.correct||0);
+    L.maxCombo=Math.max(L.maxCombo||0, telem.maxCombo||0); L.maxHit=Math.max(L.maxHit||0, telem.maxHit||0);
+    if(!defeat && !ENDLESS && !VERSUS) L.wins=(L.wins||0)+1;
+    localStorage.setItem('ba_life', JSON.stringify(L)); window._life=L;
+  }catch(e){}
   if(ENDLESS){
     try{
       const best=parseInt(localStorage.getItem('ba_best_endless')||'0',10);
@@ -4768,6 +4810,7 @@ function finishRun(defeat){
       if(telem.correct>=8) cands.push({v:telem.correct*60, t:`✍ 本场高光:答对 ${telem.correct} 题`});
       if(cands.length){ cands.sort((a,b)=>b.v-a.v); hl.textContent=cands[0].t; hl.classList.remove('hidden'); }
       else hl.classList.add('hidden'); } }
+  window._lastExam = examName;
   // 死因链(归因给可修正的自己)+ 近失差距(≤30% 才拍脸)
   const dl=document.getElementById('deathLine');
   if(defeat && E){
@@ -4802,6 +4845,12 @@ function finishRun(defeat){
   // 得分 + 评级 + 纪录
   const score = calcScore();
   const g = gradeOf(score);
+  window._lastScore = score; window._lastGrade = g;
+  { const cl=document.getElementById('chalLine');   // 挑战对比(kill-list #5)
+    if(cl){ if(R.chal && R.chal.s>0){ const dv=score-R.chal.s;
+      cl.textContent = dv>0 ? `⚔ 挑战成功!胜过对方 ${dv.toLocaleString()} 分` : dv===0 ? '⚔ 平手!同分收官' : `⚔ 差对方 ${Math.abs(dv).toLocaleString()} 分,不服再来`;
+      cl.classList.remove('hidden');
+    } else cl.classList.add('hidden'); } }
   const gb=document.getElementById('gradeBox');
   if(RUNS===1 && (g==='C'||g==='D')){   // 首局不处刑(kill-list #1):起点定级,不盖差评戳
     gb.innerHTML = `初<span class="gradeflavor">起点已定 · 从这里赶考</span>`; gb.className='grade B';
@@ -5316,12 +5365,66 @@ document.getElementById('vsplash').addEventListener('click', ()=>{
   document.getElementById('vsplash').classList.remove('play');
   const f=vsStarter; vsStarter=null; f();
 });
+
+/* ============ 战报卡 + 挑战链接(kill-list #4/#5:分享率15%生死线载体) ============ */
+function evPing(ev){ try{ fetch('https://socialarb.tail6880a0.ts.net/game/log',{method:'POST',mode:'cors',keepalive:true,
+  headers:{'content-type':'text/plain'}, body:JSON.stringify({_ev:ev, mode:MODE, at:Date.now()})}).catch(()=>{}); }catch(e){} }
+function chalUrl(){ return location.origin+location.pathname+`?ch=${((R&&R.seed)>>>0).toString(36)}&m=${MODE}&s=${window._lastScore||0}`; }
+function copyChalLink(btn){ const url=chalUrl();
+  const done=()=>{ if(btn){ btn.textContent='✅ 已复制,发给对手'; setTimeout(()=>{btn.textContent='⚔ 复制挑战链接';},2600);} evPing('share_link'); };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done).catch(()=>{ window.prompt('复制这个链接发给对手:', url); done(); });
+  else { window.prompt('复制这个链接发给对手:', url); done(); } }
+function _wrapText(x, txt, cx, y, maxW, lh, maxLines){
+  const chars=[...String(txt||'')]; let line='', lines=[];
+  for(const ch of chars){ if(x.measureText(line+ch).width>maxW){ lines.push(line); line=ch; if(lines.length>=maxLines){ line+='…'; break; } } else line+=ch; }
+  if(line) lines.push(line);
+  lines.slice(0,maxLines).forEach((l,i)=>x.fillText(l, cx, y+i*lh));
+  return y+Math.min(lines.length,maxLines)*lh;
+}
+function openShareCard(){
+  const c=document.createElement('canvas'); c.width=720; c.height=1040; const x=c.getContext('2d');
+  x.fillStyle='#f2ebd9'; x.fillRect(0,0,720,1040);
+  x.strokeStyle='#c9971e'; x.lineWidth=7; x.strokeRect(20,20,680,1000);
+  x.strokeStyle='rgba(201,151,30,.45)'; x.lineWidth=2; x.strokeRect(34,34,652,972);
+  x.textAlign='center'; x.fillStyle='#1e2430';
+  x.font='900 58px "PingFang SC","Microsoft YaHei",sans-serif'; x.fillText('放 榜', 360, 118);
+  x.fillStyle='#a8790f'; x.font='800 28px "PingFang SC",sans-serif';
+  x.fillText(`${window._lastExam||''} · 脑力竞技`, 360, 166);
+  x.fillStyle='#b23a2a'; x.font='900 168px "PingFang SC",sans-serif';
+  x.fillText(String(window._lastGrade||'?'), 360, 372);
+  x.fillStyle='#1e2430'; x.font='900 52px "PingFang SC",sans-serif';
+  x.fillText(`${(window._lastScore||0).toLocaleString()} 分`, 360, 452);
+  x.font='800 27px "PingFang SC",sans-serif'; x.fillStyle='#a8790f';
+  let yy=520; const hl=document.getElementById('highlightLine');
+  if(hl && !hl.classList.contains('hidden')) yy=_wrapText(x, hl.textContent, 360, yy, 600, 40, 2)+8;
+  const dl=document.getElementById('deathLine');
+  if(dl && !dl.classList.contains('hidden') && dl.textContent){ x.fillStyle='#6e6350'; x.font='700 24px "PingFang SC",sans-serif';
+    yy=_wrapText(x, dl.textContent, 360, yy+16, 600, 36, 3)+6; }
+  x.fillStyle='#1e2430'; x.font='800 26px "PingFang SC",sans-serif';
+  x.fillText('同一把命运骰 · 你能比我走得远吗?', 360, 926);
+  x.fillStyle='#8a7d63'; x.font='700 22px "PingFang SC",sans-serif';
+  x.fillText('socialarb.tail6880a0.ts.net/game', 360, 964);
+  const img=document.getElementById('shareImg'); img.src=c.toDataURL('image/png');
+  document.getElementById('shareOverlay').classList.remove('hidden'); evPing('share_card');
+}
+function acceptChal(){ if(!CHAL) return; PENDING_CHAL=true;
+  try{ setMode(MODES[CHAL.m]?CHAL.m:'mid'); }catch(e){}
+  evPing('chal_accept'); startRun(); }
+(()=>{ if(!CHAL) return; try{ const cb=document.getElementById('chalBanner'); if(!cb) return;
+  cb.innerHTML = `⚔ 好友下战书 · ${(MODES[CHAL.m]||MODES.mid).label} · 对方 ${Number(CHAL.s||0).toLocaleString()} 分` +
+    `<br><button class="btn" style="margin-top:9px; padding:11px 36px;" onclick="acceptChal()">同一把命运骰 · 应 战</button>`;
+  cb.classList.remove('hidden'); evPing('chal_view'); }catch(e){} })();
 // 标题屏显示历史最高(进度感钩子)
 (()=>{ try{
   const b=Number(localStorage.getItem('ba_best')||0);
   if(b>0){ const el=document.getElementById('bestLine');
     el.textContent=`🏅 最高纪录 ${b.toLocaleString()} · ${GRADE_FLAVOR[gradeOf(b)]}`;
     el.classList.remove('hidden'); }
+  const L=JSON.parse(localStorage.getItem('ba_life')||'{}');   // 生涯纪录墙(kill-list #3)
+  if(L.correct>0){ const el2=document.getElementById('bestLine');
+    const eb=Number(localStorage.getItem('ba_best_endless')||0);
+    el2.textContent += `${el2.textContent?' · ':''}✍ 生涯答对 ${L.correct}${L.maxCombo>=5?` · 🔥最高${L.maxCombo}连`:''}${eb>0?` · ♾第${eb}关`:''}`;
+    el2.classList.remove('hidden'); }
 }catch(e){} })();
 // 音频需要用户手势解锁(iOS/Chrome autoplay 策略)
 document.addEventListener('pointerdown', ()=>{ const c=au(); if(c && c.state==='suspended') c.resume(); }, {once:true});
