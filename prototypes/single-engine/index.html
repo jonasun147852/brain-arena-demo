@@ -682,12 +682,12 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
 /* 结算/战报屏:内容超高(过关补给/多行战报)时可滚动,顶对齐防居中裁切 */
 #secres, #final{ overflow-y:auto; justify-content:flex-start; padding-top:3vh; padding-bottom:5vh; }
 .card.r-awaken{ border-color:#c9971e; box-shadow:0 0 18px rgba(201,151,30,.25); }
-.card.r-silver{ background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-silver.png') center/cover !important; }
-.card.r-gold{ background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-gold.png') center/cover !important; animation:goldbreathe 2.6s ease-in-out infinite; }
-.card.r-prism{ background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-prism.png') center/cover !important; }
+.card.r-silver{ background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-silver.jpg') center/cover !important; }
+.card.r-gold{ background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-gold.jpg') center/cover !important; animation:goldbreathe 2.6s ease-in-out infinite; }
+.card.r-prism{ background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-prism.jpg') center/cover !important; }
 @keyframes goldbreathe{0%,100%{box-shadow:0 0 10px rgba(201,151,30,.12);}50%{box-shadow:0 0 22px rgba(201,151,30,.34);}}
 .card.r-id{ border-color:rgba(14,124,156,.55); box-shadow:0 0 22px rgba(14,124,156,.14);
-  background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-silver.png') center/cover !important; }
+  background:linear-gradient(rgba(250,246,234,.38),rgba(250,246,234,.62)), url('art/jb-ui-cardbg-silver.jpg') center/cover !important; }
 .rarbadge.id{ color:var(--cyan); border:1px solid rgba(14,124,156,.5); background:rgba(14,124,156,.08); }
 .card.r-prism{ position:relative; }
 .card.r-prism::before{content:''; position:absolute; inset:-2px; border-radius:inherit; padding:2px; pointer-events:none;
@@ -775,7 +775,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.48</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.49</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
