@@ -214,14 +214,16 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .vs{font-size:18px; font-weight:900; color:#c9971e; text-shadow:0 1px 0 #7a5c10, 0 -1px 0 rgba(255,252,240,.8), 0 0 16px rgba(201,151,30,.55); letter-spacing:1px;}
   /* 塔脉血池:贯穿全局的一条血,构筑成长的舞台 */
   .towerwrap{width:100%; display:flex; align-items:center; gap:7px;}
-  .davatar{width:32px; height:32px; border-radius:9px; overflow:hidden; border:2px solid #1e2430; background:#dfeaf5;
+  .davatar{width:34px; height:34px; border-radius:50%; position:relative; overflow:visible; border:none; background:#dfeaf5;
     box-shadow:0 1px 3px rgba(96,80,48,.35); flex-shrink:0;}
-  .davatar img{width:100%; height:100%; object-fit:cover; display:block;}
+  .davatar img{width:100%; height:100%; object-fit:cover; display:block; border-radius:50%;}
+  .davatar::after{content:''; position:absolute; inset:-5px; background:url('art/wqui-avatar.png') center/100% 100% no-repeat; pointer-events:none;}
   .dpill{font-size:11px; font-weight:900; letter-spacing:1px; padding:3px 9px; border-radius:5px; color:#fdf9ee; white-space:nowrap;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 1px 3px rgba(96,80,48,.3);}
   .dpill.dyou{background:linear-gradient(180deg,#2f77c2,#2560a6); border:1px solid #1e2430;}
   .dpill.dfoe{background:linear-gradient(180deg,#c74a38,#a33326); border:1px solid #1e2430;}
   .vsmid{font-size:15px; font-weight:900; color:#c9971e; text-shadow:0 1px 0 #7a5c10, 0 -1px 0 rgba(255,252,240,.8);}
+  .vsmid img{height:34px; display:block; filter:drop-shadow(0 1px 3px rgba(96,80,48,.4));}
   .towerwrap .phpwrap{flex:1; display:flex; flex-direction:column; gap:1px; min-width:0;}
   .towerwrap .hpbar{width:100%; height:14px; background:#efe6cf; border:1px solid rgba(30,36,48,.25); border-radius:4px; overflow:hidden; box-shadow:inset 0 2px 5px rgba(96,80,48,.3);}
   .towerwrap .hpnum{font-size:9px; color:var(--dim); letter-spacing:.5px; line-height:1.2; text-align:left;}
@@ -249,11 +251,11 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .st.stun{color:var(--gold);} .st.slow{color:var(--cyan);} .st.enr{color:var(--red);}
   .floattext{position:absolute; font-weight:900; pointer-events:none; animation:floatup .95s cubic-bezier(.2,.7,.3,1) forwards; text-shadow:0 1px 6px rgba(255,252,240,.85), 0 0 12px currentColor; white-space:nowrap; z-index:3;}
   /* ── 文曲·文气层:静者为纸,动者为电;发光只授语义色(青己方/橙连击/红橙危险/金瞬时) ── */
-  .qopt{box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(20,40,70,.5), 0 2px 5px rgba(96,80,48,.25), 0 0 9px rgba(14,124,156,.22);}
-  .qopt:active{box-shadow:0 0 18px rgba(14,124,156,.6), inset 0 1px 0 rgba(255,255,255,.28); transition:box-shadow .08s;}
+  .qopt{filter:drop-shadow(0 2px 4px rgba(96,80,48,.3)) drop-shadow(0 0 6px rgba(14,124,156,.18));}
+  .qopt:active{filter:drop-shadow(0 0 14px rgba(14,124,156,.75)) brightness(1.15); transition:filter .08s;}
   /* ── 三时辰:同一 UI 同一布局同一背景,只换光 ── */
-  .wq-dusk .qopt{box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(20,40,70,.5), 0 2px 5px rgba(96,80,48,.3), 0 0 13px rgba(14,124,156,.32);}
-  .wq-night .qopt{box-shadow:inset 0 1px 0 rgba(255,255,255,.24), inset 0 -2px 0 rgba(10,24,50,.6), 0 2px 6px rgba(0,0,0,.4), 0 0 18px rgba(63,205,235,.4);}
+  .wq-dusk .qopt{filter:drop-shadow(0 2px 4px rgba(60,40,20,.4)) drop-shadow(0 0 9px rgba(14,124,156,.3));}
+  .wq-night .qopt{filter:drop-shadow(0 2px 5px rgba(0,0,0,.5)) drop-shadow(0 0 12px rgba(63,205,235,.45));}
   .wq-night .topbar, .wq-night .topbar .sec, .wq-night .qpill{color:#e6e0cc;}
   .wq-night .qpill{background:rgba(230,224,204,.1); border-color:rgba(230,224,204,.3);}
   .wq-night .stat .k{color:#b8b09a;}
@@ -263,11 +265,23 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .wq-night .jbanner{opacity:.92;}
   .wq-night #battle, .wq-night .scene{}
   .wq-dusk .stat .k{color:#7a6a50;}
+  .qbox{position:relative;}
+  .fxon .qbox::after{content:''; position:absolute; top:-1px; left:5%; right:5%; height:3px; pointer-events:none;
+    background:linear-gradient(90deg,transparent,rgba(63,205,235,.8),transparent) no-repeat; background-size:26% 100%;
+    animation:qsweep 3.4s linear infinite; opacity:.75;}
+  @keyframes qsweep{0%{background-position:-30% 0;}100%{background-position:130% 0;}}
+  .hpfill{position:relative; overflow:hidden;}
+  .hpfill::after{content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%) no-repeat; background-size:40% 100%; animation:qsweep 2.6s linear infinite;}
   .qbox.tlow{animation:huiwen .8s ease-in-out infinite;}
   @keyframes huiwen{0%,100%{box-shadow:0 8px 26px rgba(96,80,48,.22), 0 0 10px rgba(192,57,43,.25);}
     50%{box-shadow:0 8px 26px rgba(96,80,48,.22), 0 0 26px rgba(192,57,43,.62), inset 0 0 14px rgba(192,57,43,.14);}}
   .qtype{box-shadow:inset 0 0 0 1px rgba(255,252,240,.35), 0 1px 3px rgba(96,80,48,.3), 0 0 10px rgba(178,58,42,.3);}
   .stat.combo.c2,.stat.combo.c3{animation:arcflicker 1.3s steps(3,jump-none) infinite;}
+  .stat.combo{position:relative;}
+  .stat.combo.c2::before,.stat.combo.c3::before{content:''; position:absolute; inset:-14px -8px -6px; z-index:0; pointer-events:none;
+    background:url('art/wqui-flame.png') center/contain no-repeat; opacity:.92; animation:flameflk .8s steps(2,jump-none) infinite;}
+  @keyframes flameflk{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+  .stat.combo .v,.stat.combo .k{position:relative; z-index:1;}
   @keyframes arcflicker{0%,100%{box-shadow:0 0 12px rgba(224,85,42,.35);}33%{box-shadow:0 0 17px rgba(224,85,42,.55), 0 0 4px rgba(255,210,122,.5);}66%{box-shadow:0 0 10px rgba(224,85,42,.3);}}
   .gradewrap{animation:bangglow 3.2s ease-in-out infinite;}
   @keyframes bangglow{0%,100%{box-shadow:inset 0 0 0 3px rgba(201,151,30,.25), inset 0 0 0 5px rgba(255,252,240,.7), 0 8px 24px rgba(96,80,48,.25);}
@@ -300,7 +314,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .tc.dbl{color:var(--gold); border-color:var(--gold); background:rgba(201,151,30,.12); animation:pulse 1s infinite;}
   @keyframes pulse{0%,100%{box-shadow:0 0 0 rgba(201,151,30,0);}50%{box-shadow:0 0 16px rgba(201,151,30,.6);}}
 
-  .qbox{width:100%; flex:0 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:11px;
+  .qbox{width:100%; flex:0 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:11px; padding:18px 22px;
     background:linear-gradient(180deg,#fbf7ec,#f4eedd); border:1px solid var(--line2); border-radius:14px; padding:12px;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
   .qmeta{display:flex; gap:8px; align-items:center;}
@@ -313,10 +327,10 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .qprompt.qp-mc{font-size:19px; letter-spacing:.5px; line-height:1.45; max-width:94%;}
   .qopts{width:92%; max-width:580px; display:grid; grid-template-columns:1fr; gap:8px; counter-reset:optn;}
   .qopt::before{counter-increment:optn; content:counter(optn, upper-alpha); flex-shrink:0;
-    width:23px; height:23px; display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(180deg,#e7b93c,#c9971e); color:#1e2430; font-weight:900; font-size:12.5px;
-    border-radius:5px; border:1px solid #1e2430; box-shadow:inset 0 1px 0 rgba(255,255,255,.45);}
-  .qopt{padding:10px 12px; border-radius:8px; background:linear-gradient(180deg,#2f77c2,#2560a6); border:2px solid #1e2430; border-left:2px solid #1e2430; position:relative; overflow:hidden; color:#fdf9ee;
+    width:24px; height:24px; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 38% 30%, #f2d06a, #c9971e 70%); color:#1e2430; font-weight:900; font-size:12.5px;
+    border-radius:50%; border:1px solid #1e2430; box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 0 6px rgba(201,151,30,.4);}
+  .qopt{padding:11px 26px; border-radius:0; background:url('art/wqui-btn.png') center/100% 100% no-repeat; border:none; position:relative; overflow:visible; color:#fdf9ee; text-shadow:0 1px 3px rgba(10,20,40,.8);
     font-size:15.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:7px; transition:transform .08s, border-color .15s, filter .15s;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(20,40,70,.5), 0 2px 5px rgba(96,80,48,.25);}
   .qopt:hover{filter:brightness(1.1); border-color:#c9971e;}
@@ -330,8 +344,8 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .qbox.good{border-color:var(--green); box-shadow:0 0 26px rgba(47,158,99,.22), inset 0 1px 0 rgba(255,255,255,.04);}
   .qbox.bad{border-color:var(--red); box-shadow:0 0 26px rgba(192,57,43,.22), inset 0 1px 0 rgba(255,255,255,.04);}
   .qbox.parry{border-color:#ffb347 !important; box-shadow:0 0 26px rgba(255,179,71,.35), inset 0 1px 0 rgba(255,255,255,.04) !important; animation:pulse .6s infinite;}
-  .qtimer{width:72%; height:9px; background:#efe6cf; border-radius:5px; overflow:visible; position:relative; border:1px solid var(--line);}
-  .qtimerfill{height:100%; background:linear-gradient(180deg,#cdb083,#b3925f); border-radius:4px; width:100%; transition:width .1s linear;}
+  .qtimer{width:72%; height:24px; background:url('art/wqui-incense.png') center/100% 100% no-repeat; border-radius:0; overflow:visible; position:relative; border:none; filter:drop-shadow(0 1px 2px rgba(96,80,48,.3));}
+  .qtimerfill{height:100%; background:linear-gradient(180deg,transparent 38%, rgba(224,85,42,.5) 48%, rgba(255,180,90,.35) 55%, transparent 65%); border-radius:0; width:100%; transition:width .1s linear;}
   .qtimerfill::after{content:''; position:absolute; right:-4px; top:50%; transform:translate(0,-50%); width:9px; height:9px; border-radius:50%;
     background:radial-gradient(circle at 40% 35%, #ffd27a, #e0552a 65%); box-shadow:0 0 9px 2px rgba(224,85,42,.65); animation:emberpulse 1s ease-in-out infinite;}
   @keyframes emberpulse{0%,100%{box-shadow:0 0 7px 2px rgba(224,85,42,.55);}50%{box-shadow:0 0 13px 4px rgba(255,140,60,.8);}}
@@ -384,7 +398,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .odgem.lit{ background:radial-gradient(circle at 35% 28%, #e9c8ff, #7d4fc0 55%, #6b2fa0); border-color:#d9b3ff; }
   .card{ box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(96,80,48,.25); }
   /* ===== 符文机枢 · 位图资产接线(AI 生成,渐进增强) ===== */
-  .fxon .qbox{ border:22px solid transparent; border-image:url('art/jb-ui-console.png') 133 183 168 183 fill / 22px stretch; border-radius:0; background:linear-gradient(180deg,#fbf7ec,#f4eedd); backdrop-filter:none; box-shadow:0 8px 26px rgba(96,80,48,.22); }
+  .fxon .qbox{ border:22px solid transparent; border-image:url('art/wqui-console.png') 100 / 24px stretch; border-radius:0; background:linear-gradient(180deg,#fbf7ec,#f4eedd); backdrop-filter:none; box-shadow:0 8px 26px rgba(96,80,48,.22); }
   /* 技能条目:水晶按钮居左,文字信息右侧金属板——画面与文字分区,不再互相踩 */
   .rbtn{ position:relative; min-height:86px; padding:8px 10px 8px 96px !important;
     background:linear-gradient(180deg,#fbf7ec,#f1e9d4) !important; border:1px solid #b0a077 !important;
@@ -397,8 +411,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     background:none !important; box-shadow:none !important; font-size:25px; margin:0; line-height:1; }
   .rbtn .kbd{ position:absolute !important; left:9px !important; top:7px !important; z-index:3; }
   .rbtn::before{ content:''; position:absolute; left:44px; top:50%; transform:translate(-50%,-50%); width:46px; height:46px; border-radius:50%;
-    border-radius:11px; background:radial-gradient(circle at 42% 35%, #eaf4fb, #bcd7ee 72%);
-    box-shadow:inset 0 0 0 2px #2a5fa3, inset 0 -5px 9px rgba(47,107,181,.3); z-index:1; pointer-events:none; }
+    width:52px; height:52px; background:url('art/wqui-tile.png') center/contain no-repeat; box-shadow:none; z-index:1; pointer-events:none; }
   .rbtn::after{ z-index:0; }
   .rbtn .ricon{ font-size:28px !important; filter:drop-shadow(0 1px 2px rgba(30,36,48,.35)); }
   .rbtn .rfill{ opacity:.22; }
@@ -779,7 +792,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     .stat{padding:4px 5px;} .stat .v{font-size:15px;} .stat .k{font-size:8px;}
     .tierchips{min-height:15px;} .tc{font-size:9.5px; padding:1px 7px;}
     .qbox{gap:6px; padding:8px;}
-    .fxon .qbox{border-width:13px; border-image:url('art/jb-ui-console.png') 133 183 168 183 fill / 13px stretch;}
+    .fxon .qbox{border-width:13px; border-image:url('art/wqui-console.png') 100 / 14px stretch;}
     .qprompt.qp-l{font-size:24px;} .qprompt.qp-m{font-size:21px;} .qprompt.qp-s{font-size:20px;}
     .qopt{padding:9px 10px; font-size:16px;}
     .qinput{font-size:18px; padding:4px; width:140px;}
@@ -829,7 +842,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.56</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.57</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -864,7 +877,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <span class="davatar"><img src="art/jb-avatar-you.png" alt="" onerror="this.parentNode.style.display='none'"></span>
       <span class="dpill dyou">你</span>
       <div class="phpwrap"><div class="hpbar"><div class="hpfill" id="pHpFill"></div></div><div class="hpnum" id="pHpNum">100 / 100</div></div>
-      <span class="vsmid">VS</span>
+      <span class="vsmid"><img src="art/wqui-vs.png" alt="VS" onerror="this.parentNode.textContent='VS'"></span>
       <div class="towerbar"><div class="towerghost" id="towerGhost"></div><div class="towerfill" id="towerFill"></div><div class="tnotch" id="tn1"></div><div class="tnotch" id="tn2"></div></div>
       <span class="dpill dfoe" id="dFoePill">守门者</span>
       <div class="towernum" id="towerNum">1060</div>
@@ -3519,8 +3532,8 @@ function addQuestionTime(ms){   // 偷秒:给当前题加时,计时条与超时�
 // ── 文曲·文气层:倒计时末 3 秒题卡电流(危险=红橙语义,法典3发光资格) ──
 let qLowTimer=null;
 function armLowGlow(remain){ clearTimeout(qLowTimer);
-  document.querySelectorAll('.qbox.tlow').forEach(b=>b.classList.remove('tlow'));
-  const arm=()=>{ const b=document.querySelector('.qbox'); if(b) b.classList.add('tlow'); };
+  (document.querySelectorAll?document.querySelectorAll('.qbox.tlow'):[]).forEach(b=>b.classList.remove('tlow'));
+  const arm=()=>{ const b=document.querySelector?document.querySelector('.qbox'):null; if(b) b.classList.add('tlow'); };
   if(remain>3200) qLowTimer=setTimeout(arm, remain-3000); else arm(); }
 /* ============================== 局流程 ============================== */
 let RUNS=0; try{ RUNS = Number(localStorage.getItem('ba_runs')||0); }catch(e){}
