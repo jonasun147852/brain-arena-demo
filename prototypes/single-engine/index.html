@@ -446,7 +446,11 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .deathline .near{color:var(--red); font-weight:900; animation:pulse 1.1s infinite;}
 
   /* 战报 */
-  .gradewrap{display:flex; align-items:center; gap:18px;}
+  .gradewrap{display:flex; align-items:center; gap:18px; padding:14px 28px; border-radius:12px;
+    background:linear-gradient(180deg,#fbf5e0,#f3e9cd); border:2px solid #c9971e;
+    box-shadow:inset 0 0 0 3px rgba(201,151,30,.25), inset 0 0 0 5px rgba(255,252,240,.7), 0 8px 24px rgba(96,80,48,.25);}
+  .highlight{font-size:14.5px; font-weight:800; color:#a8790f; letter-spacing:1px;
+    background:rgba(250,246,234,.85); border:1px solid rgba(201,151,30,.45); padding:5px 16px; border-radius:18px;}
   .grade{width:92px; height:92px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:52px; font-weight:900;
     border:3px solid var(--line2); background:radial-gradient(circle at 38% 30%, rgba(255,255,255,.08), rgba(0,0,0,.35));}
   .grade{opacity:0;}
@@ -931,7 +935,8 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
 
   <!-- FINAL -->
   <div id="final" class="screen hidden">
-    <h1 id="finalTitle" style="font-size:26px; letter-spacing:3px;">战 报</h1>
+    <h1 id="finalTitle" style="font-size:26px; letter-spacing:3px;">放 榜</h1>
+    <div class="highlight hidden" id="highlightLine"></div>
     <div class="deathline hidden" id="deathLine"></div>
     <div class="sub hidden" id="finalNotes"></div>
     <div class="gradewrap">
@@ -948,7 +953,8 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     <div class="missedbonds" id="missedBonds"></div>
     <button class="btn" onclick="startRun()">⚔ 再 来 一 局</button>
     <button class="btn ghost" style="padding:8px 20px; font-size:12px;" onclick="location.reload()">回标题</button>
-    <button class="btn ghost" style="padding:7px 18px; font-size:12px;" onclick="document.getElementById('telem').classList.toggle('hidden')">开发数据 §13</button>
+    <button class="btn ghost devbtn hidden" id="devBtn" style="padding:7px 18px; font-size:12px;" onclick="document.getElementById('telem').classList.toggle('hidden')">开发数据 §13</button>
+    <script>if(location.search.includes('dev')) setTimeout(()=>{const b=document.getElementById('devBtn'); if(b) b.classList.remove('hidden');},0);</script>
     <div class="telem hidden" id="telem"></div>
   </div>
 
@@ -4138,13 +4144,22 @@ function finishRun(defeat){
       `linear-gradient(180deg, rgba(242,235,217,.76), rgba(242,235,217,.88) 60%, #e8dfc8),`+
       `url('art/jb-yamen-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #e8dfc8`;
   }
+  const examName = (MODES[MODE]||MODES.mid).label;   // 童生试/乡试/殿试(放榜称谓)
   document.getElementById('finalTitle').textContent = VERSUS
-    ? (defeat ? `💀 竞速失利 · 对面先破塔(你方打了 ${Math.round((E?E.total-E.hp:0)/(E?E.total:1)*100)}%)` : `🏆 竞速胜利 · ${VERSUS.mode} 先破一步`)
+    ? (defeat ? `📜 放榜 · 竞速失利(你方打了 ${Math.round((E?E.total-E.hp:0)/(E?E.total:1)*100)}%)` : `🏮 金榜题名 · 竞速胜利`)
     : ENDLESS
-    ? `♾ 无尽 · 止步第 ${R.section} 关`
+    ? `♾ 放榜 · 无尽止步第 ${R.section} 关`
     : (defeat
-      ? `💀 陨落于第 ${SEC_CN[R.section-1]||R.section} 关 · ${E?E.name:''}`
-      : (won===K.SECTIONS ? '🏆 心智之塔 · 登顶' : `战报 · ${won}/${K.SECTIONS}`));
+      ? `📜 放榜 · ${examName}第 ${SEC_CN[R.section-1]||R.section} 场 · ${E?E.name:''}`
+      : (won===K.SECTIONS ? `🏮 金榜题名 · ${examName}登顶` : `📜 放榜 · ${examName} ${won}/${K.SECTIONS}`));
+  // 高光一件事(kill-list #4:峰终定律,结尾必须有一个峰)
+  { const hl=document.getElementById('highlightLine');
+    if(hl){ const cands=[];
+      if(telem.maxHit>0) cands.push({v:telem.maxHit, t:`⚡ 本场高光:单笔最重 ${telem.maxHit.toLocaleString()}`});
+      if(telem.maxCombo>=5) cands.push({v:telem.maxCombo*80, t:`🔥 本场高光:${telem.maxCombo} 连击不断`});
+      if(telem.correct>=8) cands.push({v:telem.correct*60, t:`✍ 本场高光:答对 ${telem.correct} 题`});
+      if(cands.length){ cands.sort((a,b)=>b.v-a.v); hl.textContent=cands[0].t; hl.classList.remove('hidden'); }
+      else hl.classList.add('hidden'); } }
   // 死因链(归因给可修正的自己)+ 近失差距(≤30% 才拍脸)
   const dl=document.getElementById('deathLine');
   if(defeat && E){
