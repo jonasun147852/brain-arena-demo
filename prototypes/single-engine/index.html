@@ -196,6 +196,21 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     box-shadow:inset 0 0 0 1px rgba(163,51,38,.25), 0 3px 8px rgba(96,80,48,.3); z-index:0; pointer-events:none;}
   .jbanner.l{left:9%;} .jbanner.r{right:9%;}
   @media(max-width:620px){ .jbanner{display:none;} }
+  /* ── 手机端顶部减法(Jonasun:上方界面太乱):只留骨架 ── */
+  @media(max-width:620px){
+    .topbar .foename{display:none;}                /* 考官本人在场,名字冗余 */
+    .davatar{display:none;}
+    .towerwrap{gap:5px;}
+    .towerwrap .hpnum{display:none;}
+    .dpill{font-size:10px; padding:2px 7px; letter-spacing:0;}
+    .towernum{font-size:11px; min-width:32px;}
+    .towerwrap .draftpips{display:none !important;}
+    .stat.over .odgem{width:7px; height:7px; margin:0 .5px; border-width:1px;}      /* 超载宝石缩粒防折行 */
+    .tc{display:none;} .tc.on,.tc.dbl{display:inline-block;}   /* 只亮当前链 */
+    .tierchips{min-height:0;}
+    #youF{left:1%; top:2px; width:88px;}
+    .buildrow{transform:scale(.88); transform-origin:left top; opacity:.94;}
+  }
   .vs{font-size:18px; font-weight:900; color:#c9971e; text-shadow:0 1px 0 #7a5c10, 0 -1px 0 rgba(255,252,240,.8), 0 0 16px rgba(201,151,30,.55); letter-spacing:1px;}
   /* 塔脉血池:贯穿全局的一条血,构筑成长的舞台 */
   .towerwrap{width:100%; display:flex; align-items:center; gap:7px;}
@@ -788,7 +803,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.52</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.53</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -2757,8 +2772,8 @@ const FX = (function(){
     const br=f.getBoundingClientRect(), rr=rt.getBoundingClientRect();
     if(br.width===0) return;
     anchor.x = br.left-rr.left+br.width/2;
-    anchor.y = br.top-rr.top+Math.min(88, br.height*0.5);
-    anchor.r = Math.min(76, Math.max(26, Math.min(br.width*0.3, br.height*0.42)));   // 矮场景按高度封顶,别压 HUD
+    anchor.y = br.top-rr.top+Math.min(Math.max(88, br.height*0.34), br.height*0.5);
+    anchor.r = Math.min((window.innerWidth<640?58:76), Math.max(26, Math.min(br.width*0.3, br.height*0.42)));   // 矮场景按高度封顶,别压 HUD
     const yf=document.getElementById('youF');
     if(yf && yf.getBoundingClientRect){ const yr=yf.getBoundingClientRect();
       if(yr.width>0){ anchorY.x=yr.left-rr.left+yr.width/2; anchorY.y=yr.top-rr.top+Math.min(58, yr.height*0.45); anchorY.r=Math.min(38, Math.max(22, Math.min(yr.width*0.18, yr.height*0.36))); } }
@@ -2923,14 +2938,14 @@ const FX = (function(){
           foeSprite.texture=tex;
           const fit=()=>{ if(!tex.width||!foeSprite) return;
             foeImgOk=true; foeSprite.visible=true;
-            const sc=(r*4.4)/Math.max(tex.width,tex.height);
+            const sc=(r*(W<640?3.4:4.4))/Math.max(tex.width,tex.height);
             foeSprite.scale.set(sc); foeSprite.y=-r*0.18;
           };
           if(tex.valid) fit(); else tex.baseTexture.once('loaded', fit);
         }catch(e){}
       }
       if(foeSprite && foeImgOk){
-        const sc=(r*4.4)/Math.max(foeSprite.texture.width||1,foeSprite.texture.height||1);
+        const sc=(r*(W<640?3.4:4.4))/Math.max(foeSprite.texture.width||1,foeSprite.texture.height||1);
         foeSprite.scale.set(sc);
         glyphT.visible=false;
       } else if(glyphT) glyphT.visible=true;
