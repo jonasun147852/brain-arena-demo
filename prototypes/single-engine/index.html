@@ -251,6 +251,18 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   /* ── 文曲·文气层:静者为纸,动者为电;发光只授语义色(青己方/橙连击/红橙危险/金瞬时) ── */
   .qopt{box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(20,40,70,.5), 0 2px 5px rgba(96,80,48,.25), 0 0 9px rgba(14,124,156,.22);}
   .qopt:active{box-shadow:0 0 18px rgba(14,124,156,.6), inset 0 1px 0 rgba(255,255,255,.28); transition:box-shadow .08s;}
+  /* ── 三时辰:同一 UI 同一布局同一背景,只换光 ── */
+  .wq-dusk .qopt{box-shadow:inset 0 1px 0 rgba(255,255,255,.28), inset 0 -2px 0 rgba(20,40,70,.5), 0 2px 5px rgba(96,80,48,.3), 0 0 13px rgba(14,124,156,.32);}
+  .wq-night .qopt{box-shadow:inset 0 1px 0 rgba(255,255,255,.24), inset 0 -2px 0 rgba(10,24,50,.6), 0 2px 6px rgba(0,0,0,.4), 0 0 18px rgba(63,205,235,.4);}
+  .wq-night .topbar, .wq-night .topbar .sec, .wq-night .qpill{color:#e6e0cc;}
+  .wq-night .qpill{background:rgba(230,224,204,.1); border-color:rgba(230,224,204,.3);}
+  .wq-night .stat .k{color:#b8b09a;}
+  .wq-night .vsmid{text-shadow:0 1px 0 #7a5c10, 0 0 18px rgba(201,151,30,.8);}
+  .wq-night .towerwrap .hpnum{color:#b8b09a;}
+  .wq-night .qtimerfill::after{box-shadow:0 0 12px 3px rgba(224,85,42,.85);}
+  .wq-night .jbanner{opacity:.92;}
+  .wq-night #battle, .wq-night .scene{}
+  .wq-dusk .stat .k{color:#7a6a50;}
   .qbox.tlow{animation:huiwen .8s ease-in-out infinite;}
   @keyframes huiwen{0%,100%{box-shadow:0 8px 26px rgba(96,80,48,.22), 0 0 10px rgba(192,57,43,.25);}
     50%{box-shadow:0 8px 26px rgba(96,80,48,.22), 0 0 26px rgba(192,57,43,.62), inset 0 0 14px rgba(192,57,43,.14);}}
@@ -817,7 +829,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.54</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.55</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -2861,10 +2873,11 @@ const FX = (function(){
     // 内容层:手绘背景垫底+暗罩(渐进增强);就位后程序化旧景全退场,只留位图+余烬
     try{
       const tex=PIXI.Texture.from('art/jb-yamen-gate'+((typeof ENDLESS!=='undefined'&&ENDLESS)?((sec-1)%3)+1:Math.min(sec,3))+'.jpg');
-      bgS=new PIXI.Sprite(tex); bgS.anchor.set(0.5); bgS.alpha=1;
+      const WQ = (typeof wqTheme==='function') ? wqTheme() : {shade:0xf6f0e2, tint:0xffffff, shA:0.42};
+      bgS=new PIXI.Sprite(tex); bgS.anchor.set(0.5); bgS.alpha=1; bgS.tint=WQ.tint;   // 时辰调色(同一张图,只换光)
       const shade=new PIXI.Graphics();
-      shade.beginFill(0xf6f0e2,0.42).drawRect(0,0,W,H).endFill();
-      shade.beginFill(0xf6f0e2,0.30).drawRect(0,H*0.30,W,H*0.45).endFill(); // 题目/数字动线再压一档
+      shade.beginFill(WQ.shade,WQ.shA).drawRect(0,0,W,H).endFill();
+      shade.beginFill(WQ.shade,0.30).drawRect(0,H*0.30,W,H*0.45).endFill(); // 题目/数字动线再压一档
       envC.addChildAt(shade,0); envC.addChildAt(bgS,0);
       const fit=()=>{ if(!tex.width||!bgS) return;
         const sc=Math.max(W/tex.width, H/tex.height);
@@ -3206,6 +3219,15 @@ function smallEnabled(){ return !has('h10'); }
 function benchmark(type,diff){ let b=BENCH[type][diff]*((MODES[MODE]||MODES.hard).timeMul); if(diff==='hard' && has('h05')) b*=1.5; return b; }
 
 /* ============================== 题目系统 (§4) ============================== */
+// ── 文曲·三时辰(Jonasun 2026-07-17:三版理念全要每局随机,UI/布局/背景同一版,随机的只是光) ──
+const WQ_THEMES = {
+  day:  { name:'昼读', w:'242,235,217', w2:'232,224,200', ground:'#e8dfc8', shade:0xf6f0e2, tint:0xffffff, shA:0.42 },
+  dusk: { name:'暮讲', w:'236,198,152', w2:'214,166,116', ground:'#dcc49e', shade:0xecc89c, tint:0xffd9a8, shA:0.38 },
+  night:{ name:'夜考', w:'26,30,52',   w2:'16,20,38',    ground:'#12162e', shade:0x141830, tint:0x6a76a0, shA:0.55 },
+};
+function wqTheme(){ return WQ_THEMES[(R&&R.theme)||'day']||WQ_THEMES.day; }
+function applyWqTheme(){ const b=document.getElementById('battle'); if(!b) return;
+  b.classList.remove('wq-day','wq-dusk','wq-night'); b.classList.add('wq-'+((R&&R.theme)||'day')); }
 // ── 命运骰(kill-list #5):每局种子化,Q流出题/D流发牌;挑战局用同一种子=同运对决 ──
 let RNG=null, RNG_Q=null, RNG_D=null;
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
@@ -3577,6 +3599,7 @@ function startRun(mode){
   if(PENDING_CHAL && CHAL){ R.seed=CHAL.seed>>>0; R.chal=CHAL; PENDING_CHAL=false; }
   else R.seed=(Math.random()*0xffffffff)>>>0;
   RNG_Q=mulberry32(R.seed); RNG_D=mulberry32((R.seed^0x9E3779B9)>>>0);
+  R.theme=['day','dusk','night'][R.seed%3]; applyWqTheme();   // 掷时辰(挑战局双方同时辰)
   if(ENDLESS) R.draftAt=[0,30000];   // 无尽:开宗立派+30s 教学窗;之后每关打完发一班(sectionWin)
   if(mode==='vs1' || mode==='vs3'){   // 竞速对战:短局三班牌,bot 强度跟难度档
     VERSUS = { mode: mode==='vs1'?'1v1':'3v3', over:false, foeProgress:0, lastSpecial:0,
@@ -3584,6 +3607,7 @@ function startRun(mode){
       mates: mode==='vs3' ? [mkBot('小心','心'), mkBot('大脑','脑')] : [],
       foes: mode==='vs3' ? [mkBot('石头脑袋','手'), mkBot('闪电手','脑'), mkBot('夜猫子','心')] : [mkBot('影答者','手')] };
   RNG_Q=mulberry32(R.seed||((Math.random()*0xffffffff)>>>0)); RNG_D=mulberry32(((R.seed||0)^0x9E3779B9)>>>0);   // 续局重播命运骰(流位置不保,后续可分叉)
+  R.theme=['day','dusk','night'][(R.seed||0)%3]; applyWqTheme();
     R.draftAt=[0,30000,75000];
   }
   try{ const w=document.getElementById('vsWrap'); if(w) w.classList.toggle('hidden', !VERSUS); }catch(e){}
@@ -3918,6 +3942,7 @@ function pickHex(h){
 let toastQueue = null;
 
 function beginSection(){
+  if(R.section===1 && R.theme && !R._themeToasted){ R._themeToasted=true; setTimeout(()=>toast(`🕯 今日时辰 · ${wqTheme().name}`), 900); }
   clearTimeout(R.draftTimer); R.draftTimer=null; R._draftLock=false; R.draftPending=null;
   R._secStartMs = R.fightMs;
   if(R.section===K.SECTIONS){
@@ -3954,7 +3979,7 @@ function beginSection(){
     vsEl.style.setProperty('--enemy', gc);
     vsEl.style.background =
       `radial-gradient(ellipse at 50% 40%, ${gc}26, transparent 58%),`+
-      `linear-gradient(180deg, rgba(242,235,217,.62), rgba(242,235,217,.5) 45%, #e8dfc8 96%),`+
+      `linear-gradient(180deg, rgba(${wqTheme().w},.62), rgba(${wqTheme().w2},.5) 45%, ${wqTheme().ground} 96%),`+
       `url('art/jb-yamen-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #e8dfc8`;
   }
   document.getElementById('vsName').textContent = E.name;
@@ -4700,7 +4725,7 @@ function sectionWin(){
     g.textContent=E.glyph||'Σ'; g.style.color=GATE_COL[Math.min(R.section-1,2)];
     document.getElementById('secres').style.background =
       `radial-gradient(ellipse at 50% 10%, rgba(201,151,30,.14), transparent 52%),`+
-      `linear-gradient(180deg, rgba(242,235,217,.72), rgba(242,235,217,.84) 60%, #e8dfc8),`+
+      `linear-gradient(180deg, rgba(${wqTheme().w},.72), rgba(${wqTheme().w2},.84) 60%, ${wqTheme().ground}),`+
       `url('art/jb-yamen-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #e8dfc8`;
     document.getElementById('secresQuote').textContent = `${E.glyph}「${E.lines.defeat}」`;
   }
@@ -4830,7 +4855,7 @@ function finishRun(defeat){
     const wash = defeat ? 'rgba(192,57,43,.13)' : 'rgba(201,151,30,.15)';
     document.getElementById('final').style.background =
       `radial-gradient(ellipse at 50% 8%, ${wash}, transparent 55%),`+
-      `linear-gradient(180deg, rgba(242,235,217,.76), rgba(242,235,217,.88) 60%, #e8dfc8),`+
+      `linear-gradient(180deg, rgba(${wqTheme().w},.76), rgba(${wqTheme().w2},.88) 60%, ${wqTheme().ground}),`+
       `url('art/jb-yamen-gate${ENDLESS?((R.section-1)%3)+1:Math.min(R.section,3)}.jpg') center/cover no-repeat #e8dfc8`;
   }
   const examName = (MODES[MODE]||MODES.mid).label;   // 童生试/乡试/殿试(放榜称谓)
