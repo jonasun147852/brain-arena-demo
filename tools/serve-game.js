@@ -45,7 +45,7 @@ http.createServer((req, res) => {
     res.writeHead(200, {
       'Content-Type': MIME[ext] || 'application/octet-stream',
       // html 永不缓存(版本即时可见);资产缓存一天
-      'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=86400',
+      'Cache-Control': ext === '.html' ? 'no-store, must-revalidate' : 'public, max-age=86400',
     });
     res.end(buf);
   });

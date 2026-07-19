@@ -918,7 +918,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.59</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.60</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -5537,8 +5537,8 @@ document.getElementById('vsplash').addEventListener('click', ()=>{
 });
 
 /* ============ 战报卡 + 挑战链接(kill-list #4/#5:分享率15%生死线载体) ============ */
-function evPing(ev){ try{ fetch('https://socialarb.tail6880a0.ts.net/game/log',{method:'POST',mode:'cors',keepalive:true,
-  headers:{'content-type':'text/plain'}, body:JSON.stringify({_ev:ev, mode:MODE, at:Date.now()})}).catch(()=>{}); }catch(e){} }
+function evPing(ev, extra){ try{ fetch('https://socialarb.tail6880a0.ts.net/game/log',{method:'POST',mode:'cors',keepalive:true,
+  headers:{'content-type':'text/plain'}, body:JSON.stringify(Object.assign({_ev:ev, mode:MODE, at:Date.now()}, extra||{}))}).catch(()=>{}); }catch(e){} }
 function chalUrl(){ return location.origin+location.pathname+`?ch=${((R&&R.seed)>>>0).toString(36)}&m=${MODE}&s=${window._lastScore||0}`; }
 function copyChalLink(btn){ const url=chalUrl();
   const done=()=>{ if(btn){ btn.textContent='✅ 已复制,发给对手'; setTimeout(()=>{btn.textContent='⚔ 复制挑战链接';},2600);} evPing('share_link'); };
@@ -5584,6 +5584,8 @@ function acceptChal(){ if(!CHAL) return; PENDING_CHAL=true;
   cb.innerHTML = `⚔ 好友下战书 · ${(MODES[CHAL.m]||MODES.mid).label} · 对方 ${Number(CHAL.s||0).toLocaleString()} 分` +
     `<br><button class="btn" style="margin-top:9px; padding:11px 36px;" onclick="acceptChal()">同一把命运骰 · 应 战</button>`;
   cb.classList.remove('hidden'); evPing('chal_view'); }catch(e){} })();
+// 开机信标:老板说"不行"时先看他手机实际跑的版本(kill 盲修)
+try{ evPing('boot', {v:'5.60', ua:(navigator.userAgent||'').slice(0,90), touch:('ontouchstart' in window)||navigator.maxTouchPoints>0, w:window.innerWidth, h:window.innerHeight}); }catch(e){}
 // 标题屏显示历史最高(进度感钩子)
 (()=>{ try{
   const b=Number(localStorage.getItem('ba_best')||0);
