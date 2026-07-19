@@ -29,6 +29,10 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     background-image:linear-gradient(rgba(14,124,156,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(14,124,156,.035) 1px,transparent 1px);
     background-size:38px 38px; mask:radial-gradient(circle at 50% 40%,#000 30%,transparent 85%);
     animation:griddrift 36s linear infinite;}
+  @media(max-width:720px){
+    body{background:#e8dfc8;}
+    #app{width:100vw; height:100vh; height:100dvh; border-radius:0; border:none; box-shadow:none;}
+  }
   @keyframes griddrift{to{background-position:38px 38px;}}
   .screen{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; gap:14px;
     animation:fade .35s ease;}
@@ -288,13 +292,21 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .hpfill::after{content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%) no-repeat; background-size:40% 100%; animation:qsweep 2.6s linear infinite;}
   .qbox.tlow{animation:huiwen .8s ease-in-out infinite;}
   /* ══ 界面即插画(artfirst,≤720px 战斗屏):母图为界,DOM 入画 ══ */
-  #battle.artfirst{ left:50%; top:50%; right:auto; bottom:auto; transform:translate(-50%,-50%);
-    width:min(100%, calc(100vh * 0.6667)); aspect-ratio:2/3; height:auto; max-height:100%;
-    background:url('art/wq-master.jpg') center/100% 100% no-repeat !important; border-radius:8px;
-    padding:0 !important; gap:0 !important; overflow:hidden;}
-  #battle.artfirst.wq-dusk::before{content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  #battle.artfirst{ inset:0; transform:none; width:auto; height:auto; aspect-ratio:auto;
+    background:linear-gradient(180deg,#ddd5c2,#e8dfc8 8%,#e8dfc8 92%,#d8cdb4) !important;
+    padding:0 !important; gap:0 !important; overflow:hidden; border-radius:0;}
+  .artfirst #stageWrap{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(100vw,100%); height:min(100%, 172vw); max-height:100%;
+    background:url('art/wq-master.jpg') center/100% 100% no-repeat;}
+  .artfirst #stageWrap::before{content:''; position:absolute; left:0; right:0; top:-1px; height:5%; transform:translateY(-96%);
+    background:linear-gradient(0deg, rgba(216,205,180,.9), rgba(232,223,200,0)); pointer-events:none;}
+  .artfirst #stageWrap::after{content:''; position:absolute; left:0; right:0; bottom:-1px; height:5%; transform:translateY(96%);
+    background:linear-gradient(180deg, rgba(216,205,180,.9), rgba(232,223,200,0)); pointer-events:none;}
+  #stageWrap{display:contents;}
+  .artfirst #stageWrap{display:block;}
+  .wq-dusk.artfirst #stageWrap>.scene::before{content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
     background:linear-gradient(180deg, rgba(255,150,60,.16), rgba(120,60,120,.14)); mix-blend-mode:multiply;}
-  #battle.artfirst.wq-night::before{content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  .wq-night.artfirst #stageWrap>.scene::before{content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
     background:rgba(18,22,46,.42); mix-blend-mode:multiply;}
   .artfirst .topbar{position:absolute; top:1%; left:0; right:0; z-index:3; opacity:.8; font-size:10px; justify-content:center; gap:10px; transform:none; padding:0;}
   .artfirst .towerwrap{position:absolute; top:4.1%; left:0; right:0; z-index:3; gap:0; padding:0 17%;}
@@ -918,7 +930,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.60</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.61</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -5584,6 +5596,13 @@ function acceptChal(){ if(!CHAL) return; PENDING_CHAL=true;
   cb.innerHTML = `⚔ 好友下战书 · ${(MODES[CHAL.m]||MODES.mid).label} · 对方 ${Number(CHAL.s||0).toLocaleString()} 分` +
     `<br><button class="btn" style="margin-top:9px; padding:11px 36px;" onclick="acceptChal()">同一把命运骰 · 应 战</button>`;
   cb.classList.remove('hidden'); evPing('chal_view'); }catch(e){} })();
+// 舞台包裹:battle 子元素进 #stageWrap(display:contents,桌面布局零影响;artfirst 变弹性舞台)
+try{ const bt=document.getElementById('battle');
+  if(bt && !document.getElementById('stageWrap')){
+    const w=document.createElement('div'); w.id='stageWrap';
+    [...bt.children].filter(c=>c.id!=='pixiRoot').forEach(c=>w.appendChild(c));
+    bt.appendChild(w); }
+}catch(e){}
 // 开机信标:老板说"不行"时先看他手机实际跑的版本(kill 盲修)
 try{ evPing('boot', {v:'5.60', ua:(navigator.userAgent||'').slice(0,90), touch:('ontouchstart' in window)||navigator.maxTouchPoints>0, w:window.innerWidth, h:window.innerHeight}); }catch(e){}
 // 标题屏显示历史最高(进度感钩子)
