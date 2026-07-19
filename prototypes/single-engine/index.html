@@ -11,6 +11,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     --bg0:#e8dfc8; --bg1:#f2ebd9; --panel:#faf6ea; --panel2:#f1e9d4; --line:#cdbf9f; --line2:#b0a077;
     --cyan:#0e7c9c; --blue:#2f6bb5; --gold:#c9971e; --red:#c0392b; --green:#2f9e63; --purple:#7d4fc0;
     --text:#2a2318; --dim:#8a7d63; --silver:#6e6350;
+    --kai:'Kaiti SC','STKaiti','KaiTi','楷体',serif;
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -111,6 +112,19 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .card.r-prism{border-color:var(--purple); box-shadow:0 0 30px rgba(125,79,192,.32);}
   .card.r-prism .ico{filter:drop-shadow(0 0 12px rgba(125,79,192,.6));}
   .card .ico{font-size:32px;}
+  /* ── 单字印章体系(文曲):流派色印 + 楷体字 ── */
+  .sealico{width:46px; height:46px; display:flex; align-items:center; justify-content:center;
+    font-family:var(--kai); font-size:27px !important; font-weight:700; color:#fdf9ee; line-height:1;
+    border-radius:9px; transform:rotate(-3deg); text-shadow:0 1px 2px rgba(30,36,48,.4);
+    background:linear-gradient(180deg,#c9971e,#a8790f); box-shadow:inset 0 0 0 2px rgba(255,252,240,.4), 0 2px 5px rgba(96,80,48,.4);}
+  .sealico.sc-nao{background:linear-gradient(180deg,#2f77c2,#2560a6);}
+  .sealico.sc-shou{background:linear-gradient(180deg,#c74a38,#a33326);}
+  .sealico.sc-xin{background:linear-gradient(180deg,#3aa06a,#2f9e63);}
+  .sealmini{font-family:var(--kai); font-weight:700;}
+  .ricon{font-family:var(--kai) !important; font-weight:700; color:#fdf9ee !important;
+    text-shadow:0 1px 2px rgba(30,36,48,.6), 0 0 8px rgba(63,205,235,.4);}
+  h1, #finalTitle, .card .name, .dpill, .qtype, .jbanner, .modebtn, .gradeflavor, .bestline, .foename, .tagline, .highlight{font-family:var(--kai);}
+  .qprompt{font-family:var(--kai); font-weight:800;}
   .card .name{font-size:19px; font-weight:800;}
   .card .desc{font-size:12.5px; color:var(--silver); line-height:1.55; flex:1;}
   .card .flavor{font-size:11px; color:#8a6f1e; font-style:italic; opacity:.9; line-height:1.4; letter-spacing:.5px;}
@@ -828,9 +842,9 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     <div class="sub" id="luckLine" style="font-size:12px; opacity:.75;"></div>
     <div class="subjrow" id="subjRow"></div>
     <div class="moderow">
-      <button class="modebtn" data-m="easy" onclick="setMode('easy')">🖌 童生试<span>蒙学起步</span></button>
-      <button class="modebtn" data-m="mid" onclick="setMode('mid')">📜 乡试<span>学有所成</span></button>
-      <button class="modebtn" data-m="hard" onclick="setMode('hard')">🏮 殿试<span>问鼎文魁</span></button>
+      <button class="modebtn" data-m="easy" onclick="setMode('easy')">童生试<span>蒙学起步</span></button>
+      <button class="modebtn" data-m="mid" onclick="setMode('mid')">乡试<span>学有所成</span></button>
+      <button class="modebtn" data-m="hard" onclick="setMode('hard')">殿试<span>问鼎文魁</span></button>
     </div>
     <div class="chalbanner hidden" id="chalBanner"></div>
     <button id="resumeBtn" class="btn ghost hidden" style="padding:9px 26px; font-size:14px; border-color:rgba(47,158,99,.5); color:var(--green);" onclick="resumeRun()">▶ 继续上一局</button>
@@ -842,7 +856,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.57</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.58</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -904,10 +918,10 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     </div>
 
     <div class="hud">
-      <div class="stat combo"><div class="v" id="sCombo">0</div><div class="k">🔥 连 击</div></div>
-      <div class="stat imm"><div class="v" id="sImm">10</div><div class="k">⚔ 攻 击</div></div>
-      <div class="stat energy"><div class="v" id="sEnergy">0</div><div class="k">⚡ 能 量</div></div>
-      <div class="stat over"><div class="v" id="sOver">0</div><div class="k">☢ 超 载</div></div>
+      <div class="stat combo"><div class="v" id="sCombo">0</div><div class="k">连 击</div></div>
+      <div class="stat imm"><div class="v" id="sImm">10</div><div class="k">攻 击</div></div>
+      <div class="stat energy"><div class="v" id="sEnergy">0</div><div class="k">能 量</div></div>
+      <div class="stat over"><div class="v" id="sOver">0</div><div class="k">超 载</div></div>
     </div>
     <div class="tierchips" id="tierChips">
       <span class="tc on">单体</span>
@@ -927,8 +941,8 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     </div>
 
     <div class="releases">
-      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span class="ricon" id="rSmallIco">⚡</span><span id="rSmallName">一闪</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">攻击 × 3</span><span class="castdots" id="cdSmall"></span></button>
-      <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span class="ricon" id="rBigIco">🥁</span><span id="rBigName">擂鼓</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">攻击 × 6 + 震慑</span><span class="odpips" id="odPips"></span><span class="castdots" id="cdBig"></span></button>
+      <button class="rbtn small" id="rSmall" onclick="releaseSmall()"><div class="rfill" id="rSmallFill"></div><span class="kbd">1</span><span class="ricon" id="rSmallIco">闪</span><span id="rSmallName">一闪</span><span class="cost" id="rSmallCost">50⚡</span><span class="od" id="rSmallOd">攻击 × 3</span><span class="castdots" id="cdSmall"></span></button>
+      <button class="rbtn big" id="rBig" onclick="releaseBig()"><div class="rfill" id="rBigFill"></div><span class="kbd">2</span><span class="ricon" id="rBigIco">鼓</span><span id="rBigName">擂鼓</span><span class="cost" id="rBigCost">100⚡</span><span class="od" id="rBigOd">攻击 × 6 + 震慑</span><span class="odpips" id="odPips"></span><span class="castdots" id="cdBig"></span></button>
     </div>
 
     <div class="keypad" id="keypad">
@@ -3232,6 +3246,8 @@ function smallEnabled(){ return !has('h10'); }
 function benchmark(type,diff){ let b=BENCH[type][diff]*((MODES[MODE]||MODES.hard).timeMul); if(diff==='hard' && has('h05')) b*=1.5; return b; }
 
 /* ============================== 题目系统 (§4) ============================== */
+// ── 文曲·单字印章:全游戏图标统一为技能首字楷体印(灭 emoji,书卷语言) ──
+function sealChar(h){ return (h && (h.seal || (h.name && h.name[0]))) || '技'; }
 // ── 文曲·三时辰(Jonasun 2026-07-17:三版理念全要每局随机,UI/布局/背景同一版,随机的只是光) ──
 const WQ_THEMES = {
   day:  { name:'昼读', w:'242,235,217', w2:'232,224,200', ground:'#e8dfc8', shade:0xf6f0e2, tint:0xffffff, shA:0.24, bgimg:'wqbg-day.jpg' },
@@ -3765,7 +3781,7 @@ function renderDraftCards(offer, wrap, roundIdx){
     if(h.skillSlot){
       const cur = ownedSkill(h.skillSlot);
       const slotName = h.skillSlot==='light'?'轻技能':'重技能';
-      delta = `<div class="delta">⚔ 你的${slotName}会变成「<b>${h.name}</b>」${cur?`(顶掉 ${cur.ico}${cur.name})`:''}</div>` + delta;
+      delta = `<div class="delta">⚔ 你的${slotName}会变成「<b>${h.name}</b>」${cur?`(顶掉 ${cur.name})`:''}</div>` + delta;
     }
     if(h.cat==='升级'){
       const base=HEXES.find(x=>x.id===h.upgradeFor);
@@ -3780,7 +3796,7 @@ function renderDraftCards(offer, wrap, roundIdx){
         syn.push({pri:0, html:`<div class="syn bond">⛓ 选它凑成「${b.name}」→ ${b.desc}</div>`});
       else {
         const oh=HEXES.find(x=>x.id===others[0]);
-        syn.push({pri:3, html:`<div class="syn dim">⛓ 和 ${oh.ico}${oh.name} 能凑「${b.name}」→ ${b.desc}</div>`});
+        syn.push({pri:3, html:`<div class="syn dim">⛓ 和 ${oh.name} 能凑「${b.name}」→ ${b.desc}</div>`});
       }
     });
     if(RESONANCE[h.school] && sc===1)
@@ -3790,7 +3806,7 @@ function renderDraftCards(offer, wrap, roundIdx){
     const badge = roundIdx===0 ? '<div class="rarbadge id">🎏 立派</div>'
       : (h.cat==='升级' ? '<div class="rarbadge awaken">↗ 觉醒</div>' : `<div class="rarbadge ${h.rar}">${RAR_LABEL[h.rar]}</div>`);
     el.innerHTML=`${badge}
-      <div class="ico">${h.ico}</div>
+      <div class="ico sealico sc-${h.school||'ty'}">${sealChar(h)}</div>
       <div class="name">${h.name}${upBadge}${h.ba?' <span class="bastar">★</span>':''}</div>
       <div class="desc">${h.desc}</div>
       ${delta}
@@ -3816,7 +3832,7 @@ function renderBattleDraft(idx){
   document.getElementById('bdSub').textContent = idx===0 ? '从这里开始,你在立流派' : (idx===2 ? '成长卡最后一轮' : '');
   const st=document.getElementById('bdStatus');
   st.innerHTML = `<span>❤️ ${P.hp}</span><span>⚡ ${Math.floor(P.energy)}</span><span>🔥 连击 ${P.combo}</span><span>🗼 ${E?Math.round(E.hp/E.total*100):100}%</span>`
-    + `<span class="bheld">${P.hexes.length ? '已持:'+(P.hexes.length>8?`<span class="bslot more">+${P.hexes.length-8}</span>`:'')+P.hexes.slice(-8).map(h=>`<span class="bslot r-${h.rar}" title="${h.name}">${h.ico}</span>`).join('') : '构筑:(空)'}</span>`;
+    + `<span class="bheld">${P.hexes.length ? '已持:'+(P.hexes.length>8?`<span class="bslot more">+${P.hexes.length-8}</span>`:'')+P.hexes.slice(-8).map(h=>`<span class="bslot r-${h.rar} sealmini" title="${h.name}">${sealChar(h)}</span>`).join('') : '构筑:(空)'}</span>`;
   SFX.deal();
   renderDraftCards(offer, document.getElementById('bdCards'), idx);
   const rb=document.getElementById('bdReroll');
@@ -3894,7 +3910,7 @@ function applyHexPick(h){
   return {newBond, newRes};
 }
 function pickBanner(h, r){
-  if(r.newBond) return `⛓ 羁绊结成 · ${r.newBond.ico}${r.newBond.name}!`;
+  if(r.newBond) return `⛓ 羁绊结成 · ${r.newBond.name}!`;
   if(r.newRes) return `🔗 共鸣觉醒 · ${r.newRes.name}!`;
   if(h.cat==='升级') return `↗ 觉醒 · ${h.ico}${h.name}!`;
   return `${h.ico} ${h.name} · 已装载`;
@@ -4969,7 +4985,7 @@ function finishRun(defeat){
   const missed = missedBonds();
   mb.innerHTML = missed.length
     ? '差一张就凑齐:' + missed.map(b=>{
-        const lack = b.pieces.filter(p=>!has(p)).map(p=>{ const h=HEXES.find(x=>x.id===p); return `${h.ico}${h.name}`; }).join('、');
+        const lack = b.pieces.filter(p=>!has(p)).map(p=>{ const h=HEXES.find(x=>x.id===p); return h.name; }).join('、');
         return `<span class="mb">⛓ ${b.name}<i>(缺 ${lack})</i></span>`;
       }).join('')
     : '';
@@ -5068,8 +5084,8 @@ function updateHUD(){
   rs.style.display = smallEnabled()?'flex':'none'; rs.disabled=!sOk; rs.classList.toggle('ready',sOk);
   document.getElementById('rSmallName').textContent = lsk.name;
   {  // 技能瓦片大图标:觉醒>技能卡>默认
-    const ICO={small:'⚡',big:'🥁',swap:'📄',flurry:'🌊',shield:'🚪',cross:'✂️',hand:'⏸',calc:'🧾',avalanche:'🌨',timestop:'⏰',rollcall:'🫵'};
-    const ico=(slot,key)=>{ const up=P.hexes.find(h=>h.cat==='升级'&&h.uSlot===slot); if(up) return up.ico; const sc=ownedSkill(slot); return (sc&&sc.ico)||ICO[key]||'⚔'; };
+    const NM={small:'闪',big:'鼓',swap:'撕',flurry:'浪',shield:'盾',cross:'排',hand:'拍',calc:'算',avalanche:'崩',timestop:'停',rollcall:'名'};
+    const ico=(slot,key)=>{ const up=P.hexes.find(h=>h.cat==='升级'&&h.uSlot===slot); if(up) return sealChar(up); const sc=ownedSkill(slot); if(sc) return sealChar(sc); return NM[key]||'技'; };
     const iS=document.getElementById('rSmallIco'), iB=document.getElementById('rBigIco');
     if(iS) iS.textContent=ico('light',lsk.key);
     if(iB) iB.textContent=ico('heavy',heavySkill().key);
@@ -5233,14 +5249,14 @@ function renderBuildPanel(){
   if(bonds.length || missed.length){
     html += '<div class="bsec">羁绊(凑齐两张=连答引擎;答错进度清零)</div>';
     bonds.forEach(bd=>{
-      const pieces = bd.pieces.map(pid=>{ const h=HEXES.find(x=>x.id===pid); return `${h.ico}${h.name}`; }).join(' + ');
+      const pieces = bd.pieces.map(pid=>{ const h=HEXES.find(x=>x.id===pid); return h.name; }).join(' + ');
       html += `<div class="bcard" style="border-left-color:#ff9d4d"><div class="bico">${bd.ico}</div><div class="bmain">
         <div><span class="bname">${bd.name}</span><span class="bmeta">${pieces}</span></div>
         <div class="bdesc">${bd.desc}</div>
         <div class="bprog">连答进度 ${P.streak % bd.need}/${bd.need}</div></div></div>`;
     });
     missed.forEach(bd=>{
-      const lack = bd.pieces.filter(pid=>!has(pid)).map(pid=>{ const h=HEXES.find(x=>x.id===pid); return `${h.ico}${h.name}`; }).join('、');
+      const lack = bd.pieces.filter(pid=>!has(pid)).map(pid=>{ const h=HEXES.find(x=>x.id===pid); return h.name; }).join('、');
       html += `<div class="bcard miss"><div class="bico">${bd.ico}</div><div class="bmain">
         <div><span class="bname">${bd.name}</span><span class="bmeta">差一张:缺 ${lack}</span></div>
         <div class="bdesc">${bd.desc}</div></div></div>`;
