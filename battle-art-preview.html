@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>界面即插画 · 战斗屏预览(文字叠画)</title>
+<style>
+  *{margin:0; padding:0; box-sizing:border-box;}
+  :root{--kai:'Kaiti SC','STKaiti','KaiTi','楷体',serif;}
+  body{background:#171310; min-height:100vh; display:flex; flex-direction:column; align-items:center; font-family:-apple-system,'PingFang SC',sans-serif;}
+  .hint{color:#a89a80; font-size:12px; letter-spacing:1px; padding:10px 14px 4px; text-align:center; line-height:1.7;}
+  .stage{position:relative; width:min(100vw, 64vh); aspect-ratio:2/3; margin:6px auto 20px;
+    background:url('art/wq-master.jpg') center/cover no-repeat; overflow:hidden;
+    box-shadow:0 20px 70px rgba(0,0,0,.6); border-radius:6px;}
+  .ov{position:absolute; color:#1e2430; font-family:var(--kai);}
+  .avatar{border-radius:50%; overflow:hidden;}
+  .avatar img{width:100%; height:100%; object-fit:cover;}
+  .scoretx{color:#fdf9ee; font-weight:800; font-family:var(--kai); text-shadow:0 1px 3px rgba(10,20,40,.8); display:flex; align-items:center; justify-content:center;}
+  .qtx{font-weight:800; text-align:center; display:flex; align-items:center; justify-content:center; line-height:1.5;}
+  .opt{color:#fdf9ee; font-weight:800; display:flex; align-items:center; text-shadow:0 1px 3px rgba(10,20,40,.8);}
+  .optletter{color:#1e2430; font-weight:900; display:flex; align-items:center; justify-content:center; font-family:var(--kai);}
+  .sealtx{color:#fdf9ee; font-weight:700; font-family:var(--kai); display:flex; align-items:center; justify-content:center; text-shadow:0 1px 3px rgba(10,20,40,.7);}
+  .platetx{color:#6e5a30; font-weight:800; font-family:var(--kai); display:flex; align-items:center; justify-content:center;}
+  .cmb{position:absolute; color:#e0552a; font-family:var(--kai); font-weight:900; text-shadow:0 1px 0 rgba(255,252,240,.8);}
+</style>
+</head>
+<body>
+  <div class="hint">「界面即插画」预览——整屏是一张画,文字直接叠在画上(实机切此架构后的样子)。竖屏看。</div>
+  <div class="stage">
+    <div class="ov avatar" style="left:3.2%; top:1.6%; width:12.4%; height:8.4%;"><img src="art/jb-avatar-you.png" alt=""></div>
+    <div class="ov avatar" style="right:3.2%; top:1.6%; width:12.4%; height:8.4%;"><img src="art/wq-foe-sigma.png" alt="" style="object-position:top;"></div>
+    <div class="ov scoretx" style="left:17%; top:4.2%; width:21%; height:3.4%; font-size:min(2.6vh,1.7vw);">你 2,450</div>
+    <div class="ov scoretx" style="right:17%; top:4.2%; width:21%; height:3.4%; font-size:min(2.6vh,1.7vw);">守门者 3,120</div>
+    <div class="ov qtx" style="left:14%; top:42.5%; width:72%; height:11%; font-size:min(3.4vh,2.3vw);">「床前明月光」的下一句是?</div>
+    <div class="ov optletter" style="left:11.6%; top:59.2%; width:6.4%; height:3.6%; font-size:min(2.4vh,1.6vw);">A</div>
+    <div class="ov opt" style="left:21%; top:59.2%; width:66%; height:3.6%; font-size:min(2.7vh,1.8vw);">疑是地上霜</div>
+    <div class="ov optletter" style="left:11.6%; top:64.1%; width:6.4%; height:3.6%; font-size:min(2.4vh,1.6vw);">B</div>
+    <div class="ov opt" style="left:21%; top:64.1%; width:66%; height:3.6%; font-size:min(2.7vh,1.8vw);">我欲乘风归去</div>
+    <div class="ov optletter" style="left:11.6%; top:69%; width:6.4%; height:3.6%; font-size:min(2.4vh,1.6vw);">C</div>
+    <div class="ov opt" style="left:21%; top:69%; width:66%; height:3.6%; font-size:min(2.7vh,1.8vw);">举头望明月</div>
+    <div class="ov optletter" style="left:11.6%; top:73.9%; width:6.4%; height:3.6%; font-size:min(2.4vh,1.6vw);">D</div>
+    <div class="ov opt" style="left:21%; top:73.9%; width:66%; height:3.6%; font-size:min(2.7vh,1.8vw);">低头思故乡</div>
+    <div class="cmb" style="right:6%; top:55%; font-size:min(2.8vh,1.9vw);">🔥 连击 12</div>
+    <div class="ov sealtx" style="left:4.6%; top:83.2%; width:16%; height:9.5%; font-size:min(5vh,3.4vw);">撕</div>
+    <div class="ov sealtx" style="right:4.6%; top:83.2%; width:16%; height:9.5%; font-size:min(5vh,3.4vw);">鼓</div>
+    <div class="ov platetx" style="left:24.5%; top:87.4%; width:14%; height:4%; font-size:min(2vh,1.4vw);">撕卷 40⚡</div>
+    <div class="ov platetx" style="right:24.5%; top:87.4%; width:14%; height:4%; font-size:min(2vh,1.4vw);">擂鼓 100⚡</div>
+  </div>
+</body>
+</html>
