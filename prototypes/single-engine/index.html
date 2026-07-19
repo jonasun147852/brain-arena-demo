@@ -287,6 +287,63 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .hpfill{position:relative; overflow:hidden;}
   .hpfill::after{content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%) no-repeat; background-size:40% 100%; animation:qsweep 2.6s linear infinite;}
   .qbox.tlow{animation:huiwen .8s ease-in-out infinite;}
+  /* ══ 界面即插画(artfirst,≤720px 战斗屏):母图为界,DOM 入画 ══ */
+  #battle.artfirst{ left:50%; top:50%; right:auto; bottom:auto; transform:translate(-50%,-50%);
+    width:min(100%, calc(100vh * 0.6667)); aspect-ratio:2/3; height:auto; max-height:100%;
+    background:url('art/wq-master.jpg') center/100% 100% no-repeat !important; border-radius:8px;
+    padding:0 !important; gap:0 !important; overflow:hidden;}
+  #battle.artfirst.wq-dusk::before{content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+    background:linear-gradient(180deg, rgba(255,150,60,.16), rgba(120,60,120,.14)); mix-blend-mode:multiply;}
+  #battle.artfirst.wq-night::before{content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+    background:rgba(18,22,46,.42); mix-blend-mode:multiply;}
+  .artfirst .topbar{position:absolute; top:.4%; left:26%; right:26%; z-index:3; opacity:.75; font-size:10px; justify-content:center; gap:8px; transform:scale(.92);}
+  .artfirst .towerwrap{position:absolute; top:4.1%; left:0; right:0; z-index:3; gap:0; padding:0 17%;}
+  .artfirst .davatar{display:block; position:absolute; left:4.4%; top:-1.8vh; width:11.2%; height:auto; aspect-ratio:1;}
+  .artfirst .davatar::after{display:none;}
+  .artfirst #foeAva{display:block; position:absolute; right:4.4%; top:-1.8vh; width:11.2%; aspect-ratio:1; border-radius:50%; object-fit:cover; object-position:top;}
+  .artfirst .dpill{background:none; border:none; box-shadow:none; color:#fdf9ee; font-size:12px; padding:0 4px;}
+  .artfirst .phpwrap{flex:1;} .artfirst .towerwrap .towerbar{flex:1;}
+  .artfirst .towerwrap .hpbar,.artfirst .towerbar{background:transparent; border:none; box-shadow:none; height:12px; border-radius:6px;}
+  .artfirst .towerbar::before{display:none;}
+  .artfirst .vsmid{width:12%; visibility:hidden;}
+  .artfirst .towernum{position:absolute; right:18%; top:112%; font-size:10px; opacity:.85;}
+  .artfirst .towerwrap .hpnum{display:none;}
+  .artfirst .scene{position:absolute; left:0; top:9%; height:26%; min-height:0; width:100%; z-index:2; flex:none;}
+  .artfirst #foeF{width:56%;}
+  .artfirst #youF{left:2%; top:0;}
+  .artfirst .jbanner{display:none;}
+  .artfirst .hud{position:absolute; left:8%; right:8%; top:36.2%; z-index:3; gap:3px;}
+  .artfirst .stat{background:rgba(250,246,234,.68); border:none; border-left-width:3px; padding:1px 3px; backdrop-filter:blur(1px); transform:skewX(-8deg) scale(.92);}
+  .artfirst .stat .v{font-size:14px;} .artfirst .stat .k{font-size:8px;}
+  .artfirst .tierchips{position:absolute; left:8%; right:auto; top:44%; z-index:4; justify-content:flex-start; min-height:0; transform:scale(.9); transform-origin:left top;}
+  .artfirst .qbox{position:absolute !important; left:5%; right:5%; top:42.5%; height:40.5%; z-index:3;
+    border:none !important; border-image:none !important; background:none !important; box-shadow:none !important; padding:0 !important; display:block;}
+  .artfirst .fxon .qbox::after{display:none;}
+  .artfirst .qmeta{position:absolute; left:0; right:0; top:1.5%; justify-content:center;}
+  .artfirst .qprompt{position:absolute; left:10%; right:10%; top:8.5%; height:22%; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  .artfirst .qprompt.qp-l{font-size:22px;} .artfirst .qprompt.qp-m{font-size:19px;} .artfirst .qprompt.qp-s{font-size:15.5px;}
+  .artfirst .qopts{position:absolute; left:2%; right:2%; top:43.5%; height:44%; width:auto; max-width:none;
+    display:grid; grid-template-rows:1fr 1fr 1fr 1fr; gap:8.5%; counter-reset:optn;}
+  .artfirst .qopt{background:none; filter:none; padding:0 4% 0 18%; border-radius:0; min-height:0; font-size:16px;}
+  .artfirst .qopt::before{position:absolute; left:6.2%; top:50%; transform:translateY(-50%); background:none; border:none; box-shadow:none; color:#f2d06a; font-size:15px;}
+  .artfirst .qopt:active{filter:brightness(1.3) drop-shadow(0 0 10px rgba(63,205,235,.8));}
+  .artfirst .qinput-row, .artfirst .qinput{position:relative; z-index:4;}
+  .artfirst .qbox .qinput{position:absolute; left:30%; right:30%; width:auto; top:32.5%; height:7.5%; font-size:19px; z-index:5; background:rgba(250,246,234,.6); border-radius:6px;}
+  .artfirst .qtimer{position:absolute; left:24%; right:24%; width:auto; bottom:-8.5%; height:3.5%; background:none; filter:none;}
+  .artfirst .releases{position:absolute; left:0; right:0; bottom:1.2%; top:auto; z-index:3; padding:0; gap:0; background:none;}
+  .artfirst .rbtn{position:absolute !important; background:none !important; border:none !important; box-shadow:none !important; min-height:0; padding:0 !important; overflow:visible !important;}
+  .artfirst .rbtn::after,.artfirst .rbtn::before{display:none;}
+  .artfirst .rbtn.small{left:3.5%; bottom:0; width:18%; height:11vh;}
+  .artfirst .rbtn.big{right:3.5%; bottom:0; width:18%; height:11vh;}
+  .artfirst .rbtn .ricon{position:absolute !important; left:50% !important; top:45% !important; transform:translate(-50%,-50%); font-size:27px !important;}
+  .artfirst .rbtn.small #rSmallName,.artfirst .rbtn.big #rBigName{position:absolute; left:122%; bottom:42%; font-size:12.5px; font-weight:800; font-family:var(--kai); white-space:nowrap; color:#5a4a28; z-index:5;}
+  .artfirst .rbtn.big #rBigName{left:auto; right:122%;}
+  .artfirst .rbtn .cost{position:absolute; left:122%; bottom:20%; font-size:10.5px; color:#7a6a48; z-index:5;}
+  .artfirst .rbtn.big .cost{left:auto; right:122%;}
+  .artfirst .rbtn .kbd,.artfirst .rbtn .od,.artfirst .rbtn .rfill{display:none;}
+  .artfirst .odpips,.artfirst .castdots{position:absolute; left:0; right:0; top:102%; text-align:center;}
+  .artfirst .trialbar{position:absolute; left:10%; right:10%; top:37%; z-index:4;}
+  @media(min-width:721px){ #battle.artfirst{width:auto; aspect-ratio:auto;} }
   @keyframes huiwen{0%,100%{box-shadow:0 8px 26px rgba(96,80,48,.22), 0 0 10px rgba(192,57,43,.25);}
     50%{box-shadow:0 8px 26px rgba(96,80,48,.22), 0 0 26px rgba(192,57,43,.62), inset 0 0 14px rgba(192,57,43,.14);}}
   .qtype{box-shadow:inset 0 0 0 1px rgba(255,252,240,.35), 0 1px 3px rgba(96,80,48,.3), 0 0 10px rgba(178,58,42,.3);}
@@ -856,7 +913,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <button class="btn ghost" style="padding:8px 20px; font-size:13px;" onclick="openHowto()">❓ 怎么玩</button>
     </div>
     <button class="tunbtn" onclick="document.getElementById('tuner').classList.toggle('open')">⚙</button>
-    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.58</div>
+    <div style="position:fixed; left:10px; bottom:8px; font-size:10px; color:#8a7d63; letter-spacing:1px;">v5.59</div>
     <div id="tuner" class="tuner"><h3>可调常量(改了下一局生效)</h3><div class="tgrid" id="tunerGrid"></div></div>
   </div>
 
@@ -894,6 +951,7 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
       <span class="vsmid"><img src="art/wqui-vs.png" alt="VS" onerror="this.parentNode.textContent='VS'"></span>
       <div class="towerbar"><div class="towerghost" id="towerGhost"></div><div class="towerfill" id="towerFill"></div><div class="tnotch" id="tn1"></div><div class="tnotch" id="tn2"></div></div>
       <span class="dpill dfoe" id="dFoePill">守门者</span>
+      <img id="foeAva" src="art/wq-foe-sigma.png" alt="" style="display:none;">
       <div class="towernum" id="towerNum">1060</div>
       <div class="draftpips" id="draftPips"></div>
     </div>
@@ -2812,7 +2870,7 @@ const FX = (function(){
     if(app){ requestAnimationFrame(()=>{ resize(); syncAnchor(); }); }
   }
   // 视口变化(转屏/软键盘/缩放)时画布必须跟着走,否则锚点漂移立绘出画
-  window.addEventListener('resize', ()=>{ if(app) requestAnimationFrame(()=>{ resize(); syncAnchor(); }); });
+  window.addEventListener('resize', ()=>{ if(app) requestAnimationFrame(()=>{ resize(); syncAnchor(); }); if(typeof updateArtfirst==='function') updateArtfirst(); });
   function resize(){
     const el=document.getElementById('pixiRoot');
     if(!app||!el) return;
@@ -2905,6 +2963,7 @@ const FX = (function(){
       const shade=new PIXI.Graphics();
       shade.beginFill(WQ.shade,WQ.shA).drawRect(0,0,W,H).endFill();
       shade.beginFill(WQ.shade,0.30).drawRect(0,H*0.30,W,H*0.45).endFill(); // 题目/数字动线再压一档
+      if(typeof ART1!=='undefined' && ART1){ shade.visible=false; bgS.visible=false; }
       envC.addChildAt(shade,0); envC.addChildAt(bgS,0);
       const fit=()=>{ if(!tex.width||!bgS) return;
         const sc=Math.max(W/tex.width, H/tex.height);
@@ -2998,7 +3057,8 @@ const FX = (function(){
           if(tex.valid) fit(); else tex.baseTexture.once('loaded', fit);
         }catch(e){}
       }
-      if(foeSprite && foeImgOk){
+      if(foeSprite && foeImgOk && (typeof ART1!=='undefined' && ART1)){ foeSprite.visible=false; glyphT.visible=false; }
+      else if(foeSprite && foeImgOk){
         const sc=(r*(W<640?3.4:4.4))/Math.max(foeSprite.texture.width||1,foeSprite.texture.height||1);
         foeSprite.scale.set(sc);
         glyphT.visible=false;
@@ -3248,6 +3308,16 @@ function benchmark(type,diff){ let b=BENCH[type][diff]*((MODES[MODE]||MODES.hard
 /* ============================== 题目系统 (§4) ============================== */
 // ── 文曲·单字印章:全游戏图标统一为技能首字楷体印(灭 emoji,书卷语言) ──
 function sealChar(h){ return (h && (h.seal || (h.name && h.name[0]))) || '技'; }
+// 界面即插画开关(全局):≤720 竖屏战斗进 artfirst(母图为界,DOM 入画)
+var ART1=false;
+function updateArtfirst(){ const b=document.getElementById('battle'); if(!b) return;
+  ART1 = window.innerWidth<=720;
+  b.classList.toggle('artfirst', ART1);
+  const fa=document.getElementById('foeAva');
+  if(fa){ const fi=(typeof R!=='undefined'&&R&&R.section)?((typeof ENDLESS!=='undefined'&&ENDLESS&&R.section>3)?(R.section-1)%3:Math.min(R.section-1,2)):0;
+    fa.src='art/wq-foe-'+['sigma','omega','delta'][fi]+'.png';
+    fa.style.display = ART1 ? 'block' : 'none'; }
+}
 // ── 文曲·三时辰(Jonasun 2026-07-17:三版理念全要每局随机,UI/布局/背景同一版,随机的只是光) ──
 const WQ_THEMES = {
   day:  { name:'昼读', w:'242,235,217', w2:'232,224,200', ground:'#e8dfc8', shade:0xf6f0e2, tint:0xffffff, shA:0.24, bgimg:'wqbg-day.jpg' },
@@ -3629,6 +3699,7 @@ function startRun(mode){
   else R.seed=(Math.random()*0xffffffff)>>>0;
   RNG_Q=mulberry32(R.seed); RNG_D=mulberry32((R.seed^0x9E3779B9)>>>0);
   R.theme=['day','dusk','night'][R.seed%3]; applyWqTheme();   // 掷时辰(挑战局双方同时辰)
+  if(typeof updateArtfirst==='function') updateArtfirst();
   if(ENDLESS) R.draftAt=[0,30000];   // 无尽:开宗立派+30s 教学窗;之后每关打完发一班(sectionWin)
   if(mode==='vs1' || mode==='vs3'){   // 竞速对战:短局三班牌,bot 强度跟难度档
     VERSUS = { mode: mode==='vs1'?'1v1':'3v3', over:false, foeProgress:0, lastSpecial:0,
