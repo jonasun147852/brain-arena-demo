@@ -296,11 +296,11 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
     background:linear-gradient(180deg, rgba(255,150,60,.16), rgba(120,60,120,.14)); mix-blend-mode:multiply;}
   #battle.artfirst.wq-night::before{content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
     background:rgba(18,22,46,.42); mix-blend-mode:multiply;}
-  .artfirst .topbar{position:absolute; top:.4%; left:26%; right:26%; z-index:3; opacity:.75; font-size:10px; justify-content:center; gap:8px; transform:scale(.92);}
+  .artfirst .topbar{position:absolute; top:1%; left:0; right:0; z-index:3; opacity:.8; font-size:10px; justify-content:center; gap:10px; transform:none; padding:0;}
   .artfirst .towerwrap{position:absolute; top:4.1%; left:0; right:0; z-index:3; gap:0; padding:0 17%;}
-  .artfirst .davatar{display:block; position:absolute; left:4.4%; top:-1.8vh; width:11.2%; height:auto; aspect-ratio:1;}
+  .artfirst .davatar{display:block; position:absolute; left:4.5%; top:50%; transform:translateY(-47%); width:11%; height:auto; aspect-ratio:1;}
   .artfirst .davatar::after{display:none;}
-  .artfirst #foeAva{display:block; position:absolute; right:4.4%; top:-1.8vh; width:11.2%; aspect-ratio:1; border-radius:50%; object-fit:cover; object-position:top;}
+  .artfirst #foeAva{display:block; position:absolute; right:4.5%; top:50%; transform:translateY(-47%); width:11%; aspect-ratio:1; border-radius:50%; object-fit:cover; object-position:top;}
   .artfirst .dpill{background:none; border:none; box-shadow:none; color:#fdf9ee; font-size:12px; padding:0 4px;}
   .artfirst .phpwrap{flex:1;} .artfirst .towerwrap .towerbar{flex:1;}
   .artfirst .towerwrap .hpbar,.artfirst .towerbar{background:transparent; border:none; box-shadow:none; height:12px; border-radius:6px;}
@@ -328,8 +328,13 @@ if(location.pathname.endsWith('/game')) location.replace(location.pathname+'/'+l
   .artfirst .qopt::before{position:absolute; left:6.2%; top:50%; transform:translateY(-50%); background:none; border:none; box-shadow:none; color:#f2d06a; font-size:15px;}
   .artfirst .qopt:active{filter:brightness(1.3) drop-shadow(0 0 10px rgba(63,205,235,.8));}
   .artfirst .qinput-row, .artfirst .qinput{position:relative; z-index:4;}
-  .artfirst .qbox .qinput{position:absolute; left:30%; right:30%; width:auto; top:32.5%; height:7.5%; font-size:19px; z-index:5; background:rgba(250,246,234,.6); border-radius:6px;}
-  .artfirst .qtimer{position:absolute; left:24%; right:24%; width:auto; bottom:-8.5%; height:3.5%; background:none; filter:none;}
+  .artfirst .qbox .qinput{display:none;}
+  .artfirst.isnum .qbox .qinput{display:block; position:absolute; left:30%; right:30%; width:auto; top:34%; height:8%; font-size:20px; z-index:5; background:rgba(250,246,234,.75); border:1px solid rgba(30,36,48,.3); border-radius:8px;}
+  .artfirst .keypad{display:none !important;}
+  body.touch .artfirst.isnum .keypad{display:grid !important; position:absolute; left:8%; right:8%; top:56.5%; height:29%; z-index:6; gap:6px;}
+  .artfirst .keypad .kp{background:rgba(250,246,234,.9); border:1.5px solid #a2946e; border-radius:9px; font-size:20px; font-weight:800; color:#2a2318; box-shadow:0 2px 4px rgba(96,80,48,.3);}
+  .artfirst .keypad .kp:active{background:#f2d06a;}
+  .artfirst .qtimer{position:absolute; left:26%; right:26%; width:auto; bottom:-6.6%; height:2.2%; background:none; filter:none;}
   .artfirst .releases{position:absolute; left:0; right:0; bottom:1.2%; top:auto; z-index:3; padding:0; gap:0; background:none;}
   .artfirst .rbtn{position:absolute !important; background:none !important; border:none !important; box-shadow:none !important; min-height:0; padding:0 !important; overflow:visible !important;}
   .artfirst .rbtn::after,.artfirst .rbtn::before{display:none;}
@@ -4170,6 +4175,7 @@ function peekAnswer(){   // 偷看:半数题触发,亮 0.8s,35% 看岔
 }
 function renderOpts(){
   const qo=document.getElementById('qOpts');
+  { const b=document.getElementById('battle'); if(b) b.classList.toggle('isnum', !(q&&q.mc)); }
   if(!q || !q.mc){ qo.classList.add('hidden'); return; }
   qo.classList.remove('hidden');
   qo.innerHTML='';
